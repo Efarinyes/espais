@@ -15,10 +15,10 @@ El projecte és a la **Fase 0 (bíblia documental)**. Encara no hi ha aplicació
 3. Obre la fase activa a [`docs/PLA-TREBALL.md`](docs/PLA-TREBALL.md).
 4. El model ha de cridar el skill de la feina (vegeu [`AGENTS.md`](AGENTS.md)).
 
-## Stack previst (encara no instal·lat)
+## Stack previst
 
-- Front: Vue 3 (només a `frontend/`, mobile-first).
-- Back: FastAPI, entorn **micromamba/conda** (mai `.venv`).
+- Front: Vue 3 (només a `frontend/`, mobile-first). Encara no instal·lat.
+- Back: FastAPI sobre l’entorn micromamba **`espais`** (ja creat en aquesta màquina). Mai `.venv`. `environment.yml` arribarà a la Fase 1 per documentar-lo; `env create` només si l’entorn no existeix.
 - Tests: pytest (backend) i Vitest (frontend).
 
 ## Idioma

@@ -7,7 +7,9 @@ description: Backend FastAPI en capes amb micromamba, SQLAlchemy 2 i casos d’�
 
 ## Entorn
 
-Micromamba/conda (`environment.yml`, env `espais`). **Mai** `.venv` ni `python -m venv`.
+Micromamba/conda, env `espais`. **Mai** `.venv` ni `python -m venv`.
+
+Si `espais` ja existeix: usar-lo (`micromamba run -n espais`). No `env create` a sobre. `environment.yml` al repo pinnant deps explícites (Fase 1). Paquets nous (p. ex. ruff): `env update -n espais -f environment.yml`. `env create -f` només si l’entorn no existeix.
 
 ## Capes
 
@@ -17,12 +19,13 @@ Routers prims. Un cas d’ús per acció. `entity_id` a totes les queries de neg
 
 ## Checklist
 
-- [ ] Dependències al conda env, no pip solt sense llista
+- [ ] No recrear l’entorn `espais` si ja existeix
+- [ ] Dependències al conda env i a `environment.yml` explícit (no dump de prefix)
 - [ ] Cas d’ús testejable amb fakes
 - [ ] Sense lògica de solapament/mail al router
 - [ ] SQLite dev; tipus compatibles amb PostgreSQL
 - [ ] Clock i UUID injectats si cal determinisme
-- [ ] Ruff quan existeixi el projecte Python
+- [ ] Ruff: `env update`, no `env create`
 
 ## Recursos
 

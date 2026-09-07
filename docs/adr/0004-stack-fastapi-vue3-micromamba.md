@@ -16,7 +16,8 @@ Es vol backend Python lleuger, front modern mobile-first, i entorns reproduïble
 
 ## Conseqüències
 
-- Documentar com crear l’entorn a README quan existeixi `environment.yml` (Fase 1).
+- Documentar com usar l’entorn a README quan existeixi `environment.yml` (Fase 1): si `espais` ja existeix, s’aprofita; `env create -f` només si no hi és.
+- L’entorn local `espais` ja està creat; el yml el documenta, no el substitueix.
 - CI ha d’usar micromamba o imatge equivalent, no `python -m venv`.
 - Vue CLI / paquets globals queden prohibits al protocol.
 

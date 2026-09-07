@@ -4,18 +4,29 @@ ADR: [0004](adr/0004-stack-fastapi-vue3-micromamba.md).
 
 ## Backend
 
-- Python 3.12+ en entorn **micromamba/conda** (`environment.yml`). Nom de l’entorn: `espais`.
+- Python 3.12+ en entorn **micromamba/conda**. Nom de l’entorn: `espais`.
 - **Mai** `.venv`, `virtualenv` ni instal·lació global de paquets del projecte.
 - FastAPI, Uvicorn, Pydantic v2, SQLAlchemy 2, Alembic.
 - SQLite en desenvolupament i tests; esquema compatible amb PostgreSQL (tipus, sense extensions SQLite-only a producció futura).
 - pytest, httpx.
 
-Activació prevista:
+L’entorn local **ja existeix** (`micromamba/envs/espais`, Python 3.12, stack anterior a conda-forge). No es recrea.
+
+`environment.yml` al repo (Fase 1) **documenta** aquest entorn amb dependències explícites (no un dump de tot el prefix). És la font de veritat del repositori; l’env local n’és la instància instal·lada.
 
 ```bash
-micromamba env create -f environment.yml
+# Entorn ja present (aquesta màquina): usar-lo
 micromamba activate espais
+# o: micromamba run -n espais pytest
+
+# Només si `espais` NO existeix (CI, altra màquina)
+micromamba env create -f environment.yml
+
+# Alinear paquets nous (p. ex. ruff), mai create a sobre
+micromamba env update -n espais -f environment.yml
 ```
+
+Mai `micromamba env create` si l’entorn `espais` ja existeix.
 
 ## Frontend
 

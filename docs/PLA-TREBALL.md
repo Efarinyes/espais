@@ -36,7 +36,7 @@ Una fase només es tanca si:
 **Tasques:**
 
 - Git local via skill `repo-github` (ja init a la Fase 0). Branca `fase/1-esquelet` en arrencar. Remot GitHub **només quan es demani**.
-- Entorn micromamba amb `environment.yml` (Python, FastAPI, SQLAlchemy, Alembic, pytest). Mai `.venv`.
+- **Aprofitar** l’entorn micromamba existent `espais` (no `env create`). Afegir `environment.yml` al repo pinnant dependències explícites a partir d’aquest env. Mai `.venv`.
 - Backend mínim: app FastAPI que respon salut i munta tests.
 - Frontend mínim: Vue 3 + Vite **només a `frontend/`** (npm/pnpm local del directori). Pinia, Vue Router, Vitest.
 - CI mínima: pytest + Vitest.
