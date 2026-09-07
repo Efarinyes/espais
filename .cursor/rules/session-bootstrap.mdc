@@ -1,0 +1,12 @@
+---
+description: Arrencada de sessió Espais — llegir estat viu i cridar skills
+alwaysApply: true
+---
+
+# Bootstrap de sessió
+
+Abans de canviar res: llegeix `SESSION.md`, `docs/INDEX.md` i la fase activa de `docs/PLA-TREBALL.md`. Crida `session-start` i el skill de la feina (`AGENTS.md`). Al tancar, `session-close` (no fa git) i actualitza `SESSION.md`. Preservar (commit local): `repo-github`. Sense push ni remote fins que es demani.
+
+Termes: entitat, responsable, coordinador, espai, reserva, assistència, aforament. UI i docs en català. Ús intern i gratuït: sense cobrament al producte ni al backlog. Actes oberts al públic via coordinador a v1; autoservei ciutadà = backlog.
+
+Fase 0: cap codi d’aplicació. Mai `.venv`. Vue només a `frontend/`. Tot negoci amb `entity_id`. Decisions noves → ADR.

@@ -1,0 +1,11 @@
+---
+description: Contracte de tests Espais (pytest i Vitest)
+globs: "**/test*"
+alwaysApply: false
+---
+
+# Tests
+
+Cap cas d’ús sense test. Unitari amb fakes de ports. Cobrir: registre atòmic, aïllament de tenant, unique d’espai per entitat, solapament, assistència `count`, anul·lació + notifier.
+
+Sense SMTP real. Un comportament per test. Skill: `testing-quality`.

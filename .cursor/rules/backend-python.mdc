@@ -1,0 +1,11 @@
+---
+description: Convencions Python/FastAPI del backend Espais
+globs: backend/**/*.py
+alwaysApply: false
+---
+
+# Backend Python
+
+Capes: `api` → `usecases` → `domain`/`ports` ← `adapters`. Routers sense regles de negoci. Un cas d’ús per acció. Queries amb `entity_id`.
+
+Entorn micromamba (`espais`), mai `.venv`. SQLAlchemy 2, Pydantic v2. Ports per persistència, notifier i clock. Skill: `backend-fastapi`. Tests amb `testing-quality`.

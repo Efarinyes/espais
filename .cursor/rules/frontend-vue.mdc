@@ -1,0 +1,11 @@
+---
+description: Convencions Vue 3 mobile-first a frontend/
+globs: frontend/**
+alwaysApply: false
+---
+
+# Frontend Vue
+
+Només aquest directori; mai Vue global. Vistes primes; lògica a composables; HTTP amb `provide`/`inject`. Pinia per sessió, no per cada llista.
+
+Copy català (glossari). Mobile-first, empty/loading/error. El backend valida solapaments. Skills: `frontend-vue`, `ui-ux-mobile`.

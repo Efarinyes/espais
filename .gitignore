@@ -1,0 +1,16 @@
+# Git ignore — Espais
+
+.env*
+.env
+node_modules/
+__pycache__/
+.mamba/
+.venv/
+*.db
+.DS_Store
+*.pyc
+.pytest_cache/
+.mypy_cache/
+dist/
+frontend/dist/
+frontend/node_modules/
