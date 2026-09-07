@@ -9,23 +9,25 @@ Actualitza aquest arxiu al final de cada sessió. És el punt d’arrencada del 
 
 ## Darrera feina
 
-Repositori **local** inicialitzat (`main`, `.gitignore`, primer commit). Remot GitHub ajornat fins que es demani. Skill `repo-github`: preservar = commit; no push sense `origin` ni demanda.
+Protocol de tancament: `session-close` escriu `SESSION.md` i **sempre** aplica `repo-github` (mode tancament), independent dels commits de la sessió. Repositori local a `main`; sense `origin`. Producte intern i gratuït; autoservei ciutadà = backlog.
 
 ## Següent tasca
 
-Arrencar la Fase 1 quan es revisi i s’aprovi [`docs/PLA-TREBALL.md`](docs/PLA-TREBALL.md):
+Arrencar la **Fase 1 — Esquelet** (un pas: branca + entorn):
 
-- Branca `fase/1-esquelet` en arrencar (git local ja existeix).
-- Remot GitHub quan es decideixi pujar (no forma part de l’esquelet per defecte).
-- Entorn micromamba (`environment.yml`).
-- Esquelet FastAPI + Vue 3 només a `frontend/`.
-- CI mínima de tests.
+1. `session-start` + `repo-github`: branca `fase/1-esquelet` des de `main`.
+2. `environment.yml` micromamba (env `espais`, mai `.venv`).
+3. FastAPI mínim + tests pytest.
+4. Vue 3 + Vite **només a `frontend/`** + Vitest.
+5. CI mínima de tests.
 
-Skills a cridar a la Fase 1: `session-start`, `repo-github`, `backend-fastapi`, `frontend-vue`, `testing-quality`, `session-close`.
+Skills Fase 1: `session-start`, `repo-github`, `backend-fastapi`, `frontend-vue`, `testing-quality`, `architecture-solid`, `session-close`.
+
+Remot GitHub: quan es vulgui pujar, `repo-github` bootstrap remot.
 
 ## Blockers
 
-Cap. Pendent de revisió humana del pla.
+Cap.
 
 ## ADRs oberts / recents
 
@@ -35,11 +37,13 @@ Cap. Pendent de revisió humana del pla.
 - [0004](docs/adr/0004-stack-fastapi-vue3-micromamba.md) — acceptat
 - [0005](docs/adr/0005-avis-anulacio-coordinador.md) — acceptat
 
+Cap ADR nou. Git només local fins a demanda explícita.
+
 ## Notes
 
-- Assistència v1: compte d’assistents, extensible a llista nominativa o comptes.
-- Tipologia d’entitat: text lliure, no enum tancat.
-- Ús intern i gratuït. Sense passarel·la, cost de reserva ni pagament per ús. No és backlog.
-- Actes oberts al públic (presentació de llibre, fòrum de pel·lícula): reserva del coordinador a v1.
-- Backlog explícit (no v1): transferència de responsable, diversos responsables, unió d’entitats, coordinador en més d’una entitat, autoservei de reserva per a ciutadania.
-- Git: skill `repo-github`. Ara mateix només local. Remot GitHub quan es demani. `session-close` no commiteja.
+- Glossari: entitat, responsable, coordinador, espai, reserva, assistència, aforament.
+- Assistència v1: compte; extensible amb `AttendanceRecord.strategy`.
+- Ús intern i gratuït. Sense cobrament al backlog ni al model.
+- Actes oberts al públic: reserva del coordinador a v1.
+- Backlog: transferència de responsable, diversos responsables, unió d’entitats, coordinador multi-entitat, autoservei ciutadà, assistència nominativa.
+- Durant la sessió: `repo-github` preservar. Al final: `session-close` → `repo-github` tancament (sempre, perquè `SESSION.md` ha canviat).

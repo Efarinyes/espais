@@ -177,4 +177,4 @@ Documentat, no implementat ara:
 4. `backend-fastapi` i/o `frontend-vue` i/o `ui-ux-mobile`
 5. `architecture-solid` abans de donar la fase per tancada
 6. `repo-github` quan calgui preservar (commit local, qualsevol moment). Push/PR només amb remot i sota demanda
-7. `session-close` (no fa git)
+7. `session-close` (escriu `SESSION.md` i **sempre** aplica `repo-github` tancament)

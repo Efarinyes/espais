@@ -31,7 +31,7 @@ Després crida el skill `session-start` i el skill de la feina concreta.
 | Feina | Skill |
 |---|---|
 | Inici de sessió | `session-start` |
-| Final de sessió | `session-close` |
+| Final de sessió (`SESSION.md` + commit via `repo-github`) | `session-close` |
 | Git local (commit, branques); GitHub només sota demanda | `repo-github` |
 | Domini, glossari, model | `domain-model` |
 | Alta d’entitat / responsable / coordinadors | `registration-onboarding` |
@@ -48,4 +48,4 @@ Els skills viuen a [`.cursor/skills/`](.cursor/skills/). Les rules a [`.cursor/r
 
 ## Tancament de cada sessió
 
-Crida `session-close` i actualitza [`SESSION.md`](SESSION.md): què s’ha fet, què ve a continuació, blockers, ADRs nous. No deixis decisions només al xat. `session-close` no fa git; per commit crida `repo-github`. Push i remot només quan es demani. Vegeu [`docs/16-repositori.md`](docs/16-repositori.md).
+Crida `session-close`: primer [`SESSION.md`](SESSION.md), després **sempre** `repo-github` (mode tancament). Independent dels commits de la sessió, `SESSION.md` ha canviat i ha de ser al git. Push i remot només quan es demani. Vegeu [`docs/16-repositori.md`](docs/16-repositori.md).

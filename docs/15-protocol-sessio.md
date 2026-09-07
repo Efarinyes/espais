@@ -17,14 +17,14 @@ El model no depèn de la memòria del xat. L’estat viu és [`SESSION.md`](../S
 - Canvi de glossari → [02-glossari.md](02-glossari.md) al mateix PR/sessió.
 - Deute conscient → ADR o tasca al pla, no comentari `TODO` solt.
 - Cridar `testing-quality` amb cada cas d’ús; `architecture-solid` abans de tancar fase.
-- Git a part: cridar `repo-github` quan calgui preservar (commit local). Push i PR només quan hi hagi remot i es demani. Vegeu [16-repositori.md](16-repositori.md).
+- Git a part **durant** la sessió: cridar `repo-github` (preservar) quan calgui. Push i PR només amb remot i demanda. Vegeu [16-repositori.md](16-repositori.md).
 
 ## Tancament
 
-1. Cridar `session-close` (només context: `SESSION.md`, ADRs). **No** fa git.
-2. Actualitzar `SESSION.md`: fase, darrera feina, següent tasca, blockers, ADRs.
+1. Cridar `session-close`.
+2. Actualitzar `SESSION.md` (fase, darrera feina, següent tasca, blockers, ADRs).
 3. Si s’ha tancat una fase, marcar-la al pla i deixar la següent com a actual.
-4. Si cal preservar o publicar, cridar `repo-github` (no forma part de `session-close`).
+4. **Sempre** aplicar `repo-github` en mode tancament (mateixa resposta). `SESSION.md` sempre ha canviat: ha d’entrar al git. Sense push tret de demanda.
 5. No deixar el “què falta” només al xat.
 
 ## Plantilla de `SESSION.md`

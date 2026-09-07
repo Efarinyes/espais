@@ -25,7 +25,7 @@ Després resumeix en 3–5 línies: fase, darrera feina, següent tasca, blocker
 
 ## Després
 
-Crida el skill de la feina. Al final de la sessió, `session-close`.
+Crida el skill de la feina. A mitja sessió, `repo-github` per preservar. Al final, `session-close` (inclou `repo-github` tancament).
 
 ## Recursos
 
