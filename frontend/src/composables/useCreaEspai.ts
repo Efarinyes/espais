@@ -1,6 +1,7 @@
 import { reactive, ref } from "vue";
 import { useRouter } from "vue-router";
 
+import { diesAFinestres, diesPerDefecte, validaDies } from "../disponibilitat";
 import { ApiError } from "../services/identitat";
 import { requireEspaisApi } from "../services/espais";
 import { useSessioStore } from "../stores/sessio";
@@ -15,9 +16,11 @@ export function useCreaEspai() {
     capacity: "20",
     equipment: "",
   });
+  const dies = ref(diesPerDefecte());
   const errorsCamp = reactive({
     name: "",
     capacity: "",
+    windows: "",
   });
   const errorGlobal = ref("");
   const enviant = ref(false);
@@ -27,7 +30,8 @@ export function useCreaEspai() {
     const n = Number(camps.capacity);
     errorsCamp.capacity =
       Number.isInteger(n) && n >= 1 ? "" : "L’aforament ha de ser un enter positiu.";
-    return !errorsCamp.name && !errorsCamp.capacity;
+    errorsCamp.windows = validaDies(dies.value);
+    return !errorsCamp.name && !errorsCamp.capacity && !errorsCamp.windows;
   }
 
   async function enviar() {
@@ -41,11 +45,14 @@ export function useCreaEspai() {
         name: camps.name,
         capacity: Number(camps.capacity),
         equipment: camps.equipment,
+        windows: diesAFinestres(dies.value),
       });
       await router.push({ name: "espais" });
     } catch (err) {
       if (err instanceof ApiError && err.status === 409) {
         errorGlobal.value = "Aquest nom d’espai ja existeix a l’entitat.";
+      } else if (err instanceof ApiError && err.status === 403) {
+        errorGlobal.value = "Només el responsable pot definir espais.";
       } else if (err instanceof ApiError) {
         errorGlobal.value = err.message;
       } else {
@@ -56,5 +63,5 @@ export function useCreaEspai() {
     }
   }
 
-  return { camps, errorsCamp, errorGlobal, enviant, enviar };
+  return { camps, dies, errorsCamp, errorGlobal, enviant, enviar };
 }

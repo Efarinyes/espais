@@ -23,7 +23,7 @@ def _is_duplicate_space_name(exc: IntegrityError) -> bool:
 def _space_from_row(row: SpaceRow) -> Space:
     windows = tuple(
         AvailabilityWindow(weekday=w.weekday, start=w.start_time, end=w.end_time)
-        for w in sorted(row.windows, key=lambda item: item.weekday)
+        for w in sorted(row.windows, key=lambda item: (item.weekday, item.start_time))
     )
     return Space(
         id=row.id,
@@ -105,7 +105,9 @@ class SqlAlchemySpaceRepository:
 
     def save(self, space: Space) -> None:
         row = self._session.scalar(
-            select(SpaceRow).where(SpaceRow.id == space.id, SpaceRow.entity_id == space.entity_id)
+            select(SpaceRow)
+            .where(SpaceRow.id == space.id, SpaceRow.entity_id == space.entity_id)
+            .options(selectinload(SpaceRow.windows))
         )
         if row is None:
             return
@@ -115,6 +117,16 @@ class SqlAlchemySpaceRepository:
         row.equipment = space.equipment
         row.min_attendance = space.min_attendance
         row.active = space.active
+        row.windows.clear()
+        for window in space.windows:
+            row.windows.append(
+                SpaceWindowRow(
+                    id=uuid4(),
+                    weekday=window.weekday,
+                    start_time=window.start,
+                    end_time=window.end,
+                )
+            )
         try:
             self._session.flush()
         except IntegrityError as exc:

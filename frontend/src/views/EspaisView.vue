@@ -9,6 +9,7 @@ import { useSessioStore } from "../stores/sessio";
 const sessio = useSessioStore();
 const { espais, carregant, error } = useLlistaEspais();
 
+const esResponsable = computed(() => sessio.role === "responsible");
 const llistaAmpla = computed(() => !error.value && !carregant.value && espais.value.length > 0);
 </script>
 
@@ -23,9 +24,15 @@ const llistaAmpla = computed(() => !error.value && !carregant.value && espais.va
 
     <section v-else-if="espais.length === 0" class="card bg-base-100 shadow-sm mt-6" aria-labelledby="buit-espais">
       <div class="card-body">
-        <h2 id="buit-espais" class="card-title">Encara no heu definit cap espai</h2>
-        <p>El nom el trieu vosaltres (Sala 1 o Sala Pau Casals).</p>
-        <RouterLink class="btn btn-primary min-h-11" to="/espais/nou">Defineix el primer espai</RouterLink>
+        <template v-if="esResponsable">
+          <h2 id="buit-espais" class="card-title">Encara no heu definit cap espai</h2>
+          <p>El nom el trieu vosaltres (Sala 1 o Sala Pau Casals).</p>
+          <RouterLink class="btn btn-primary min-h-11" to="/espais/nou">Defineix el primer espai</RouterLink>
+        </template>
+        <template v-else>
+          <h2 id="buit-espais" class="card-title">Encara no hi ha espais</h2>
+          <p>El responsable de l’entitat els definirà. Mentrestant no es poden fer reserves.</p>
+        </template>
       </div>
     </section>
 
@@ -34,11 +41,11 @@ const llistaAmpla = computed(() => !error.value && !carregant.value && espais.va
         v-for="espai in espais"
         :key="espai.id"
         :espai="espai"
-        :pot-editar="sessio.role === 'responsible'"
+        :pot-editar="esResponsable"
       />
     </ul>
 
-    <div v-if="espais.length > 0" class="mt-6">
+    <div v-if="espais.length > 0 && esResponsable" class="mt-6">
       <RouterLink class="btn btn-primary min-h-11" to="/espais/nou">Afegeix un espai</RouterLink>
     </div>
   </main>

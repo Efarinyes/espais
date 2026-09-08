@@ -61,7 +61,7 @@ Una fase només es tanca si:
 
 **Criteri fet:** un responsable pot entrar i veure només la seva entitat; tests d’aïllament de tenant.
 
-## Fase 3 — Espais (següent)
+## Fase 3 — Espais (al disc; pendent `architecture-solid`)
 
 **Objectiu:** cada entitat defineix els seus espais.
 
@@ -77,7 +77,7 @@ Una fase només es tanca si:
 
 **Criteri fet:** CRUD d’espais acotat a l’entitat; noms duplicats només es validen dins la mateixa entitat.
 
-## Fase 4 — Coordinadors i reserves
+## Fase 4 — Coordinadors i reserves (al disc; pendent `architecture-solid`)
 
 **Objectiu:** el coordinador reserva un espai en un interval.
 

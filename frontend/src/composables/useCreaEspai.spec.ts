@@ -7,6 +7,7 @@ import { flushPromises, mount } from "@vue/test-utils";
 import { useCreaEspai } from "./useCreaEspai";
 import { ApiError } from "../services/identitat";
 import { espaisApiKey, type EspaisApi } from "../services/espais";
+import { finestresPerDefecte } from "../disponibilitat";
 import { useSessioStore } from "../stores/sessio";
 
 function muntar(api: Partial<EspaisApi>) {
@@ -46,6 +47,7 @@ function muntar(api: Partial<EspaisApi>) {
             capacity: 20,
             equipment: null,
             active: true,
+            windows: finestresPerDefecte(),
           }),
           crear: async () => ({
             id: "s1",
@@ -54,6 +56,7 @@ function muntar(api: Partial<EspaisApi>) {
             capacity: 20,
             equipment: null,
             active: true,
+            windows: finestresPerDefecte(),
           }),
           actualitzar: async () => ({
             id: "s1",
@@ -62,6 +65,7 @@ function muntar(api: Partial<EspaisApi>) {
             capacity: 20,
             equipment: null,
             active: true,
+            windows: finestresPerDefecte(),
           }),
           ...api,
         } satisfies EspaisApi,
@@ -108,5 +112,61 @@ describe("useCreaEspai", () => {
     await flushPromises();
     expect(router.currentRoute.value.name).toBe("espai-nou");
     expect(wrapper.vm.errorGlobal).toContain("no s’ha pogut desar");
+  });
+
+  it("envia les finestres per defecte en crear", async () => {
+    let enviat: { windows?: { weekday: number }[] } | undefined;
+    const { wrapper, router } = muntar({
+      crear: async (_token, input) => {
+        enviat = input;
+        return {
+          id: "s1",
+          entity_id: "e1",
+          name: "Sala 1",
+          capacity: 10,
+          equipment: null,
+          active: true,
+          windows: finestresPerDefecte(),
+        };
+      },
+    });
+    await router.push("/espais/nou");
+    wrapper.vm.camps.name = "Sala 1";
+    wrapper.vm.camps.capacity = "10";
+    await wrapper.vm.enviar();
+    await flushPromises();
+    expect(enviat?.windows).toHaveLength(7);
+  });
+
+  it("no envia si no hi ha cap dia actiu", async () => {
+    let cridat = false;
+    const { wrapper } = muntar({
+      crear: async () => {
+        cridat = true;
+        throw new Error("no s’hauria de cridar");
+      },
+    });
+    wrapper.vm.camps.name = "Sala 1";
+    wrapper.vm.camps.capacity = "10";
+    wrapper.vm.dies.forEach((dia: { actiu: boolean }) => {
+      dia.actiu = false;
+    });
+    await wrapper.vm.enviar();
+    await flushPromises();
+    expect(cridat).toBe(false);
+    expect(wrapper.vm.errorsCamp.windows).toContain("almenys un dia");
+  });
+
+  it("mostra error clar si el coordinador no té permís", async () => {
+    const { wrapper } = muntar({
+      crear: async () => {
+        throw new ApiError("només el responsable pot definir espais", 403);
+      },
+    });
+    wrapper.vm.camps.name = "Sala 1";
+    wrapper.vm.camps.capacity = "10";
+    await wrapper.vm.enviar();
+    await flushPromises();
+    expect(wrapper.vm.errorGlobal).toContain("Només el responsable");
   });
 });

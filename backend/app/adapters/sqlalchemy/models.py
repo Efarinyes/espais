@@ -96,3 +96,45 @@ class SpaceWindowRow(Base):
     start_time: Mapped[time] = mapped_column(Time, nullable=False)
     end_time: Mapped[time] = mapped_column(Time, nullable=False)
     space: Mapped[SpaceRow] = relationship(back_populates="windows")
+
+
+class InvitationRow(Base):
+    __tablename__ = "invitations"
+
+    id: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), primary_key=True)
+    entity_id: Mapped[UUID] = mapped_column(
+        Uuid(as_uuid=True),
+        ForeignKey("entities.id"),
+        nullable=False,
+        index=True,
+    )
+    email: Mapped[str] = mapped_column(String(255), nullable=False)
+    token: Mapped[str] = mapped_column(String(128), nullable=False, unique=True)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    accepted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+
+class ReservationRow(Base):
+    __tablename__ = "reservations"
+
+    id: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), primary_key=True)
+    entity_id: Mapped[UUID] = mapped_column(
+        Uuid(as_uuid=True),
+        ForeignKey("entities.id"),
+        nullable=False,
+        index=True,
+    )
+    space_id: Mapped[UUID] = mapped_column(
+        Uuid(as_uuid=True),
+        ForeignKey("spaces.id"),
+        nullable=False,
+        index=True,
+    )
+    coordinator_id: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), nullable=False)
+    coordinator_name: Mapped[str] = mapped_column(String(255), nullable=False)
+    starts_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    ends_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    status: Mapped[str] = mapped_column(String(32), nullable=False)
+    notes: Mapped[str | None] = mapped_column(String(512), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)

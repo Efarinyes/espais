@@ -4,32 +4,34 @@ Actualitza aquest arxiu al final de cada sessió. És el punt d’arrencada del 
 
 ## Fase
 
-- **Fase actual:** 3 — Espais (en curs; CreateSpace, ListSpaces, GetSpace, UpdateSpace fets)
-- **Següent fase:** 3 continua fins al criteri CRUD (finestres de disponibilitat); després 4 — Coordinadors i reserves
+- **Fase actual:** 4 — Coordinadors i reserves (al disc: invitació, CreateReservation, calendari; no tancada: manca `architecture-solid`)
+- **Següent fase:** 5 — Assistència (`RecordAttendance`), després de tancar 3+4 amb la revisió SOLID
 
 ## Darrera feina
 
-A `fase/3-espais`:
+A `fase/3-espais` (el producte ja ha passat d’espais a reserves; la branca no s’ha reanomenat):
 
-- Persistència SQLite: URL absoluta, bootstrap Alembic a l’arrencada (`schema.py`), `GET`/`PATCH /espais/{id}`. `UpdateSpace` / `GetSpace` acotats a l’entitat; desactivar ≠ esborrar; 404 sense filtrar altre tenant; 409 només si el nom ja existeix a l’entitat.
-- Front: targeta d’espai (equipament o missatge de buit), «Editar» només responsable, empty/error de llista no es confonen. Proxy Vite: `Accept: text/html` → SPA.
-- Kit UI (ADR 0006): Tailwind 4 + DaisyUI 5, tema neutre `espais`; PWA instal·lable (`vite-plugin-pwa`, lang `ca`, cache de l’esquelet). L’API no és offline. Vistes reescrites amb Daisy; composables i Pinia conservats.
+- Espais: CRUD per entitat, finestres d’horari a l’alta/edició (`FinestresDisponibilitat`), el coordinador no crea ni edita (403 + UI).
+- Coordinadors: `InviteCoordinator` / `AcceptInvitation` (Alembic 0003), UI convidar i `/invitar/:token`.
+- Reserves: `CreateReservation` / `ListReservations` (Alembic 0004), solapament i finestres al back. UTC; TZ Europe/Madrid.
+- Calendari Schedule-X: el coordinador entra per la targeta de l’espai (`?espai=`); el responsable veu totes les reserves (capçalera Calendari), color per espai i nom de qui ha reservat. Durada al modal (1 h per defecte, no només 30 min). Títols curts (Tu / Ocupat / nom).
+- Calendari viu (ADR 0007): port `DisparadorCalendari`; adaptador polling ~20 s + refetch en tornar a la pestanya. Porta oberta a SSE/WebSocket (mateix `avisar()`, no reescriure Schedule-X).
 
-Vitest 23 verds; build del front genera manifest + service worker. pytest del backend no s’ha reexecutat en el tancament.
+Vitest 61 verds en tancar. pytest no s’ha reexecutat en aquest tancament.
 
-La Fase 3 **no** es tanca: falta l’editor de finestres de disponibilitat i la revisió `architecture-solid`.
+Fase 3 i 4 **no** es tanquen al pla: falta `architecture-solid`.
 
 ## Següent tasca
 
-Editor de finestres d’horari per espai (TDD): el responsable defineix disponibilitat; v1 encara té el defecte 08:00–22:00 tots els dies sense UI.
+Revisió `architecture-solid` (capes, SRP, deute) sobre espais + invitacions + reserves + calendari. Si surt neta: marcar Fase 3 i 4 fetes a `docs/PLA-TREBALL.md` i començar Fase 5 (`RecordAttendance`, compte d’assistents). Si hi ha deute: ADR o tasca al pla, no tancar.
 
-Skills: `spaces-definition`, `domain-model`, `backend-fastapi`, `frontend-vue`, `ui-ux-mobile`, `testing-quality`.
+Skills: `architecture-solid`, `testing-quality`; després `reservations-attendance`, `domain-model`.
 
-Remot GitHub: encara sota demanda.
+Remot GitHub: encara sota demanda. Sense `origin`.
 
 ## Blockers
 
-Cap. API `http://127.0.0.1:8000`; front `http://127.0.0.1:5173` (Vite ja recarrega Daisy/PWA).
+Cap. API `http://127.0.0.1:8000`; front `http://127.0.0.1:5173`.
 
 ## ADRs oberts / recents
 
@@ -39,8 +41,9 @@ Cap. API `http://127.0.0.1:8000`; front `http://127.0.0.1:5173` (Vite ja recarre
 - [0004](docs/adr/0004-stack-fastapi-vue3-micromamba.md) — acceptat
 - [0005](docs/adr/0005-avis-anulacio-coordinador.md) — acceptat
 - [0006](docs/adr/0006-tailwind-daisy-pwa.md) — acceptat
+- [0007](docs/adr/0007-calendari-polling.md) — acceptat (polling v1; sockets = adaptador futur)
 
-Cap ADR nou pendent.
+Cap ADR nou pendent. Sockets/SSE de calendari: no ara; el port ja existeix.
 
 ## Notes
 
@@ -49,4 +52,4 @@ Cap ADR nou pendent.
 - Micromamba: `micromamba run -n espais pytest`; no `env create` si `espais` existeix.
 - Front: `cd frontend && npm test` / `npm run dev`. Vue no global. Tema Daisy `espais`; toc ≥ 44px (`min-h-11`).
 - PWA: instal·lable; no desregistrar el SW en DEV. `navigateFallbackDenylist` per `/salut`, `/registre`, `/sessio`, `/espais`.
-- Revisió SOLID pendent abans de tancar la fase. Deute conscient: editor de finestres; invitacions = Fase 4; ocupació «disponible / parcial» = Fase 4 (reserves).
+- Deute conscient: tancar Fase 3+4 amb SOLID; assistència i anul·lació/reprogramació (fases 5–6) encara no; ocupació «disponible / parcial» al calendari = millora, no blocker.

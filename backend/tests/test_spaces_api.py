@@ -127,3 +127,88 @@ def test_cannot_update_space_of_other_entity(sqlite_session_factory) -> None:
     assert response.status_code == 404
     assert client.get(f"/espais/{space_id}", headers=headers_a).status_code == 404
     assert client.get(f"/espais/{space_id}", headers=headers_b).json()["name"] == "Sala 1"
+
+
+def test_create_space_default_windows_are_full_week(sqlite_session_factory) -> None:
+    client = TestClient(create_app(session_factory=sqlite_session_factory))
+    created = _register(client, email="anna-finestres@example.com")
+    headers = {"Authorization": f"Bearer {created['token']}"}
+    body = client.post("/espais", headers=headers, json={"name": "Sala 1", "capacity": 10}).json()
+    assert len(body["windows"]) == 7
+    assert {w["weekday"] for w in body["windows"]} == set(range(7))
+    assert body["windows"][0]["start"] == "08:00:00"
+    assert body["windows"][0]["end"] == "22:00:00"
+
+
+def test_create_and_update_custom_windows(sqlite_session_factory) -> None:
+    client = TestClient(create_app(session_factory=sqlite_session_factory))
+    created = _register(client, email="anna-horari@example.com")
+    headers = {"Authorization": f"Bearer {created['token']}"}
+    windows = [
+        {"weekday": day, "start": "09:00", "end": "18:00"} for day in range(5)
+    ]
+    posted = client.post(
+        "/espais",
+        headers=headers,
+        json={"name": "Sala 1", "capacity": 10, "windows": windows},
+    )
+    assert posted.status_code == 201
+    assert [w["weekday"] for w in posted.json()["windows"]] == [0, 1, 2, 3, 4]
+    space_id = posted.json()["id"]
+    weekend = [
+        {"weekday": 5, "start": "10:00", "end": "14:00"},
+        {"weekday": 6, "start": "10:00", "end": "14:00"},
+    ]
+    patched = client.patch(
+        f"/espais/{space_id}",
+        headers=headers,
+        json={"name": "Sala 1", "capacity": 10, "active": True, "windows": weekend},
+    )
+    assert patched.status_code == 200
+    assert [w["weekday"] for w in patched.json()["windows"]] == [5, 6]
+    fetched = client.get(f"/espais/{space_id}", headers=headers).json()
+    assert [w["weekday"] for w in fetched["windows"]] == [5, 6]
+    assert fetched["windows"][0]["start"] == "10:00:00"
+
+
+def test_empty_windows_return_400(sqlite_session_factory) -> None:
+    client = TestClient(create_app(session_factory=sqlite_session_factory))
+    created = _register(client, email="anna-buit@example.com")
+    headers = {"Authorization": f"Bearer {created['token']}"}
+    response = client.post(
+        "/espais",
+        headers=headers,
+        json={"name": "Sala 1", "capacity": 10, "windows": []},
+    )
+    assert response.status_code == 400
+
+
+def test_coordinator_cannot_create_or_update_space(sqlite_session_factory) -> None:
+    client = TestClient(create_app(session_factory=sqlite_session_factory))
+    created = _register(client, email="anna-permis@example.com")
+    headers = {"Authorization": f"Bearer {created['token']}"}
+    posted = client.post("/espais", headers=headers, json={"name": "Sala 1", "capacity": 10})
+    assert posted.status_code == 201
+    space_id = posted.json()["id"]
+    invited = client.post("/invitacions", headers=headers, json={"email": "carla-permis@example.com"})
+    token = invited.json()["accept_url"].rsplit("/", 1)[-1]
+    accepted = client.post(
+        f"/invitacions/{token}/acceptar",
+        json={"name": "Carla", "password": "secret123"},
+    )
+    coord_headers = {"Authorization": f"Bearer {accepted.json()['token']}"}
+    assert (
+        client.post("/espais", headers=coord_headers, json={"name": "Sala 2", "capacity": 8}).status_code
+        == 403
+    )
+    patched = client.patch(
+        f"/espais/{space_id}",
+        headers=coord_headers,
+        json={"name": "Sala 1", "capacity": 99, "equipment": None, "active": True},
+    )
+    assert patched.status_code == 403
+    listed = client.get("/espais", headers=coord_headers)
+    assert listed.status_code == 200
+    assert listed.json()[0]["name"] == "Sala 1"
+    assert listed.json()[0]["capacity"] == 10
+

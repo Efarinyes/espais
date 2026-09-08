@@ -9,9 +9,10 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, sessionmaker
 
-from app.adapters.sqlalchemy.models import EntityRow, MembershipRow, UserRow
+from app.adapters.sqlalchemy.models import EntityRow, InvitationRow, MembershipRow, UserRow
 from app.domain.errors import DuplicateEmailError
 from app.domain.identity import Entity, Membership, MembershipRole, User
+from app.domain.invitation import Invitation
 
 
 def _aware(moment: datetime) -> datetime:
@@ -45,6 +46,18 @@ def _membership_from_row(row: MembershipRow) -> Membership:
         user_id=row.user_id,
         entity_id=row.entity_id,
         role=MembershipRole(row.role),
+    )
+
+
+def _invitation_from_row(row: InvitationRow) -> Invitation:
+    return Invitation(
+        id=row.id,
+        entity_id=row.entity_id,
+        email=row.email,
+        token=row.token,
+        expires_at=_aware(row.expires_at),
+        accepted_at=_aware(row.accepted_at) if row.accepted_at is not None else None,
+        created_at=_aware(row.created_at),
     )
 
 
@@ -133,6 +146,42 @@ class SqlAlchemyMembershipRepository:
         return [_membership_from_row(row) for row in rows]
 
 
+class SqlAlchemyInvitationRepository:
+    def __init__(self, session: Session) -> None:
+        self._session = session
+
+    def add(self, invitation: Invitation) -> None:
+        self._session.add(
+            InvitationRow(
+                id=invitation.id,
+                entity_id=invitation.entity_id,
+                email=invitation.email,
+                token=invitation.token,
+                expires_at=invitation.expires_at,
+                accepted_at=invitation.accepted_at,
+                created_at=invitation.created_at,
+            )
+        )
+        self._session.flush()
+
+    def save(self, invitation: Invitation) -> None:
+        row = self._session.get(InvitationRow, invitation.id)
+        if row is None:
+            self.add(invitation)
+            return
+        row.email = invitation.email
+        row.token = invitation.token
+        row.expires_at = invitation.expires_at
+        row.accepted_at = invitation.accepted_at
+        self._session.flush()
+
+    def get_by_token(self, token: str) -> Invitation | None:
+        row = self._session.scalar(select(InvitationRow).where(InvitationRow.token == token.strip()))
+        if row is None:
+            return None
+        return _invitation_from_row(row)
+
+
 class FailingSqlAlchemyMembershipRepository(SqlAlchemyMembershipRepository):
     def add(self, membership: Membership) -> None:
         raise RuntimeError("fallada en desar membership")
@@ -144,6 +193,7 @@ class SqlAlchemyIdentityUnitOfWork:
         self.entities = SqlAlchemyEntityRepository(self._session)
         self.users = SqlAlchemyUserRepository(self._session)
         self.memberships = SqlAlchemyMembershipRepository(self._session)
+        self.invitations = SqlAlchemyInvitationRepository(self._session)
 
     def commit(self) -> None:
         self._session.commit()

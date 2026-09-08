@@ -7,24 +7,81 @@
   name: "espais";
   default: true;
   color-scheme: light;
-  --color-base-100: #fffcf7;
-  --color-base-200: #f4f1ea;
-  --color-base-300: #d6d3d1;
-  --color-base-content: #1c1917;
-  --color-primary: #1d4e89;
+  --color-base-100: #fafaf7;
+  --color-base-200: #fff8e8;
+  --color-base-300: #f2e5cc;
+  --color-base-content: #202a2e;
+  --color-primary: #1677a8;
   --color-primary-content: #ffffff;
-  --color-secondary: #44403c;
-  --color-secondary-content: #fffcf7;
-  --color-accent: #1d4e89;
-  --color-accent-content: #ffffff;
-  --color-neutral: #1c1917;
-  --color-neutral-content: #fffcf7;
-  --color-info: #1d4e89;
-  --color-success: #166534;
-  --color-warning: #a16207;
-  --color-error: #9f1239;
-  --color-error-content: #fff1f2;
+  --color-secondary: #c9922e;
+  --color-secondary-content: #202a2e;
+  --color-accent: #e5b93f;
+  --color-accent-content: #202a2e;
+  --color-neutral: #202a2e;
+  --color-neutral-content: #fafaf7;
+  --color-info: #dff3fa;
+  --color-info-content: #202a2e;
+  --color-success: #657a35;
+  --color-success-content: #ffffff;
+  --color-warning: #e97825;
+  --color-warning-content: #202a2e;
+  --color-error: #d83a4b;
+  --color-error-content: #ffffff;
   --radius-box: 0.75rem;
   --radius-field: 0.75rem;
   --radius-selector: 0.75rem;
+}
+
+[data-theme="espais"] {
+  --color-heading: #075985;
+  --color-warning-light: #f6c27a;
+  --color-error-dark: #a92336;
+  --color-success-dark: #3f5f2a;
+  --color-secondary-dark: #7a5528;
+}
+
+[data-theme="espais"] h1,
+[data-theme="espais"] h2,
+[data-theme="espais"] h3,
+[data-theme="espais"] .navbar .btn-ghost.text-xl {
+  color: var(--color-heading);
+}
+
+[data-theme="espais"] .btn-primary:hover,
+[data-theme="espais"] .btn-primary:active,
+[data-theme="espais"] .btn-primary:focus-visible {
+  --btn-color: #075985;
+  background-color: #075985;
+  border-color: #075985;
+}
+
+.calendari-espais .sx-vue-calendar-wrapper {
+  width: 100%;
+  height: min(78vh, 880px);
+  min-height: 28rem;
+}
+
+.calendari-espais .sx__time-grid-event-inner {
+  padding: 0.2rem 0.35rem;
+  overflow: hidden;
+}
+
+.calendari-espais .sx__time-grid-event-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.calendari-espais .sx__time-grid-event-time {
+  font-size: 0.7rem;
+  line-height: 1.2;
+  opacity: 0.9;
+}
+
+.calendari-espais .sx__time-grid-event-people,
+.calendari-espais .sx__time-grid-event-location {
+  display: none;
 }

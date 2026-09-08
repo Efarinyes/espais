@@ -1,6 +1,7 @@
 import { reactive, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
+import { diesAFinestres, diesPerDefecte, finestresADies, validaDies } from "../disponibilitat";
 import { ApiError } from "../services/identitat";
 import { requireEspaisApi } from "../services/espais";
 import { useSessioStore } from "../stores/sessio";
@@ -17,9 +18,11 @@ export function useEditaEspai() {
     equipment: "",
     active: true,
   });
+  const dies = ref(diesPerDefecte());
   const errorsCamp = reactive({
     name: "",
     capacity: "",
+    windows: "",
   });
   const errorGlobal = ref("");
   const carregant = ref(false);
@@ -31,7 +34,12 @@ export function useEditaEspai() {
     const n = Number(camps.capacity);
     errorsCamp.capacity =
       Number.isInteger(n) && n >= 1 ? "" : "L’aforament ha de ser un enter positiu.";
-    return !errorsCamp.name && !errorsCamp.capacity;
+    errorsCamp.windows = validaDies(dies.value);
+    return !errorsCamp.name && !errorsCamp.capacity && !errorsCamp.windows;
+  }
+
+  function aplicarDies(windows: { weekday: number; start: string; end: string }[]) {
+    dies.value = finestresADies(windows);
   }
 
   async function carregar() {
@@ -48,6 +56,7 @@ export function useEditaEspai() {
       camps.capacity = String(espai.capacity);
       camps.equipment = espai.equipment ?? "";
       camps.active = espai.active;
+      aplicarDies(espai.windows ?? []);
       trobat.value = true;
     } catch (err) {
       if (err instanceof ApiError && err.status === 404) {
@@ -75,11 +84,14 @@ export function useEditaEspai() {
         capacity: Number(camps.capacity),
         equipment: camps.equipment,
         active: camps.active,
+        windows: diesAFinestres(dies.value),
       });
       await router.push({ name: "espais" });
     } catch (err) {
       if (err instanceof ApiError && err.status === 409) {
         errorGlobal.value = "Aquest nom d’espai ja existeix a l’entitat.";
+      } else if (err instanceof ApiError && err.status === 403) {
+        errorGlobal.value = "Només el responsable pot definir espais.";
       } else if (err instanceof ApiError) {
         errorGlobal.value = err.message;
       } else {
@@ -98,5 +110,5 @@ export function useEditaEspai() {
     { immediate: true },
   );
 
-  return { camps, errorsCamp, errorGlobal, carregant, enviant, trobat, enviar };
+  return { camps, dies, errorsCamp, errorGlobal, carregant, enviant, trobat, enviar };
 }

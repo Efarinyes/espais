@@ -33,7 +33,7 @@ Mai `micromamba env create` si l’entorn `espais` ja existeix.
 - Vue 3 + Vite, **només al directori `frontend/`**.
 - Instal·lació amb el package manager del projecte dins `frontend/` (`package.json` local). Mai `npm install -g vue`.
 - Vue Router, Pinia (sessió), Composition API, `<script setup>`.
-- Estils: **Tailwind CSS** + **DaisyUI**, tema neutre custom (ADR [0006](adr/0006-tailwind-daisy-pwa.md)). Mobile-first. Toc ≥ 44px.
+- Estils: **Tailwind CSS** + **DaisyUI**, tema custom paleta mediterrània (ADR [0006](adr/0006-tailwind-daisy-pwa.md)). Mobile-first. Toc ≥ 44px.
 - PWA instal·lable (`vite-plugin-pwa`): esquelet cachejat; l’API cal xarxa.
 - Tests: Vitest + Vue Test Utils.
 
@@ -50,3 +50,4 @@ Mai `micromamba env create` si l’entorn `espais` ja existeix.
 - Vue CLI global.
 - ORM diferent de SQLAlchemy 2.
 - Redis/cues pesades: reintents de correu amb flag i job simple, no Kubernetes.
+- WebSocket/SSE de calendari a v1: el front té un port de disparador (ADR [0007](adr/0007-calendari-polling.md)); l’adaptador actual és polling HTTP.

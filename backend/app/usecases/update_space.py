@@ -7,7 +7,7 @@ from uuid import UUID
 
 from app.domain.errors import DuplicateSpaceNameError, ForbiddenError, InvalidSpaceError, SpaceNotFoundError
 from app.domain.identity import MembershipRole
-from app.domain.space import Space
+from app.domain.space import AvailabilityWindow, Space, validate_windows
 from app.ports.spaces import SpaceUnitOfWork
 from app.usecases.create_space import normalize_space_name
 
@@ -21,6 +21,7 @@ class UpdateSpaceCommand:
     capacity: int
     equipment: str | None = None
     active: bool = True
+    windows: tuple[AvailabilityWindow, ...] | None = None
 
 
 @dataclass(frozen=True)
@@ -55,7 +56,15 @@ class UpdateSpace:
         if existing is not None and existing.id != space.id:
             raise DuplicateSpaceNameError(name)
 
-        updated = replace(space, name=name, capacity=command.capacity, equipment=equipment, active=command.active)
+        windows = validate_windows(command.windows) if command.windows is not None else space.windows
+        updated = replace(
+            space,
+            name=name,
+            capacity=command.capacity,
+            equipment=equipment,
+            active=command.active,
+            windows=windows,
+        )
         try:
             self._uow.spaces.save(updated)
             self._uow.commit()

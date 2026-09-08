@@ -45,3 +45,5 @@ def test_app_startup_migrates_spaces_and_persists(tmp_path: Path, monkeypatch) -
     finally:
         engine.dispose()
     assert "spaces" in names
+    assert "invitations" in names
+    assert "reservations" in names

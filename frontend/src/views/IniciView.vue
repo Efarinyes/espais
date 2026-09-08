@@ -42,12 +42,19 @@ const llistaAmpla = computed(
         aria-labelledby="buit-titol"
       >
         <div class="card-body">
-          <h2 id="buit-titol" class="card-title">Defineix el primer espai</h2>
-          <p>Encara no heu definit cap espai. El nom el trieu vosaltres (Sala 1 o Sala Pau Casals).</p>
-          <RouterLink class="btn btn-primary min-h-11" to="/espais/nou">Defineix el primer espai</RouterLink>
-          <p class="text-sm text-base-content/70">
-            Convidar coordinadors es podrà fer més endavant; no cal per començar.
-          </p>
+          <template v-if="sessio.role === 'responsible'">
+            <h2 id="buit-titol" class="card-title">Defineix el primer espai</h2>
+            <p>Encara no heu definit cap espai. El nom el trieu vosaltres (Sala 1 o Sala Pau Casals).</p>
+            <RouterLink class="btn btn-primary min-h-11" to="/espais/nou">Defineix el primer espai</RouterLink>
+            <RouterLink class="btn btn-outline min-h-11" to="/coordinadors/convidar">Convida coordinadors</RouterLink>
+            <p class="text-sm text-base-content/70">
+              Pots convidar coordinadors ara o més endavant; no cal per definir espais.
+            </p>
+          </template>
+          <template v-else>
+            <h2 id="buit-titol" class="card-title">Encara no hi ha espais</h2>
+            <p>El responsable de l’entitat els definirà. Mentrestant no es poden fer reserves.</p>
+          </template>
         </div>
       </section>
 

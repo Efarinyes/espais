@@ -1,4 +1,4 @@
-"""Alembic: esquema d’identitat i espais."""
+"""Alembic: esquema d’identitat, espais i invitacions."""
 
 import os
 from logging.config import fileConfig

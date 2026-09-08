@@ -3,23 +3,13 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import time
 from uuid import UUID
 
 from app.domain.errors import DuplicateSpaceNameError, ForbiddenError, InvalidSpaceError
 from app.domain.identity import MembershipRole
-from app.domain.space import AvailabilityWindow, Space
+from app.domain.space import AvailabilityWindow, Space, default_week_windows, validate_windows
 from app.ports.identity import Clock, IdGenerator
 from app.ports.spaces import SpaceUnitOfWork
-
-DEFAULT_OPEN = time(8, 0)
-DEFAULT_CLOSE = time(22, 0)
-
-
-def default_week_windows() -> tuple[AvailabilityWindow, ...]:
-    return tuple(
-        AvailabilityWindow(weekday=day, start=DEFAULT_OPEN, end=DEFAULT_CLOSE) for day in range(7)
-    )
 
 
 def normalize_space_name(name: str) -> str:
@@ -61,7 +51,7 @@ class CreateSpace:
         if equipment == "":
             equipment = None
 
-        windows = command.windows if command.windows else default_week_windows()
+        windows = validate_windows(command.windows if command.windows is not None else default_week_windows())
         needle = normalize_space_name(name)
         if self._uow.spaces.get_by_normalized_name(command.entity_id, needle) is not None:
             raise DuplicateSpaceNameError(name)

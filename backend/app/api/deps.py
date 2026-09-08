@@ -12,15 +12,21 @@ from sqlalchemy.orm import sessionmaker
 
 from app.adapters.security import BcryptPasswordHasher
 from app.adapters.sqlalchemy.identity import SqlAlchemyIdentityUnitOfWork
+from app.adapters.sqlalchemy.reservations import SqlAlchemyReservationUnitOfWork
 from app.adapters.sqlalchemy.schema import bootstrap_session_factory
 from app.adapters.sqlalchemy.spaces import SqlAlchemySpaceUnitOfWork
-from app.adapters.system import SystemClock, UuidIdGenerator
+from app.adapters.system import SecretsInvitationTokenGenerator, SystemClock, UuidIdGenerator
 from app.adapters.tokens import HmacTokenIssuer
 from app.domain.errors import SessionNotFoundError
 from app.ports.identity import TokenIssuer
+from app.usecases.accept_invitation import AcceptInvitation
 from app.usecases.authenticate_user import AuthenticateUser
+from app.usecases.create_reservation import CreateReservation
 from app.usecases.create_space import CreateSpace
+from app.usecases.get_invitation import GetInvitation
 from app.usecases.get_space import GetSpace
+from app.usecases.invite_coordinator import InviteCoordinator
+from app.usecases.list_reservations import ListReservations
 from app.usecases.list_spaces import ListSpaces
 from app.usecases.register_entity import RegisterEntity
 from app.usecases.resolve_session import ResolveSession, SessionView
@@ -35,6 +41,9 @@ class IdentityHttp:
     authenticate: AuthenticateUser
     resolve: ResolveSession
     tokens: TokenIssuer
+    invite: InviteCoordinator
+    preview: GetInvitation
+    accept: AcceptInvitation
 
 
 def get_session_factory(request: Request) -> sessionmaker:
@@ -61,15 +70,26 @@ class SpacesHttp:
     update: UpdateSpace
 
 
+@dataclass
+class ReservationsHttp:
+    create: CreateReservation
+    list: ListReservations
+
+
 def get_identity_http(request: Request) -> Iterator[IdentityHttp]:
     uow = SqlAlchemyIdentityUnitOfWork(get_session_factory(request))
     hasher = BcryptPasswordHasher()
+    clock = SystemClock()
+    ids = UuidIdGenerator()
     try:
         yield IdentityHttp(
-            register=RegisterEntity(uow, SystemClock(), UuidIdGenerator(), hasher),
+            register=RegisterEntity(uow, clock, ids, hasher),
             authenticate=AuthenticateUser(uow, hasher),
             resolve=ResolveSession(uow),
             tokens=get_token_issuer(request),
+            invite=InviteCoordinator(uow, clock, ids, SecretsInvitationTokenGenerator()),
+            preview=GetInvitation(uow, clock),
+            accept=AcceptInvitation(uow, clock, ids, hasher),
         )
     finally:
         uow.close()
@@ -104,6 +124,17 @@ def get_spaces_http(request: Request) -> Iterator[SpacesHttp]:
             list=ListSpaces(uow),
             get=GetSpace(uow),
             update=UpdateSpace(uow),
+        )
+    finally:
+        uow.close()
+
+
+def get_reservations_http(request: Request) -> Iterator[ReservationsHttp]:
+    uow = SqlAlchemyReservationUnitOfWork(get_session_factory(request))
+    try:
+        yield ReservationsHttp(
+            create=CreateReservation(uow, SystemClock(), UuidIdGenerator()),
+            list=ListReservations(uow),
         )
     finally:
         uow.close()

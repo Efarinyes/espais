@@ -1,7 +1,8 @@
 <script setup lang="ts">
+import FinestresDisponibilitat from "../components/FinestresDisponibilitat.vue";
 import { useCreaEspai } from "../composables/useCreaEspai";
 
-const { camps, errorsCamp, errorGlobal, enviant, enviar } = useCreaEspai();
+const { camps, dies, errorsCamp, errorGlobal, enviant, enviar } = useCreaEspai();
 </script>
 
 <template>
@@ -9,6 +10,7 @@ const { camps, errorsCamp, errorGlobal, enviant, enviar } = useCreaEspai();
     <h1 class="text-3xl font-semibold">Defineix un espai</h1>
     <p class="mt-2 text-base-content/80">
       El nom el trieu vosaltres (Sala 1 o Sala Pau Casals). L’aforament és el màxim de persones.
+      La disponibilitat són els dies i hores en què es podrà reservar.
     </p>
 
     <div v-if="errorGlobal" class="alert alert-error mt-6" role="alert">
@@ -41,6 +43,9 @@ const { camps, errorsCamp, errorGlobal, enviant, enviar } = useCreaEspai();
         <label class="label" for="equipment">Equipament (opcional)</label>
         <input id="equipment" v-model="camps.equipment" class="input w-full min-h-11" name="equipment" autocomplete="off" />
       </fieldset>
+
+      <FinestresDisponibilitat v-model="dies" />
+      <p v-if="errorsCamp.windows" class="text-error">{{ errorsCamp.windows }}</p>
 
       <button class="btn btn-primary min-h-11 w-full" type="submit" :disabled="enviant">
         {{ enviant ? "Desant…" : "Desar l’espai" }}

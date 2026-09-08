@@ -20,6 +20,16 @@ const api: IdentityApi = {
   registrar: async () => sessioBuida,
   iniciarSessio: async () => sessioBuida,
   obtenirSessio: async () => sessioBuida,
+  convidarCoordinador: async () => ({
+    email: "carla@example.com",
+    accept_url: "/invitar/token-convidat",
+    expires_at: "2026-09-22T12:00:00+00:00",
+  }),
+  obtenirInvitacio: async () => ({
+    email: "carla@example.com",
+    entity_name: "AAVV Barri A",
+  }),
+  acceptarInvitacio: async () => sessioBuida,
 };
 
 describe("RegistreView", () => {

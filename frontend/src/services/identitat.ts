@@ -31,10 +31,24 @@ export class ApiError extends Error {
   }
 }
 
+export type InvitacioDto = {
+  email: string;
+  accept_url: string;
+  expires_at: string;
+};
+
+export type InvitacioPreviewDto = {
+  email: string;
+  entity_name: string;
+};
+
 export type IdentityApi = {
   registrar(input: RegistreInput): Promise<SessioDto>;
   iniciarSessio(email: string, password: string): Promise<SessioDto>;
   obtenirSessio(token: string): Promise<Omit<SessioDto, "token">>;
+  convidarCoordinador(token: string, email: string): Promise<InvitacioDto>;
+  obtenirInvitacio(inviteToken: string): Promise<InvitacioPreviewDto>;
+  acceptarInvitacio(inviteToken: string, name: string, password: string): Promise<SessioDto>;
 };
 
 export const identityApiKey: InjectionKey<IdentityApi> = Symbol("identityApi");
@@ -105,6 +119,38 @@ export function createIdentityApi(baseUrl = ""): IdentityApi {
         throw new ApiError(await llegirError(res), res.status);
       }
       return (await res.json()) as Omit<SessioDto, "token">;
+    },
+
+    async convidarCoordinador(token, email) {
+      const res = await fetch(`${baseUrl}/invitacions`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email }),
+      });
+      if (!res.ok) {
+        throw new ApiError(await llegirError(res), res.status);
+      }
+      return (await res.json()) as InvitacioDto;
+    },
+
+    async obtenirInvitacio(inviteToken) {
+      const res = await fetch(`${baseUrl}/invitacions/${inviteToken}`);
+      if (!res.ok) {
+        throw new ApiError(await llegirError(res), res.status);
+      }
+      return (await res.json()) as InvitacioPreviewDto;
+    },
+
+    async acceptarInvitacio(inviteToken, name, password) {
+      const res = await fetch(`${baseUrl}/invitacions/${inviteToken}/acceptar`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, password }),
+      });
+      return parseSessio(res);
     },
   };
 }

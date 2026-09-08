@@ -18,7 +18,7 @@ class SessionNotFoundError(Exception):
 
 
 class InvalidSpaceError(Exception):
-    """Dades d’espai invàlides (nom buit, aforament ≤ 0)."""
+    """Dades d’espai invàlides (nom, aforament o finestres)."""
 
 
 class DuplicateSpaceNameError(Exception):
@@ -31,3 +31,23 @@ class SpaceNotFoundError(Exception):
 
 class ForbiddenError(Exception):
     """L’actor no té permís per a aquesta acció."""
+
+
+class InvitationNotFoundError(Exception):
+    """El token d’invitació no existeix."""
+
+
+class InvitationExpiredError(Exception):
+    """El token d’invitació ha caducat."""
+
+
+class InvitationAcceptedError(Exception):
+    """El token d’invitació ja s’ha fet servir."""
+
+
+class InvalidReservationError(Exception):
+    """Interval, disponibilitat o espai invàlids per a la reserva."""
+
+
+class ReservationOverlapError(Exception):
+    """Ja hi ha una reserva confirmada que solapa aquest interval."""

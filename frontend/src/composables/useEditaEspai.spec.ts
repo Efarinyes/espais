@@ -7,6 +7,7 @@ import { flushPromises, mount } from "@vue/test-utils";
 import { useEditaEspai } from "./useEditaEspai";
 import { ApiError } from "../services/identitat";
 import { espaisApiKey, type EspaisApi } from "../services/espais";
+import { finestresPerDefecte } from "../disponibilitat";
 import { useSessioStore } from "../stores/sessio";
 
 const espai = {
@@ -16,6 +17,7 @@ const espai = {
   capacity: 20,
   equipment: "cadires",
   active: true,
+  windows: finestresPerDefecte(),
 };
 
 function muntar(api: Partial<EspaisApi>) {
@@ -68,6 +70,7 @@ describe("useEditaEspai", () => {
     expect(wrapper.vm.camps.capacity).toBe("20");
     expect(wrapper.vm.camps.equipment).toBe("cadires");
     expect(wrapper.vm.camps.active).toBe(true);
+    expect(wrapper.vm.dies.filter((dia: { actiu: boolean }) => dia.actiu)).toHaveLength(7);
     expect(wrapper.vm.trobat).toBe(true);
   });
 

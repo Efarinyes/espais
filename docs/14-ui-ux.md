@@ -8,12 +8,12 @@ Skill: `ui-ux-mobile`. Front: [11-stack.md](11-stack.md).
 - Fluxos curts: registre en una pantalla; reserva en pocs passos.
 - Empty states amb una sola CTA clara.
 - Confirmació explícita a anul·lacions (conseqüència: s’avisa el coordinador).
-- Una paleta neutra per a totes les tipologies. No tema “futbol” vs “teatre” a v1.
+- Una paleta mediterrània per a totes les tipologies. No tema “futbol” vs “teatre” a v1.
 - Glossari català a totes les cadenes.
 
 ## Design tokens (v1)
 
-Tema DaisyUI **espais** (ADR [0006](adr/0006-tailwind-daisy-pwa.md)): fons càlid, text fosc, accent `#1d4e89`, perill `#9f1239`, radi 12px, toc ≥ 44px (`min-h-11`).
+Tema DaisyUI **espais** (ADR [0006](adr/0006-tailwind-daisy-pwa.md)): paleta mediterrània única. Fons crema `#FFF8E8`, superfície blanc cal `#FAFAF7` / sorra `#F2E5CC`, text carbó `#202A2E`, primary mar `#1677A8` (hover/títols blau profund `#075985`), accent blat `#E5B93F`, perill maduixa `#D83A4B`, radi 12px, toc ≥ 44px (`min-h-11`). Daurats (`#E5B93F`, `#C9922E`) amb text carbó, no blanc.
 
 Contrast WCAG AA en text normal. Focus visible. Labels lligades als inputs. Errors al costat del camp, no només toast. Una paleta per a totes les tipologies.
 

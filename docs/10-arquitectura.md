@@ -43,6 +43,7 @@ ADR [0001](adr/0001-multi-tenant-una-app.md).
 - Composables: estat de pantalla, crides als serveis.
 - Serveis HTTP injectats (`provide`/`inject`), no singletons ocults.
 - Pinia només per sessió d’auth i estat realment transversal. No un store per cada entitat de negoci si un composable n’hi ha prou.
+- Calendari viu (ADR [0007](adr/0007-calendari-polling.md)): port `DisparadorCalendari`; v1 polling HTTP. SSE/WebSocket = altre adaptador del mateix port.
 
 Analogia Angular: Composition API ≈ lògica; `provide`/`inject` ≈ DI; reactivitat Vue 3 ≈ signals.
 

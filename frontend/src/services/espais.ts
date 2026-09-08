@@ -1,5 +1,6 @@
 import { inject, type InjectionKey } from "vue";
 
+import type { FinestraDto } from "../disponibilitat";
 import { ApiError } from "./identitat";
 
 export type EspaiDto = {
@@ -9,12 +10,14 @@ export type EspaiDto = {
   capacity: number;
   equipment: string | null;
   active: boolean;
+  windows: FinestraDto[];
 };
 
 export type CreaEspaiInput = {
   name: string;
   capacity: number;
   equipment: string;
+  windows: FinestraDto[];
 };
 
 export type ActualitzaEspaiInput = CreaEspaiInput & {
@@ -89,6 +92,7 @@ export function createEspaisApi(baseUrl = ""): EspaisApi {
           name: input.name,
           capacity: input.capacity,
           equipment: input.equipment || null,
+          windows: input.windows,
         }),
       });
       if (!res.ok) {
@@ -106,6 +110,7 @@ export function createEspaisApi(baseUrl = ""): EspaisApi {
           capacity: input.capacity,
           equipment: input.equipment || null,
           active: input.active,
+          windows: input.windows,
         }),
       });
       if (!res.ok) {

@@ -6,6 +6,7 @@ import { flushPromises, mount } from "@vue/test-utils";
 import { ApiError } from "../services/identitat";
 import type { SessioDto } from "../services/identitat";
 import { espaisApiKey, type EspaisApi } from "../services/espais";
+import { finestresPerDefecte } from "../disponibilitat";
 import { useSessioStore } from "../stores/sessio";
 import IniciView from "./IniciView.vue";
 
@@ -18,6 +19,7 @@ const apiBuit: EspaisApi = {
     capacity: 10,
     equipment: null,
     active: true,
+    windows: finestresPerDefecte(),
   }),
   crear: async () => ({
     id: "s1",
@@ -26,6 +28,7 @@ const apiBuit: EspaisApi = {
     capacity: 10,
     equipment: null,
     active: true,
+    windows: finestresPerDefecte(),
   }),
   actualitzar: async () => ({
     id: "s1",
@@ -34,6 +37,7 @@ const apiBuit: EspaisApi = {
     capacity: 10,
     equipment: null,
     active: true,
+    windows: finestresPerDefecte(),
   }),
 };
 
@@ -51,8 +55,10 @@ function muntar(dto?: SessioDto, api: EspaisApi = apiBuit) {
       { path: "/registre", name: "registre", component: { template: "<div />" } },
       { path: "/iniciar-sessio", name: "iniciar-sessio", component: { template: "<div />" } },
       { path: "/espais/nou", name: "espai-nou", component: { template: "<div />" } },
+      { path: "/coordinadors/convidar", name: "convidar-coordinador", component: { template: "<div />" } },
       { path: "/espais/:id", name: "espai-editar", component: { template: "<div />" } },
       { path: "/espais", name: "espais", component: { template: "<div />" } },
+      { path: "/calendari", name: "calendari", component: { template: "<div />" } },
     ],
   });
   return mount(IniciView, {
@@ -88,8 +94,17 @@ describe("IniciView", () => {
     expect(wrapper.text()).toContain("AAVV Barri A");
     expect(wrapper.text()).toContain("Defineix el primer espai");
     expect(wrapper.get("a[href='/espais/nou']").text()).toContain("Defineix el primer espai");
+    expect(wrapper.get("a[href='/coordinadors/convidar']").text()).toContain("Convida coordinadors");
     expect(wrapper.find("#buit-titol").exists()).toBe(true);
     expect(wrapper.find("#llista-titol").exists()).toBe(false);
+  });
+
+  it("no convida ni defineix espais si el coordinador entra sense espais", async () => {
+    const wrapper = muntar({ ...sessioAnna, role: "coordinator", user_name: "Carla" });
+    await flushPromises();
+    expect(wrapper.text()).toContain("Encara no hi ha espais");
+    expect(wrapper.text()).not.toContain("Defineix el primer espai");
+    expect(wrapper.text()).not.toContain("Convida coordinadors");
   });
 
   it("llista els espais de l’entitat quan n’hi ha", async () => {
@@ -103,6 +118,7 @@ describe("IniciView", () => {
           capacity: 40,
           equipment: null,
           active: true,
+          windows: finestresPerDefecte(),
         },
       ],
     });
@@ -110,7 +126,9 @@ describe("IniciView", () => {
     expect(wrapper.text()).toContain("Sala Pau Casals");
     expect(wrapper.text()).toContain("Aforament: 40");
     expect(wrapper.text()).toContain("Aquest espai no té equipament");
+    expect(wrapper.text()).toContain("Disponibilitat: Tots els dies 08:00–22:00");
     expect(wrapper.text()).toContain("Editar");
+    expect(wrapper.get('a[href="/calendari?espai=s1"]').text()).toContain("Sala Pau Casals");
     expect(wrapper.find("#buit-titol").exists()).toBe(false);
     expect(wrapper.find("#llista-titol").exists()).toBe(true);
     expect(wrapper.text()).not.toContain("Veure tots els espais");
@@ -127,6 +145,7 @@ describe("IniciView", () => {
           capacity: 20,
           equipment: "piano, llums",
           active: true,
+          windows: finestresPerDefecte(),
         },
       ],
     });

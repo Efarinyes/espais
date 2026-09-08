@@ -6,7 +6,7 @@ from sqlalchemy.exc import IntegrityError
 
 from app.adapters.sqlalchemy.spaces import SqlAlchemySpaceUnitOfWork
 from app.domain.space import Space
-from app.usecases.create_space import default_week_windows
+from app.domain.space import default_week_windows
 
 
 def test_fk_failure_is_not_duplicate_name(sqlite_session_factory) -> None:

@@ -3,6 +3,7 @@ import { createMemoryHistory, createRouter } from "vue-router";
 import { mount } from "@vue/test-utils";
 
 import type { EspaiDto } from "../services/espais";
+import { finestresPerDefecte } from "../disponibilitat";
 import EspaiTargeta from "./EspaiTargeta.vue";
 
 const base: EspaiDto = {
@@ -12,6 +13,7 @@ const base: EspaiDto = {
   capacity: 40,
   equipment: null,
   active: true,
+  windows: finestresPerDefecte(),
 };
 
 function muntar(espai: EspaiDto, potEditar = false) {
@@ -19,6 +21,7 @@ function muntar(espai: EspaiDto, potEditar = false) {
     history: createMemoryHistory(),
     routes: [
       { path: "/espais/:id", name: "espai-editar", component: { template: "<div />" } },
+      { path: "/calendari", name: "calendari", component: { template: "<div />" } },
     ],
   });
   return mount(EspaiTargeta, {
@@ -50,16 +53,34 @@ describe("EspaiTargeta", () => {
   it("marca l’espai inactiu i el deixa visible", () => {
     const wrapper = muntar({ ...base, active: false });
     expect(wrapper.text()).toContain("Inactiu");
+    expect(wrapper.text()).not.toContain("Reservar");
+    expect(wrapper.find('a[href="/calendari?espai=s1"]').exists()).toBe(false);
+  });
+
+  it("obre el calendari de l’espai en clicar la targeta", () => {
+    const wrapper = muntar(base);
+    expect(wrapper.get('a[href="/calendari?espai=s1"]').text()).toContain("Sala Pau Casals");
+    expect(wrapper.text()).toContain("Reservar");
   });
 
   it("mostra l’enllaç d’edició per al responsable", () => {
     const wrapper = muntar(base, true);
-    expect(wrapper.get("a").text()).toBe("Editar");
+    expect(wrapper.get('a[href="/espais/s1"]').text()).toBe("Editar");
   });
 
   it("no mostra Editar si no es pot editar", () => {
     const wrapper = muntar(base, false);
     expect(wrapper.text()).not.toContain("Editar");
-    expect(wrapper.find("a").exists()).toBe(false);
+    expect(wrapper.find('a[href="/espais/s1"]').exists()).toBe(false);
+  });
+
+  it("mostra el resum de disponibilitat", () => {
+    const wrapper = muntar(base);
+    expect(wrapper.text()).toContain("Disponibilitat: Tots els dies 08:00–22:00");
+  });
+
+  it("mostra Sense horari si la llista de finestres és buida", () => {
+    const wrapper = muntar({ ...base, windows: [] });
+    expect(wrapper.text()).toContain("Disponibilitat: Sense horari");
   });
 });

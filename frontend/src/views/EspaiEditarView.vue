@@ -1,14 +1,15 @@
 <script setup lang="ts">
+import FinestresDisponibilitat from "../components/FinestresDisponibilitat.vue";
 import { useEditaEspai } from "../composables/useEditaEspai";
 
-const { camps, errorsCamp, errorGlobal, carregant, enviant, trobat, enviar } = useEditaEspai();
+const { camps, dies, errorsCamp, errorGlobal, carregant, enviant, trobat, enviar } = useEditaEspai();
 </script>
 
 <template>
   <main class="mx-auto w-full max-w-md px-4 py-6">
     <h1 class="text-3xl font-semibold">Edita l’espai</h1>
     <p class="mt-2 text-base-content/80">
-      Podeu canviar el nom, l’aforament i l’equipament. Desactivar no esborra l’espai.
+      Podeu canviar el nom, l’aforament, l’equipament i l’horari. Desactivar no esborra l’espai.
     </p>
 
     <div v-if="errorGlobal" class="alert alert-error mt-6" role="alert">
@@ -54,6 +55,9 @@ const { camps, errorsCamp, errorGlobal, carregant, enviant, trobat, enviar } = u
           </span>
         </label>
       </fieldset>
+
+      <FinestresDisponibilitat v-model="dies" />
+      <p v-if="errorsCamp.windows" class="text-error">{{ errorsCamp.windows }}</p>
 
       <button class="btn btn-primary min-h-11 w-full" type="submit" :disabled="enviant">
         {{ enviant ? "Desant…" : "Desar els canvis" }}

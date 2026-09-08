@@ -1,6 +1,9 @@
 import { createRouter, createWebHistory } from "vue-router";
 
 import { useSessioStore } from "../stores/sessio";
+import AcceptaInvitacioView from "../views/AcceptaInvitacioView.vue";
+import CalendariView from "../views/CalendariView.vue";
+import ConvidaCoordinadorView from "../views/ConvidaCoordinadorView.vue";
 import EspaiEditarView from "../views/EspaiEditarView.vue";
 import EspaiNouView from "../views/EspaiNouView.vue";
 import EspaisView from "../views/EspaisView.vue";
@@ -20,12 +23,35 @@ export const router = createRouter({
       meta: { guestOnly: true },
     },
     { path: "/espais", name: "espais", component: EspaisView, meta: { requiresAuth: true } },
-    { path: "/espais/nou", name: "espai-nou", component: EspaiNouView, meta: { requiresAuth: true } },
+    {
+      path: "/calendari",
+      name: "calendari",
+      component: CalendariView,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: "/espais/nou",
+      name: "espai-nou",
+      component: EspaiNouView,
+      meta: { requiresAuth: true, requiresResponsible: true },
+    },
     {
       path: "/espais/:id",
       name: "espai-editar",
       component: EspaiEditarView,
-      meta: { requiresAuth: true },
+      meta: { requiresAuth: true, requiresResponsible: true },
+    },
+    {
+      path: "/coordinadors/convidar",
+      name: "convidar-coordinador",
+      component: ConvidaCoordinadorView,
+      meta: { requiresAuth: true, requiresResponsible: true },
+    },
+    {
+      path: "/invitar/:token",
+      name: "acceptar-invitacio",
+      component: AcceptaInvitacioView,
+      meta: { guestOnly: true },
     },
   ],
 });
@@ -34,6 +60,9 @@ router.beforeEach((to) => {
   const sessio = useSessioStore();
   if (to.meta.requiresAuth && !sessio.iniciada) {
     return { name: "iniciar-sessio" };
+  }
+  if (to.meta.requiresResponsible && sessio.role !== "responsible") {
+    return { name: "inici" };
   }
   if (to.meta.guestOnly && sessio.iniciada) {
     return { name: "inici" };

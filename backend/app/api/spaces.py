@@ -1,5 +1,6 @@
 """HTTP d’espais: sessió aporta entity_id; el router no calcula unicitat."""
 
+from datetime import time
 from typing import Annotated
 from uuid import UUID
 
@@ -8,7 +9,7 @@ from pydantic import BaseModel, Field
 
 from app.api.deps import SpacesHttp, get_spaces_http, require_session
 from app.domain.errors import DuplicateSpaceNameError, ForbiddenError, InvalidSpaceError, SpaceNotFoundError
-from app.domain.space import Space
+from app.domain.space import AvailabilityWindow, Space
 from app.usecases.create_space import CreateSpaceCommand
 from app.usecases.resolve_session import SessionView
 from app.usecases.update_space import UpdateSpaceCommand
@@ -16,10 +17,17 @@ from app.usecases.update_space import UpdateSpaceCommand
 router = APIRouter()
 
 
+class AvailabilityWindowBody(BaseModel):
+    weekday: int = Field(ge=0, le=6)
+    start: time
+    end: time
+
+
 class CreateSpaceRequest(BaseModel):
     name: str
     capacity: int = Field(ge=1)
     equipment: str | None = None
+    windows: list[AvailabilityWindowBody] | None = None
 
 
 class UpdateSpaceRequest(BaseModel):
@@ -27,6 +35,7 @@ class UpdateSpaceRequest(BaseModel):
     capacity: int = Field(ge=1)
     equipment: str | None = None
     active: bool = True
+    windows: list[AvailabilityWindowBody] | None = None
 
 
 class SpaceResponse(BaseModel):
@@ -36,6 +45,13 @@ class SpaceResponse(BaseModel):
     capacity: int
     equipment: str | None
     active: bool
+    windows: list[AvailabilityWindowBody]
+
+
+def _domain_windows(items: list[AvailabilityWindowBody] | None) -> tuple[AvailabilityWindow, ...] | None:
+    if items is None:
+        return None
+    return tuple(AvailabilityWindow(weekday=item.weekday, start=item.start, end=item.end) for item in items)
 
 
 def _to_response(space: Space) -> SpaceResponse:
@@ -46,6 +62,10 @@ def _to_response(space: Space) -> SpaceResponse:
         capacity=space.capacity,
         equipment=space.equipment,
         active=space.active,
+        windows=[
+            AvailabilityWindowBody(weekday=window.weekday, start=window.start, end=window.end)
+            for window in space.windows
+        ],
     )
 
 
@@ -63,6 +83,7 @@ def create_space(
                 name=body.name,
                 capacity=body.capacity,
                 equipment=body.equipment,
+                windows=_domain_windows(body.windows),
             )
         )
     except ForbiddenError as exc:
@@ -116,6 +137,7 @@ def update_space(
                 capacity=body.capacity,
                 equipment=body.equipment,
                 active=body.active,
+                windows=_domain_windows(body.windows),
             )
         )
     except SpaceNotFoundError:

@@ -8,6 +8,7 @@ from hmac import compare_digest
 from uuid import UUID
 
 from app.domain.identity import Entity, Membership, User
+from app.domain.invitation import Invitation
 
 
 @dataclass
@@ -15,12 +16,14 @@ class _Store:
     entities: list[Entity] = field(default_factory=list)
     users: list[User] = field(default_factory=list)
     memberships: list[Membership] = field(default_factory=list)
+    invitations: list[Invitation] = field(default_factory=list)
 
     def copy(self) -> _Store:
         return _Store(
             entities=list(self.entities),
             users=list(self.users),
             memberships=list(self.memberships),
+            invitations=list(self.invitations),
         )
 
 
@@ -79,6 +82,29 @@ class InMemoryMembershipRepository:
         return list(self._uow._working.memberships)
 
 
+class InMemoryInvitationRepository:
+    def __init__(self, uow: InMemoryIdentityUnitOfWork) -> None:
+        self._uow = uow
+
+    def add(self, invitation: Invitation) -> None:
+        self._uow._working.invitations.append(invitation)
+
+    def save(self, invitation: Invitation) -> None:
+        working = self._uow._working.invitations
+        for index, existing in enumerate(working):
+            if existing.id == invitation.id:
+                working[index] = invitation
+                return
+        working.append(invitation)
+
+    def get_by_token(self, token: str) -> Invitation | None:
+        needle = token.strip()
+        for invitation in self._uow._working.invitations:
+            if invitation.token == needle:
+                return invitation
+        return None
+
+
 class FailingMembershipRepository(InMemoryMembershipRepository):
     def add(self, membership: Membership) -> None:
         raise RuntimeError("fallada en desar membership")
@@ -91,6 +117,7 @@ class InMemoryIdentityUnitOfWork:
         self.entities = InMemoryEntityRepository(self)
         self.users = InMemoryUserRepository(self)
         self.memberships = InMemoryMembershipRepository(self)
+        self.invitations = InMemoryInvitationRepository(self)
 
     def commit(self) -> None:
         self._committed = self._working.copy()

@@ -42,6 +42,16 @@ function muntar(api: Partial<IdentityApi>) {
           registrar: async () => sessioOk,
           iniciarSessio: async () => sessioOk,
           obtenirSessio: async () => sessioOk,
+          convidarCoordinador: async () => ({
+            email: "carla@example.com",
+            accept_url: "/invitar/token-convidat",
+            expires_at: "2026-09-22T12:00:00+00:00",
+          }),
+          obtenirInvitacio: async () => ({
+            email: "carla@example.com",
+            entity_name: "AAVV Barri A",
+          }),
+          acceptarInvitacio: async () => sessioOk,
           ...api,
         } satisfies IdentityApi,
       },

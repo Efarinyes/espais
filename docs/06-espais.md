@@ -34,6 +34,7 @@ Excepcions (festius, tancaments) són backlog; a v1 el responsable reprograma o 
 - Llista d’espais amb aforament i properes reserves.
 - Empty state: “Encara no heu definit cap espai. El nom el trieu vosaltres (Sala 1 o Sala Pau Casals).”
 - Formulari curt, mobile-first. Equipament com a xips o línies, no inventari.
+- Disponibilitat v1 a la UI: un interval per dia de la setmana (es poden desmarcar dies). El model admet més d’una finestra el mateix dia; l’editor no ho exposa encara.
 
 ## Invariants
 
