@@ -7,3 +7,11 @@ class DuplicateEmailError(Exception):
 
 class InvalidRegistrationError(Exception):
     """Dades d’alta invàlides (nom buit, contrasenya curta, email buit)."""
+
+
+class InvalidCredentialsError(Exception):
+    """Email o contrasenya incorrectes. No distingeix quin camp ha fallat."""
+
+
+class SessionNotFoundError(Exception):
+    """El token és vàlid però no hi ha membership (compte incoherent)."""

@@ -23,6 +23,9 @@ def test_post_registre_returns_201_and_ids(sqlite_session_factory) -> None:
     assert body["entity_id"]
     assert body["user_id"]
     assert body["membership_id"]
+    assert body["token"]
+    assert body["entity_name"] == "AAVV Barri A"
+    assert body["role"] == "responsible"
 
 
 def test_post_registre_duplicate_email_returns_409(sqlite_session_factory) -> None:

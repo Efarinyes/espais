@@ -1,4 +1,4 @@
-"""Alta d’entitat: valida HTTP i delega a RegisterEntity."""
+"""Alta d’entitat: valida HTTP, RegisterEntity, i inicia sessió."""
 
 from typing import Annotated
 from uuid import UUID
@@ -6,9 +6,10 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
-from app.api.deps import get_register_entity
+from app.api.deps import IdentityHttp, get_identity_http
+from app.api.session import SessionResponse, session_response
 from app.domain.errors import DuplicateEmailError, InvalidRegistrationError
-from app.usecases.register_entity import RegisterEntity, RegisterEntityCommand
+from app.usecases.register_entity import RegisterEntityCommand
 
 router = APIRouter()
 
@@ -21,19 +22,18 @@ class RegisterEntityRequest(BaseModel):
     password: str = Field(min_length=1)
 
 
-class RegisterEntityResponse(BaseModel):
-    entity_id: UUID
-    user_id: UUID
+class RegisterEntityResponse(SessionResponse):
     membership_id: UUID
+    token: str
 
 
 @router.post("/registre", status_code=201, response_model=RegisterEntityResponse)
 def register(
     body: RegisterEntityRequest,
-    use_case: Annotated[RegisterEntity, Depends(get_register_entity)],
+    identity: Annotated[IdentityHttp, Depends(get_identity_http)],
 ) -> RegisterEntityResponse:
     try:
-        result = use_case.execute(
+        result = identity.register.execute(
             RegisterEntityCommand(
                 entity_name=body.entity_name,
                 typology=body.typology,
@@ -47,8 +47,7 @@ def register(
     except InvalidRegistrationError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from None
 
-    return RegisterEntityResponse(
-        entity_id=result.entity_id,
-        user_id=result.user_id,
-        membership_id=result.membership_id,
-    )
+    view = identity.resolve.execute(result.user_id)
+    token = identity.tokens.issue(result.user_id)
+    base = session_response(view, token=token)
+    return RegisterEntityResponse(membership_id=result.membership_id, **base.model_dump())

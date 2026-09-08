@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
+from hmac import compare_digest
 from uuid import UUID
 
 from app.domain.identity import Entity, Membership, User
@@ -30,6 +31,12 @@ class InMemoryEntityRepository:
     def add(self, entity: Entity) -> None:
         self._uow._working.entities.append(entity)
 
+    def get_by_id(self, entity_id: UUID) -> Entity | None:
+        for entity in self._uow._working.entities:
+            if entity.id == entity_id:
+                return entity
+        return None
+
     def list_all(self) -> list[Entity]:
         return list(self._uow._working.entities)
 
@@ -40,6 +47,12 @@ class InMemoryUserRepository:
 
     def add(self, user: User) -> None:
         self._uow._working.users.append(user)
+
+    def get_by_id(self, user_id: UUID) -> User | None:
+        for user in self._uow._working.users:
+            if user.id == user_id:
+                return user
+        return None
 
     def get_by_email(self, email: str) -> User | None:
         needle = email.strip().lower()
@@ -55,6 +68,12 @@ class InMemoryMembershipRepository:
 
     def add(self, membership: Membership) -> None:
         self._uow._working.memberships.append(membership)
+
+    def get_by_user_id(self, user_id: UUID) -> Membership | None:
+        for membership in self._uow._working.memberships:
+            if membership.user_id == user_id:
+                return membership
+        return None
 
     def list_all(self) -> list[Membership]:
         return list(self._uow._working.memberships)
@@ -100,3 +119,9 @@ class SequentialIdGenerator:
 class PlainPasswordHasher:
     def hash(self, raw: str) -> str:
         return f"hashed:{raw}"
+
+    def verify(self, raw: str, hashed: str) -> bool:
+        expected = f"hashed:{raw}"
+        if len(expected) != len(hashed):
+            return False
+        return compare_digest(expected, hashed)

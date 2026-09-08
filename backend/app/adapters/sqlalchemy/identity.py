@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
+from uuid import UUID
 
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
@@ -62,6 +63,12 @@ class SqlAlchemyEntityRepository:
         )
         self._session.flush()
 
+    def get_by_id(self, entity_id: UUID) -> Entity | None:
+        row = self._session.get(EntityRow, entity_id)
+        if row is None:
+            return None
+        return _entity_from_row(row)
+
     def list_all(self) -> list[Entity]:
         rows = self._session.scalars(select(EntityRow)).all()
         return [_entity_from_row(row) for row in rows]
@@ -86,6 +93,12 @@ class SqlAlchemyUserRepository:
         except IntegrityError as exc:
             raise DuplicateEmailError(user.email) from exc
 
+    def get_by_id(self, user_id: UUID) -> User | None:
+        row = self._session.get(UserRow, user_id)
+        if row is None:
+            return None
+        return _user_from_row(row)
+
     def get_by_email(self, email: str) -> User | None:
         needle = email.strip().lower()
         row = self._session.scalar(select(UserRow).where(UserRow.email == needle))
@@ -108,6 +121,12 @@ class SqlAlchemyMembershipRepository:
             )
         )
         self._session.flush()
+
+    def get_by_user_id(self, user_id: UUID) -> Membership | None:
+        row = self._session.scalar(select(MembershipRow).where(MembershipRow.user_id == user_id))
+        if row is None:
+            return None
+        return _membership_from_row(row)
 
     def list_all(self) -> list[Membership]:
         rows = self._session.scalars(select(MembershipRow)).all()
