@@ -4,20 +4,20 @@ Actualitza aquest arxiu al final de cada sessió. És el punt d’arrencada del 
 
 ## Fase
 
-- **Fase actual:** 3 — Espais (en curs)
-- **Següent fase:** 3 — Espais (pendent de criteri: CRUD acotat a l’entitat)
+- **Fase actual:** 3 — Espais (en curs; CreateSpace + ListSpaces fets)
+- **Següent fase:** 3 continua fins al criteri CRUD; després 4 — Coordinadors i reserves
 
 ## Darrera feina
 
-Fase 2 publicada a `main` (fast-forward `62de9c2`, sense push). Branques `fase/1-esquelet` i `fase/2-identitat` esborrades (ja són a `main`). Treball a `fase/3-espais`.
+A `fase/3-espais`: `CreateSpace` i `ListSpaces`. Nom únic per `(entity_id, nom)` (case-insensitive); el mateix nom entre entitats és permès. Aforament > 0. Queries sempre amb `entity_id` de la sessió. Disponibilitat v1: finestres 08:00–22:00 tots els dies (sense editor encara). Alembic `0002_spaces`. `POST`/`GET /espais`.
 
-Identitat: `RegisterEntity` atòmic, `AuthenticateUser`, `ResolveSession` (membership, no `entity_id` del token). `POST /registre` inicia sessió; `POST`/`GET /sessio`. Front: `/registre`, `/iniciar-sessio`, inici amb CTA «Defineix el primer espai» (desactivada fins a `CreateSpace`).
+Front: empty state accionable «Defineix el primer espai» → `/espais/nou`; llista a `/espais`. pytest 36, Vitest 8.
 
-Disseny visual (colors, tipografia, paleta): **ajornat** a sessions posteriors; no bloqueja la Fase 3. Sense ADR: no canvia el producte, només el poliment de UI (Fase 8 / `ui-ux-mobile`).
+La Fase 3 **no** es tanca: falta `UpdateSpace` / desactivar.
 
 ## Següent tasca
 
-`CreateSpace` (TDD): nom únic per entitat, aforament, empty state actionable («Defineix el primer espai»).
+`UpdateSpace` (TDD): editar nom/aforament/equipament acotat a l’entitat; desactivar ≠ esborrar historial.
 
 Skills: `spaces-definition`, `domain-model`, `backend-fastapi`, `frontend-vue`, `ui-ux-mobile`, `testing-quality`.
 
@@ -25,7 +25,7 @@ Remot GitHub: encara sota demanda.
 
 ## Blockers
 
-Cap.
+Cap. Si la SQLite local ja existia: `alembic upgrade head`.
 
 ## ADRs oberts / recents
 
@@ -41,8 +41,8 @@ Cap ADR nou.
 
 - Glossari: entitat, responsable, coordinador, espai, reserva, assistència, aforament.
 - Ús intern i gratuït. Sense cobrament al model.
-- Provar l’app: API `http://127.0.0.1:8000`, front `http://127.0.0.1:5173` (proxy Vite). Esquema: `alembic upgrade head`. `micromamba run -n espais uvicorn app.main:app --app-dir backend`.
+- Provar: `alembic upgrade head`; API `http://127.0.0.1:8000`; front `http://127.0.0.1:5173`.
 - Micromamba: `micromamba run -n espais pytest`; no `env create` si `espais` existeix.
 - Front: `cd frontend && npm test` / `npm run dev`. Vue no global.
-- UI: tokens CSS actuals són provisionals; colors i tipografia es decideixen més endavant.
-- Revisió SOLID (Fase 2): un cas d’ús per acció; routers només HTTP; vistes primes + composables; Pinia només sessió. Deute conscient: CTA d’espais desactivada (Fase 3); invitacions = Fase 4; poliment visual ajornat.
+- UI: colors i tipografia ajornats.
+- Revisió SOLID: `CreateSpace` / `ListSpaces` separats; router sense unicitat; `entity_id` de la membership. Deute: `UpdateSpace`, editor de finestres, invitacions = Fase 4.
