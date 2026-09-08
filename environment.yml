@@ -1,0 +1,13 @@
+name: espais
+channels:
+  - conda-forge
+dependencies:
+  - python=3.12
+  - fastapi
+  - uvicorn
+  - pydantic
+  - sqlalchemy
+  - alembic
+  - pytest
+  - httpx
+  - ruff

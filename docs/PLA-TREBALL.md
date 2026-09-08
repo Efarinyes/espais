@@ -29,23 +29,23 @@ Una fase només es tanca si:
 
 **Skills:** `session-start`, `session-close`, `domain-model`, `repo-github` (quan calgui preservar docs; no forma part del tancament).
 
-## Fase 1 — Esquelet (següent)
+## Fase 1 — Esquelet (feta)
 
 **Objectiu:** repositori executable buit, a punt per casos d’ús.
 
 **Tasques:**
 
-- Git local via skill `repo-github` (ja init a la Fase 0). Branca `fase/1-esquelet` en arrencar. Remot GitHub **només quan es demani**.
-- **Aprofitar** l’entorn micromamba existent `espais` (no `env create`). Afegir `environment.yml` al repo pinnant dependències explícites a partir d’aquest env. Mai `.venv`.
+- Git local via skill `repo-github` (ja init a la Fase 0). Branca `fase/1-esquelet`. Remot GitHub **només quan es demani**.
+- **Aprofitar** l’entorn micromamba existent `espais` (no `env create`). `environment.yml` al repo amb dependències explícites. Mai `.venv`.
 - Backend mínim: app FastAPI que respon salut i munta tests.
-- Frontend mínim: Vue 3 + Vite **només a `frontend/`** (npm/pnpm local del directori). Pinia, Vue Router, Vitest.
+- Frontend mínim: Vue 3 + Vite **només a `frontend/`**. Pinia, Vue Router, Vitest.
 - CI mínima: pytest + Vitest.
 
 **Skills:** `repo-github`, `backend-fastapi`, `frontend-vue`, `testing-quality`, `architecture-solid`.
 
 **Criteri fet:** `micromamba run -n espais pytest` i tests del front verds; cap dependència Vue global.
 
-## Fase 2 — Identitat i tenant
+## Fase 2 — Identitat i tenant (següent)
 
 **Objectiu:** alta d’entitat + primer responsable, sessió, aïllament per `entity_id`.
 

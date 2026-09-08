@@ -1,0 +1,1 @@
+"""Aplicació Espais — API FastAPI."""

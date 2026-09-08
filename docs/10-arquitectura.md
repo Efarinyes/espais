@@ -46,7 +46,23 @@ ADR [0001](adr/0001-multi-tenant-una-app.md).
 
 Analogia Angular: Composition API ≈ lògica; `provide`/`inject` ≈ DI; reactivitat Vue 3 ≈ signals.
 
-## Directori previst (Fase 1, no crear ara)
+## Directori (Fase 1)
+
+```
+backend/
+  app/api/
+  app/usecases/
+  app/domain/
+  app/ports/
+  app/adapters/
+  tests/
+frontend/
+  src/views/
+  src/composables/
+  src/services/
+  src/components/
+environment.yml
+```
 
 ```
 backend/

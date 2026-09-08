@@ -24,7 +24,7 @@ Després crida el skill `session-start` i el skill de la feina concreta.
 - Vue 3 només a `frontend/`, mai instal·lació global. Python només amb micromamba, mai `.venv`.
 - Idioma de UI i docs: català.
 - Decisions noves: ADR a `docs/adr/`, no només al xat.
-- En aquesta fase (Fase 0 feta): no generar codi d’aplicació fins que `SESSION.md` indiqui Fase 1 o posterior.
+- En Fase 1 o posterior: esquelet i casos d’ús al repo; Vue només a `frontend/`. Python només amb micromamba, mai `.venv`.
 
 ## Skills a cridar
 

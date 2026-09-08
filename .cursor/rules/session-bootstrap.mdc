@@ -9,4 +9,4 @@ Abans de canviar res: llegeix `SESSION.md`, `docs/INDEX.md` i la fase activa de 
 
 Termes: entitat, responsable, coordinador, espai, reserva, assistència, aforament. UI i docs en català. Ús intern i gratuït: sense cobrament al producte ni al backlog. Actes oberts al públic via coordinador a v1; autoservei ciutadà = backlog.
 
-Fase 0: cap codi d’aplicació. Mai `.venv`. Vue només a `frontend/`. Tot negoci amb `entity_id`. Decisions noves → ADR.
+Fase 1+: esquelet al repo. Mai `.venv`. Vue només a `frontend/`. Tot negoci amb `entity_id`. Decisions noves → ADR.
