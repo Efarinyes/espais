@@ -1,0 +1,1 @@
+# Adaptadors in-memory (tests).

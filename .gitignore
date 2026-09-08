@@ -7,6 +7,7 @@ __pycache__/
 .mamba/
 .venv/
 *.db
+*.sqlite3
 .DS_Store
 *.pyc
 .pytest_cache/
