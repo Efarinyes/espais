@@ -8,6 +8,7 @@ export default defineConfig({
       "/salut": "http://127.0.0.1:8000",
       "/registre": "http://127.0.0.1:8000",
       "/sessio": "http://127.0.0.1:8000",
+      "/espais": "http://127.0.0.1:8000",
     },
   },
   test: {

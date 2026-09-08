@@ -1,6 +1,8 @@
 import { createRouter, createWebHistory } from "vue-router";
 
 import { useSessioStore } from "../stores/sessio";
+import EspaiNouView from "../views/EspaiNouView.vue";
+import EspaisView from "../views/EspaisView.vue";
 import IniciSessioView from "../views/IniciSessioView.vue";
 import IniciView from "../views/IniciView.vue";
 import RegistreView from "../views/RegistreView.vue";
@@ -16,11 +18,16 @@ export const router = createRouter({
       component: IniciSessioView,
       meta: { guestOnly: true },
     },
+    { path: "/espais", name: "espais", component: EspaisView, meta: { requiresAuth: true } },
+    { path: "/espais/nou", name: "espai-nou", component: EspaiNouView, meta: { requiresAuth: true } },
   ],
 });
 
 router.beforeEach((to) => {
   const sessio = useSessioStore();
+  if (to.meta.requiresAuth && !sessio.iniciada) {
+    return { name: "iniciar-sessio" };
+  }
   if (to.meta.guestOnly && sessio.iniciada) {
     return { name: "inici" };
   }

@@ -11,6 +11,7 @@ from app.adapters.tokens import HmacTokenIssuer
 from app.api.health import router as health_router
 from app.api.register import router as register_router
 from app.api.session import router as session_router
+from app.api.spaces import router as spaces_router
 from app.ports.identity import TokenIssuer
 
 
@@ -38,6 +39,7 @@ def create_app(
     application.include_router(health_router)
     application.include_router(register_router)
     application.include_router(session_router)
+    application.include_router(spaces_router)
     return application
 
 

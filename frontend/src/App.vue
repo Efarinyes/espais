@@ -16,9 +16,10 @@ function sortir() {
   <div>
     <header class="capcalera">
       <RouterLink class="capcalera__marca" to="/">Espais</RouterLink>
-      <button v-if="sessio.iniciada" class="boto boto--text" type="button" @click="sortir">
-        Surt
-      </button>
+      <div v-if="sessio.iniciada" class="capcalera__accions">
+        <RouterLink class="boto boto--text" to="/espais">Espais</RouterLink>
+        <button class="boto boto--text" type="button" @click="sortir">Surt</button>
+      </div>
     </header>
     <RouterView />
   </div>

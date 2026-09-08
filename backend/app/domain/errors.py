@@ -15,3 +15,15 @@ class InvalidCredentialsError(Exception):
 
 class SessionNotFoundError(Exception):
     """El token és vàlid però no hi ha membership (compte incoherent)."""
+
+
+class InvalidSpaceError(Exception):
+    """Dades d’espai invàlides (nom buit, aforament ≤ 0)."""
+
+
+class DuplicateSpaceNameError(Exception):
+    """El nom d’espai ja existeix dins la mateixa entitat."""
+
+
+class ForbiddenError(Exception):
+    """L’actor no té permís per a aquesta acció."""

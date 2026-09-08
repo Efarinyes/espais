@@ -13,11 +13,14 @@ from sqlalchemy.orm import sessionmaker
 from app.adapters.security import BcryptPasswordHasher
 from app.adapters.sqlalchemy.engine import make_engine, make_session_factory
 from app.adapters.sqlalchemy.identity import SqlAlchemyIdentityUnitOfWork
+from app.adapters.sqlalchemy.spaces import SqlAlchemySpaceUnitOfWork
 from app.adapters.system import SystemClock, UuidIdGenerator
 from app.adapters.tokens import HmacTokenIssuer
 from app.domain.errors import SessionNotFoundError
 from app.ports.identity import TokenIssuer
 from app.usecases.authenticate_user import AuthenticateUser
+from app.usecases.create_space import CreateSpace
+from app.usecases.list_spaces import ListSpaces
 from app.usecases.register_entity import RegisterEntity
 from app.usecases.resolve_session import ResolveSession, SessionView
 
@@ -46,6 +49,12 @@ def get_token_issuer(request: Request) -> TokenIssuer:
         issuer = HmacTokenIssuer("espais-dev-insegur", SystemClock())
         request.app.state.token_issuer = issuer
     return issuer
+
+
+@dataclass
+class SpacesHttp:
+    create: CreateSpace
+    list: ListSpaces
 
 
 def get_identity_http(request: Request) -> Iterator[IdentityHttp]:
@@ -79,5 +88,16 @@ def require_session(
         except SessionNotFoundError:
             raise HTTPException(status_code=401, detail="sessió invàlida") from None
         yield view
+    finally:
+        uow.close()
+
+
+def get_spaces_http(request: Request) -> Iterator[SpacesHttp]:
+    uow = SqlAlchemySpaceUnitOfWork(get_session_factory(request))
+    try:
+        yield SpacesHttp(
+            create=CreateSpace(uow, SystemClock(), UuidIdGenerator()),
+            list=ListSpaces(uow),
+        )
     finally:
         uow.close()

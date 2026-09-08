@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { RouterLink } from "vue-router";
 
+import { useLlistaEspais } from "../composables/useLlistaEspais";
 import { useSessioStore } from "../stores/sessio";
 
 const sessio = useSessioStore();
+const { espais, carregant } = useLlistaEspais();
 </script>
 
 <template>
@@ -20,15 +22,24 @@ const sessio = useSessioStore();
     <template v-else>
       <h1>{{ sessio.entityName }}</h1>
       <p v-if="sessio.typology">{{ sessio.typology }}</p>
-      <p>Hola, {{ sessio.userName }}. Encara no hi ha espais.</p>
+      <p>Hola, {{ sessio.userName }}.</p>
 
-      <section class="buit" aria-labelledby="buit-titol">
+      <section v-if="!carregant && espais.length === 0" class="buit" aria-labelledby="buit-titol">
         <h2 id="buit-titol">Defineix el primer espai</h2>
-        <p>Els espais són vostres; el nom el decideix l’entitat.</p>
-        <button class="boto boto--primari" type="button" disabled>
-          Defineix el primer espai
-        </button>
+        <p>Encara no heu definit cap espai. El nom el trieu vosaltres (Sala 1 o Sala Pau Casals).</p>
+        <RouterLink class="boto boto--primari" to="/espais/nou">Defineix el primer espai</RouterLink>
         <p>Convidar coordinadors es podrà fer més endavant; no cal per començar.</p>
+      </section>
+
+      <section v-else-if="!carregant" class="buit" aria-labelledby="llista-titol">
+        <h2 id="llista-titol">Els vostres espais</h2>
+        <ul class="llista">
+          <li v-for="espai in espais" :key="espai.id">
+            <strong>{{ espai.name }}</strong>
+            <span>Aforament: {{ espai.capacity }}</span>
+          </li>
+        </ul>
+        <RouterLink class="boto boto--secundari" to="/espais">Veure tots els espais</RouterLink>
       </section>
     </template>
   </main>
