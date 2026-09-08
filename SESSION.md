@@ -4,12 +4,12 @@ Actualitza aquest arxiu al final de cada sessió. És el punt d’arrencada del 
 
 ## Fase
 
-- **Fase actual:** 3 — Espais (següent)
-- **Següent fase:** 3 — Espais (pendent); publicar Fase 2 a `main` (local) abans d’obrir `fase/3-espais`
+- **Fase actual:** 3 — Espais (en curs)
+- **Següent fase:** 3 — Espais (pendent de criteri: CRUD acotat a l’entitat)
 
 ## Darrera feina
 
-Fase 2 tancada a `fase/2-identitat`. El responsable ha comprovat el flux al navegador: registre, sessió i empty state **funcionen**.
+Fase 2 publicada a `main` (fast-forward `62de9c2`, sense push). Branques `fase/1-esquelet` i `fase/2-identitat` esborrades (ja són a `main`). Treball a `fase/3-espais`.
 
 Identitat: `RegisterEntity` atòmic, `AuthenticateUser`, `ResolveSession` (membership, no `entity_id` del token). `POST /registre` inicia sessió; `POST`/`GET /sessio`. Front: `/registre`, `/iniciar-sessio`, inici amb CTA «Defineix el primer espai» (desactivada fins a `CreateSpace`).
 
@@ -17,8 +17,7 @@ Disseny visual (colors, tipografia, paleta): **ajornat** a sessions posteriors; 
 
 ## Següent tasca
 
-1. Merge local `fase/2-identitat` → `main` (sense push) i branca `fase/3-espais`.
-2. `CreateSpace` (TDD): nom únic per entitat, aforament, empty state actionable.
+`CreateSpace` (TDD): nom únic per entitat, aforament, empty state actionable («Defineix el primer espai»).
 
 Skills: `spaces-definition`, `domain-model`, `backend-fastapi`, `frontend-vue`, `ui-ux-mobile`, `testing-quality`.
 
