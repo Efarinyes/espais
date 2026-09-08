@@ -38,7 +38,7 @@ Una fase només es tanca si:
 - Git local via skill `repo-github` (ja init a la Fase 0). Branca `fase/1-esquelet`. Remot GitHub **només quan es demani**.
 - **Aprofitar** l’entorn micromamba existent `espais` (no `env create`). `environment.yml` al repo amb dependències explícites. Mai `.venv`.
 - Backend mínim: app FastAPI que respon salut i munta tests.
-- Frontend mínim: Vue 3 + Vite **només a `frontend/`**. Pinia, Vue Router, Vitest.
+- Frontend mínim: Vue 3 + Vite **només a `frontend/`**. Pinia, Vue Router, Vitest. Tailwind + DaisyUI + PWA (ADR 0006; reaplicat a l’esquelet en Fase 3).
 - CI mínima: pytest + Vitest.
 
 **Skills:** `repo-github`, `backend-fastapi`, `frontend-vue`, `testing-quality`, `architecture-solid`.
@@ -151,6 +151,7 @@ Una fase només es tanca si:
 - Recorregut mobile dels fluxos crítics: registre, espais, reserva, anul·lació.
 - Accessibilitat bàsica (contrast, focus, etiquetes).
 - Missatges d’error i empty states.
+- PWA: instal·lable des de l’esquelet (ADR 0006); aquí es verifica en mòbil real.
 
 **Skills:** `ui-ux-mobile`, `architecture-solid`, `testing-quality`.
 

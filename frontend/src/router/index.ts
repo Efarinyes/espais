@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from "vue-router";
 
 import { useSessioStore } from "../stores/sessio";
+import EspaiEditarView from "../views/EspaiEditarView.vue";
 import EspaiNouView from "../views/EspaiNouView.vue";
 import EspaisView from "../views/EspaisView.vue";
 import IniciSessioView from "../views/IniciSessioView.vue";
@@ -20,6 +21,12 @@ export const router = createRouter({
     },
     { path: "/espais", name: "espais", component: EspaisView, meta: { requiresAuth: true } },
     { path: "/espais/nou", name: "espai-nou", component: EspaiNouView, meta: { requiresAuth: true } },
+    {
+      path: "/espais/:id",
+      name: "espai-editar",
+      component: EspaiEditarView,
+      meta: { requiresAuth: true },
+    },
   ],
 });
 

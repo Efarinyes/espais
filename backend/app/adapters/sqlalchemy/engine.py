@@ -3,14 +3,22 @@
 from __future__ import annotations
 
 import os
+from pathlib import Path
 
 from sqlalchemy import Engine, create_engine, event
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
 
+def repo_root() -> Path:
+    return Path(__file__).resolve().parents[4]
+
+
 def database_url() -> str:
-    return os.environ.get("DATABASE_URL", "sqlite:///./espais.sqlite3")
+    configured = os.environ.get("DATABASE_URL")
+    if configured:
+        return configured
+    return f"sqlite:///{repo_root() / 'espais.sqlite3'}"
 
 
 def _enable_sqlite_foreign_keys(engine: Engine) -> None:

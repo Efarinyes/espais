@@ -14,6 +14,12 @@ from app.domain.space import AvailabilityWindow, Space
 from app.usecases.create_space import normalize_space_name
 
 
+def _is_duplicate_space_name(exc: IntegrityError) -> bool:
+    text = str(exc.orig) if exc.orig is not None else str(exc)
+    lowered = text.lower()
+    return "uq_spaces_entity_name" in lowered or "name_normalized" in lowered
+
+
 def _space_from_row(row: SpaceRow) -> Space:
     windows = tuple(
         AvailabilityWindow(weekday=w.weekday, start=w.start_time, end=w.end_time)
@@ -61,7 +67,9 @@ class SqlAlchemySpaceRepository:
         try:
             self._session.flush()
         except IntegrityError as exc:
-            raise DuplicateSpaceNameError(space.name) from exc
+            if _is_duplicate_space_name(exc):
+                raise DuplicateSpaceNameError(space.name) from exc
+            raise
 
     def list_by_entity_id(self, entity_id: UUID) -> list[Space]:
         rows = self._session.scalars(
@@ -84,6 +92,35 @@ class SqlAlchemySpaceRepository:
         if row is None:
             return None
         return _space_from_row(row)
+
+    def get_by_id(self, entity_id: UUID, space_id: UUID) -> Space | None:
+        row = self._session.scalar(
+            select(SpaceRow)
+            .where(SpaceRow.id == space_id, SpaceRow.entity_id == entity_id)
+            .options(selectinload(SpaceRow.windows))
+        )
+        if row is None:
+            return None
+        return _space_from_row(row)
+
+    def save(self, space: Space) -> None:
+        row = self._session.scalar(
+            select(SpaceRow).where(SpaceRow.id == space.id, SpaceRow.entity_id == space.entity_id)
+        )
+        if row is None:
+            return
+        row.name = space.name
+        row.name_normalized = normalize_space_name(space.name)
+        row.capacity = space.capacity
+        row.equipment = space.equipment
+        row.min_attendance = space.min_attendance
+        row.active = space.active
+        try:
+            self._session.flush()
+        except IntegrityError as exc:
+            if _is_duplicate_space_name(exc):
+                raise DuplicateSpaceNameError(space.name) from exc
+            raise
 
 
 class SqlAlchemySpaceUnitOfWork:

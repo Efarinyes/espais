@@ -15,4 +15,5 @@ __pycache__/
 .ruff_cache/
 dist/
 frontend/dist/
+frontend/dev-dist/
 frontend/node_modules/

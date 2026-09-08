@@ -15,6 +15,10 @@ class SpaceRepository(Protocol):
 
     def get_by_normalized_name(self, entity_id: UUID, name_normalized: str) -> Space | None: ...
 
+    def get_by_id(self, entity_id: UUID, space_id: UUID) -> Space | None: ...
+
+    def save(self, space: Space) -> None: ...
+
 
 class SpaceUnitOfWork(Protocol):
     spaces: SpaceRepository

@@ -7,7 +7,7 @@ description: UI mobile-first, empty states, accessibilitat i verificació visual
 
 ## Principis
 
-360–430px primer. Paleta neutra única. Glossari català. CTA clara als buits. Anul·lar = confirmació + text que s’avisa el coordinador.
+360–430px primer. Paleta neutra única (tema Daisy `espais`). Glossari català. CTA clara als buits. Anul·lar = confirmació + text que s’avisa el coordinador. PWA instal·lable, no app nativa.
 
 ## Checklist
 

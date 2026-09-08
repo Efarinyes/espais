@@ -24,6 +24,18 @@ class InMemorySpaceRepository:
                 return space
         return None
 
+    def get_by_id(self, entity_id: UUID, space_id: UUID) -> Space | None:
+        for space in self._uow._working:
+            if space.entity_id == entity_id and space.id == space_id:
+                return space
+        return None
+
+    def save(self, space: Space) -> None:
+        for index, existing in enumerate(self._uow._working):
+            if existing.id == space.id and existing.entity_id == space.entity_id:
+                self._uow._working[index] = space
+                return
+
 
 class InMemorySpaceUnitOfWork:
     def __init__(self) -> None:

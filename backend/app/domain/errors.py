@@ -25,5 +25,9 @@ class DuplicateSpaceNameError(Exception):
     """El nom d’espai ja existeix dins la mateixa entitat."""
 
 
+class SpaceNotFoundError(Exception):
+    """L’espai no existeix dins l’entitat de l’actor."""
+
+
 class ForbiddenError(Exception):
     """L’actor no té permís per a aquesta acció."""

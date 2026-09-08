@@ -33,8 +33,9 @@ Mai `micromamba env create` si l’entorn `espais` ja existeix.
 - Vue 3 + Vite, **només al directori `frontend/`**.
 - Instal·lació amb el package manager del projecte dins `frontend/` (`package.json` local). Mai `npm install -g vue`.
 - Vue Router, Pinia (sessió), Composition API, `<script setup>`.
+- Estils: **Tailwind CSS** + **DaisyUI**, tema neutre custom (ADR [0006](adr/0006-tailwind-daisy-pwa.md)). Mobile-first. Toc ≥ 44px.
+- PWA instal·lable (`vite-plugin-pwa`): esquelet cachejat; l’API cal xarxa.
 - Tests: Vitest + Vue Test Utils.
-- Estils: CSS natiu amb design tokens (sense framework pesat a v1, tret que un ADR ho canviï). Mobile-first.
 
 ## Eines de qualitat
 

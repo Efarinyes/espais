@@ -19,7 +19,9 @@ Només `frontend/`. Mai `npm install -g vue` ni Vue CLI global.
 ## Checklist
 
 - [ ] Copy en català, glossari respectat
-- [ ] Mobile-first (toc ≥ 44px, fluxos curts)
+- [ ] Mobile-first (toc ≥ 44px, `min-h-11`)
+- [ ] Tailwind + DaisyUI, tema neutre `espais` (ADR 0006)
+- [ ] PWA instal·lable; l’API no és offline
 - [ ] Estats loading / error / empty
 - [ ] Sense regles de solapament només al client (el back valida)
 - [ ] TypeScript preferit (Fase 1)

@@ -39,7 +39,23 @@ function muntar(api: Partial<EspaisApi>) {
       provide: {
         [espaisApiKey as symbol]: {
           llistar: async () => [],
+          obtenir: async () => ({
+            id: "s1",
+            entity_id: "e1",
+            name: "Sala 1",
+            capacity: 20,
+            equipment: null,
+            active: true,
+          }),
           crear: async () => ({
+            id: "s1",
+            entity_id: "e1",
+            name: "Sala 1",
+            capacity: 20,
+            equipment: null,
+            active: true,
+          }),
+          actualitzar: async () => ({
             id: "s1",
             entity_id: "e1",
             name: "Sala 1",
@@ -77,5 +93,20 @@ describe("useCreaEspai", () => {
     await wrapper.vm.enviar();
     await flushPromises();
     expect(wrapper.vm.errorGlobal).toContain("ja existeix");
+  });
+
+  it("es queda al formulari si desar retorna un error 500", async () => {
+    const { wrapper, router } = muntar({
+      crear: async () => {
+        throw new ApiError("no s’ha pogut desar", 500);
+      },
+    });
+    await router.push("/espais/nou");
+    wrapper.vm.camps.name = "Sala 1";
+    wrapper.vm.camps.capacity = "10";
+    await wrapper.vm.enviar();
+    await flushPromises();
+    expect(router.currentRoute.value.name).toBe("espai-nou");
+    expect(wrapper.vm.errorGlobal).toContain("no s’ha pogut desar");
   });
 });

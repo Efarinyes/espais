@@ -35,6 +35,7 @@ Punt de mapa. Llegeix [`SESSION.md`](../SESSION.md) abans de qualsevol capítol.
 - [adr/0003-assistencia-per-compte.md](adr/0003-assistencia-per-compte.md)
 - [adr/0004-stack-fastapi-vue3-micromamba.md](adr/0004-stack-fastapi-vue3-micromamba.md)
 - [adr/0005-avis-anulacio-coordinador.md](adr/0005-avis-anulacio-coordinador.md)
+- [adr/0006-tailwind-daisy-pwa.md](adr/0006-tailwind-daisy-pwa.md)
 
 ## Skills i rules
 

@@ -1,5 +1,6 @@
 import { onMounted, ref } from "vue";
 
+import { ApiError } from "../services/identitat";
 import { requireEspaisApi } from "../services/espais";
 import type { EspaiDto } from "../services/espais";
 import { useSessioStore } from "../stores/sessio";
@@ -20,8 +21,12 @@ export function useLlistaEspais() {
     error.value = "";
     try {
       espais.value = await api.llistar(sessio.token);
-    } catch {
-      error.value = "No s’han pogut carregar els espais.";
+    } catch (err) {
+      espais.value = [];
+      error.value =
+        err instanceof ApiError && err.message
+          ? err.message
+          : "No s’han pogut carregar els espais.";
     } finally {
       carregant.value = false;
     }

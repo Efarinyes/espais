@@ -1,4 +1,4 @@
-"""Alembic: esquema d’identitat (entities, users, memberships)."""
+"""Alembic: esquema d’identitat i espais."""
 
 import os
 from logging.config import fileConfig
@@ -8,6 +8,7 @@ from sqlalchemy import engine_from_config, pool
 from alembic import context
 from app.adapters.sqlalchemy import models as identity_models  # noqa: F401
 from app.adapters.sqlalchemy.base import Base
+from app.adapters.sqlalchemy.engine import database_url
 
 config = context.config
 
@@ -17,6 +18,10 @@ if config.config_file_name is not None:
 url = os.environ.get("DATABASE_URL")
 if url:
     config.set_main_option("sqlalchemy.url", url)
+else:
+    existing = config.get_main_option("sqlalchemy.url")
+    if existing in (None, "", "sqlite:///./espais.sqlite3"):
+        config.set_main_option("sqlalchemy.url", database_url())
 
 target_metadata = Base.metadata
 

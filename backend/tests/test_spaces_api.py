@@ -69,3 +69,61 @@ def test_same_name_in_two_entities_and_no_leak(sqlite_session_factory) -> None:
 def test_list_espais_requires_session(sqlite_session_factory) -> None:
     client = TestClient(create_app(session_factory=sqlite_session_factory))
     assert client.get("/espais").status_code == 401
+
+
+def test_update_and_get_space_for_own_entity(sqlite_session_factory) -> None:
+    client = TestClient(create_app(session_factory=sqlite_session_factory))
+    created = _register(client, email="anna-edita@example.com")
+    headers = {"Authorization": f"Bearer {created['token']}"}
+    posted = client.post("/espais", headers=headers, json={"name": "Sala 1", "capacity": 10, "equipment": "cadires"})
+    space_id = posted.json()["id"]
+    response = client.patch(
+        f"/espais/{space_id}",
+        headers=headers,
+        json={"name": "Sala Pau Casals", "capacity": 40, "equipment": "piano", "active": True},
+    )
+    assert response.status_code == 200
+    assert response.json()["name"] == "Sala Pau Casals"
+    assert response.json()["capacity"] == 40
+    assert response.json()["equipment"] == "piano"
+
+    fetched = client.get(f"/espais/{space_id}", headers=headers)
+    assert fetched.status_code == 200
+    assert fetched.json()["name"] == "Sala Pau Casals"
+
+
+def test_deactivate_space_remains_in_list(sqlite_session_factory) -> None:
+    client = TestClient(create_app(session_factory=sqlite_session_factory))
+    created = _register(client, email="anna-baixa@example.com")
+    headers = {"Authorization": f"Bearer {created['token']}"}
+    posted = client.post("/espais", headers=headers, json={"name": "Sala 1", "capacity": 10})
+    space_id = posted.json()["id"]
+    response = client.patch(
+        f"/espais/{space_id}",
+        headers=headers,
+        json={"name": "Sala 1", "capacity": 10, "equipment": None, "active": False},
+    )
+    assert response.status_code == 200
+    assert response.json()["active"] is False
+    listed = client.get("/espais", headers=headers).json()
+    assert len(listed) == 1
+    assert listed[0]["id"] == space_id
+    assert listed[0]["active"] is False
+
+
+def test_cannot_update_space_of_other_entity(sqlite_session_factory) -> None:
+    client = TestClient(create_app(session_factory=sqlite_session_factory))
+    a = _register(client, email="a-edita@example.com", entity_name="Entitat A")
+    b = _register(client, email="b-edita@example.com", entity_name="Entitat B", responsible_name="Berta")
+    headers_a = {"Authorization": f"Bearer {a['token']}"}
+    headers_b = {"Authorization": f"Bearer {b['token']}"}
+    posted = client.post("/espais", headers=headers_b, json={"name": "Sala 1", "capacity": 10})
+    space_id = posted.json()["id"]
+    response = client.patch(
+        f"/espais/{space_id}",
+        headers=headers_a,
+        json={"name": "Piratejada", "capacity": 99, "active": True},
+    )
+    assert response.status_code == 404
+    assert client.get(f"/espais/{space_id}", headers=headers_a).status_code == 404
+    assert client.get(f"/espais/{space_id}", headers=headers_b).json()["name"] == "Sala 1"

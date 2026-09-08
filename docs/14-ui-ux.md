@@ -13,9 +13,9 @@ Skill: `ui-ux-mobile`. Front: [11-stack.md](11-stack.md).
 
 ## Design tokens (v1)
 
-Definir a CSS: color de fons, text, accent, perill (anul·lar), èxit, radi, espaiat, mida de toc ≥ 44px.
+Tema DaisyUI **espais** (ADR [0006](adr/0006-tailwind-daisy-pwa.md)): fons càlid, text fosc, accent `#1d4e89`, perill `#9f1239`, radi 12px, toc ≥ 44px (`min-h-11`).
 
-Contrast WCAG AA en text normal. Focus visible. Labels lligades als inputs. Errors al costat del camp, no només toast.
+Contrast WCAG AA en text normal. Focus visible. Labels lligades als inputs. Errors al costat del camp, no només toast. Una paleta per a totes les tipologies.
 
 ## Pantalles clau
 

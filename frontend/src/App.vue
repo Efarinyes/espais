@@ -13,12 +13,14 @@ function sortir() {
 </script>
 
 <template>
-  <div>
-    <header class="capcalera">
-      <RouterLink class="capcalera__marca" to="/">Espais</RouterLink>
-      <div v-if="sessio.iniciada" class="capcalera__accions">
-        <RouterLink class="boto boto--text" to="/espais">Espais</RouterLink>
-        <button class="boto boto--text" type="button" @click="sortir">Surt</button>
+  <div class="min-h-screen">
+    <header class="navbar bg-base-100 shadow-sm">
+      <div class="flex-1">
+        <RouterLink class="btn btn-ghost text-xl min-h-11" to="/">Espais</RouterLink>
+      </div>
+      <div v-if="sessio.iniciada" class="flex-none gap-1">
+        <RouterLink class="btn btn-ghost min-h-11" to="/espais">Espais</RouterLink>
+        <button class="btn btn-ghost min-h-11" type="button" @click="sortir">Surt</button>
       </div>
     </header>
     <RouterView />

@@ -17,9 +17,15 @@ export type CreaEspaiInput = {
   equipment: string;
 };
 
+export type ActualitzaEspaiInput = CreaEspaiInput & {
+  active: boolean;
+};
+
 export type EspaisApi = {
   llistar(token: string): Promise<EspaiDto[]>;
+  obtenir(token: string, id: string): Promise<EspaiDto>;
   crear(token: string, input: CreaEspaiInput): Promise<EspaiDto>;
+  actualitzar(token: string, id: string, input: ActualitzaEspaiInput): Promise<EspaiDto>;
 };
 
 export const espaisApiKey: InjectionKey<EspaisApi> = Symbol("espaisApi");
@@ -67,6 +73,14 @@ export function createEspaisApi(baseUrl = ""): EspaisApi {
       return (await res.json()) as EspaiDto[];
     },
 
+    async obtenir(token, id) {
+      const res = await fetch(`${baseUrl}/espais/${id}`, { headers: headers(token) });
+      if (!res.ok) {
+        throw new ApiError(await detallError(res), res.status);
+      }
+      return (await res.json()) as EspaiDto;
+    },
+
     async crear(token, input) {
       const res = await fetch(`${baseUrl}/espais`, {
         method: "POST",
@@ -75,6 +89,23 @@ export function createEspaisApi(baseUrl = ""): EspaisApi {
           name: input.name,
           capacity: input.capacity,
           equipment: input.equipment || null,
+        }),
+      });
+      if (!res.ok) {
+        throw new ApiError(await detallError(res), res.status);
+      }
+      return (await res.json()) as EspaiDto;
+    },
+
+    async actualitzar(token, id, input) {
+      const res = await fetch(`${baseUrl}/espais/${id}`, {
+        method: "PATCH",
+        headers: headers(token, true),
+        body: JSON.stringify({
+          name: input.name,
+          capacity: input.capacity,
+          equipment: input.equipment || null,
+          active: input.active,
         }),
       });
       if (!res.ok) {

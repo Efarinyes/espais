@@ -1,33 +1,45 @@
 <script setup lang="ts">
+import { computed } from "vue";
 import { RouterLink } from "vue-router";
 
+import EspaiTargeta from "../components/EspaiTargeta.vue";
 import { useLlistaEspais } from "../composables/useLlistaEspais";
+import { useSessioStore } from "../stores/sessio";
 
+const sessio = useSessioStore();
 const { espais, carregant, error } = useLlistaEspais();
+
+const llistaAmpla = computed(() => !error.value && !carregant.value && espais.value.length > 0);
 </script>
 
 <template>
-  <main class="pantalla">
-    <h1>Espais de l’entitat</h1>
+  <main class="mx-auto w-full px-4 py-6" :class="llistaAmpla ? 'max-w-6xl' : 'max-w-md'">
+    <h1 class="text-3xl font-semibold">Espais de l’entitat</h1>
 
-    <p v-if="error" class="error-global" role="alert">{{ error }}</p>
-    <p v-else-if="carregant">Carregant…</p>
+    <div v-if="error" class="alert alert-error mt-6" role="alert">
+      <span>{{ error }}</span>
+    </div>
+    <p v-else-if="carregant" class="mt-6">Carregant…</p>
 
-    <section v-else-if="espais.length === 0" class="buit" aria-labelledby="buit-espais">
-      <h2 id="buit-espais">Encara no heu definit cap espai</h2>
-      <p>El nom el trieu vosaltres (Sala 1 o Sala Pau Casals).</p>
-      <RouterLink class="boto boto--primari" to="/espais/nou">Defineix el primer espai</RouterLink>
+    <section v-else-if="espais.length === 0" class="card bg-base-100 shadow-sm mt-6" aria-labelledby="buit-espais">
+      <div class="card-body">
+        <h2 id="buit-espais" class="card-title">Encara no heu definit cap espai</h2>
+        <p>El nom el trieu vosaltres (Sala 1 o Sala Pau Casals).</p>
+        <RouterLink class="btn btn-primary min-h-11" to="/espais/nou">Defineix el primer espai</RouterLink>
+      </div>
     </section>
 
-    <ul v-else class="llista">
-      <li v-for="espai in espais" :key="espai.id">
-        <strong>{{ espai.name }}</strong>
-        <span>Aforament: {{ espai.capacity }}</span>
-      </li>
+    <ul v-else class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 items-stretch">
+      <EspaiTargeta
+        v-for="espai in espais"
+        :key="espai.id"
+        :espai="espai"
+        :pot-editar="sessio.role === 'responsible'"
+      />
     </ul>
 
-    <div v-if="espais.length > 0" class="accions">
-      <RouterLink class="boto boto--primari" to="/espais/nou">Afegeix un espai</RouterLink>
+    <div v-if="espais.length > 0" class="mt-6">
+      <RouterLink class="btn btn-primary min-h-11" to="/espais/nou">Afegeix un espai</RouterLink>
     </div>
   </main>
 </template>
