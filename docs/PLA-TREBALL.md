@@ -45,7 +45,7 @@ Una fase només es tanca si:
 
 **Criteri fet:** `micromamba run -n espais pytest` i tests del front verds; cap dependència Vue global.
 
-## Fase 2 — Identitat i tenant (següent)
+## Fase 2 — Identitat i tenant (feta)
 
 **Objectiu:** alta d’entitat + primer responsable, sessió, aïllament per `entity_id`.
 
@@ -61,7 +61,7 @@ Una fase només es tanca si:
 
 **Criteri fet:** un responsable pot entrar i veure només la seva entitat; tests d’aïllament de tenant.
 
-## Fase 3 — Espais
+## Fase 3 — Espais (següent)
 
 **Objectiu:** cada entitat defineix els seus espais.
 

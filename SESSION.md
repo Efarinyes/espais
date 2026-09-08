@@ -4,25 +4,26 @@ Actualitza aquest arxiu al final de cada sessió. És el punt d’arrencada del 
 
 ## Fase
 
-- **Fase actual:** 2 — Identitat i tenant (en curs; tros 1 fet)
-- **Següent fase:** 2 continua (sessió + UI); no tancar la fase fins al criteri de `PLA-TREBALL.md`
+- **Fase actual:** 3 — Espais (següent)
+- **Següent fase:** 3 — Espais (pendent); publicar Fase 2 a `main` (local) abans d’obrir `fase/3-espais`
 
 ## Darrera feina
 
-Publicat l’esquelet: merge local `fase/1-esquelet` → `main` (fast-forward, `77bb98a`), sense push. Branca `fase/2-identitat`.
+Tros 2 de la Fase 2 a `fase/2-identitat`: autenticació i UI.
 
-`RegisterEntity` atòmic (entitat + usuari + membership `responsible`): tests amb fakes (camí feliç, email duplicat, rollback sense òrfena, nom d’entitat no únic global) i adaptador SQLAlchemy/SQLite + Alembic `0001_identity`. Router prim `POST /registre` (201/400/409). Hash bcrypt. `entity_id` a la membership. Tipologia string lliure. Sense `CreateSpace`, invitacions, login ni front.
+- `AuthenticateUser` + `ResolveSession`: la sessió es reconstrueix per `user_id` i membership (no es confia l’`entity_id` del token).
+- `POST /sessio` (login), `GET /sessio` (principal), `POST /registre` inicia sessió (token HMAC).
+- Front: `/registre`, `/iniciar-sessio`, empty state a `/` amb el nom de l’entitat i CTA «Defineix el primer espai» (desactivada fins a la Fase 3). Pinia de sessió, servei `provide`/`inject`.
+- Tests: pytest 26, Vitest 5. Aïllament: cada token només veu la seva entitat. Verificat amb curl (registre A/B, login, 401, proxy Vite 409).
 
-`micromamba run -n espais pytest`: 14 verds. Ruff net. `bcrypt` documentat a `environment.yml` (ja era a l’env).
+Criteri de Fase 2 (`PLA-TREBALL.md`): un responsable pot entrar i veure només la seva entitat. Complet. El botó d’espais espera `CreateSpace`.
 
 ## Següent tasca
 
-Tros 2 de la Fase 2 — no tota la fase d’una vegada:
+1. Merge local `fase/2-identitat` → `main` (sense push) i branca `fase/3-espais`.
+2. `CreateSpace` (TDD): nom únic per entitat, aforament, empty state actionable.
 
-1. Autenticació / sessió i “veure només la seva entitat” (criteri de fase).
-2. Front: registre + empty state guiat (`frontend-vue`, `ui-ux-mobile`).
-
-Skills: `registration-onboarding`, `backend-fastapi`, `frontend-vue`, `testing-quality`, `ui-ux-mobile`, `session-close`.
+Skills: `spaces-definition`, `domain-model`, `backend-fastapi`, `frontend-vue`, `ui-ux-mobile`, `testing-quality`.
 
 Remot GitHub: encara sota demanda.
 
@@ -38,12 +39,13 @@ Cap.
 - [0004](docs/adr/0004-stack-fastapi-vue3-micromamba.md) — acceptat
 - [0005](docs/adr/0005-avis-anulacio-coordinador.md) — acceptat
 
-Cap ADR nou: persistència i capes ja eren a 0001/0004.
+Cap ADR nou: token HMAC de sessió és detall d’adaptador (secret `ESPAIS_SECRET`, defecte insegur de dev).
 
 ## Notes
 
 - Glossari: entitat, responsable, coordinador, espai, reserva, assistència, aforament.
 - Ús intern i gratuït. Sense cobrament al model.
-- Micromamba: `micromamba run -n espais pytest`; no `env create` si `espais` existeix. Esquema: `alembic upgrade head` (SQLite `./espais.sqlite3` per defecte).
-- Front: `cd frontend && npm test`. Vue no global.
-- Revisió SOLID (tros 1): un cas d’ús; router sense negoci; ports + adaptadors; `list_all` només per tests d’identitat; unicitat d’email és de plataforma (no tenant). Deute conscient al tros 2: sessió/guard i UI. Invitació de coordinadors = Fase 4.
+- Provar l’app: API `http://127.0.0.1:8000`, front `http://127.0.0.1:5173` (proxy Vite). Esquema: `alembic upgrade head`. `micromamba run -n espais uvicorn app.main:app --app-dir backend`.
+- Micromamba: `micromamba run -n espais pytest`; no `env create` si `espais` existeix.
+- Front: `cd frontend && npm test` / `npm run dev`. Vue no global.
+- Revisió SOLID (Fase 2): un cas d’ús per acció (`RegisterEntity`, `AuthenticateUser`, `ResolveSession`); routers només HTTP; vistes primes + composables; Pinia només sessió. Deute conscient: CTA d’espais desactivada (Fase 3); invitacions = Fase 4. `GET /sessio` sense `entity_id` a la query perquè l’entitat surt de la membership (correcte).
