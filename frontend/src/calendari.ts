@@ -7,6 +7,18 @@ export type FranjaReserva = {
   ends_at: string;
 };
 
+export function parseCompteAssistencia(valor: unknown): number | null {
+  const text = String(valor ?? "").trim();
+  if (text === "") {
+    return null;
+  }
+  const n = Number(text);
+  if (!Number.isInteger(n) || n < 0) {
+    return null;
+  }
+  return n;
+}
+
 export function titolReserva(item: ReservaDto, role: RolSessio): string {
   if (!item.mine && role !== "responsible") {
     return "Ocupat";

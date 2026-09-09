@@ -4,28 +4,28 @@ Actualitza aquest arxiu al final de cada sessió. És el punt d’arrencada del 
 
 ## Fase
 
-- **Fase actual:** 4 — Coordinadors i reserves (al disc: invitació, CreateReservation, calendari; no tancada: manca `architecture-solid`)
-- **Següent fase:** 5 — Assistència (`RecordAttendance`), després de tancar 3+4 amb la revisió SOLID
+- **Fase actual:** 5 — Assistència (al disc: `RecordAttendance`; no tancada: manca `architecture-solid` sobre assistència + modal)
+- **Següent fase:** 6 — Govern del responsable (`RescheduleReservation`, `CancelReservationByResponsible`), després de tancar 5 amb la revisió SOLID
 
 ## Darrera feina
 
-A `fase/3-espais` (el producte ja ha passat d’espais a reserves; la branca no s’ha reanomenat):
+A `fase/3-espais` (el producte ja ha passat d’espais a assistència; la branca no s’ha reanomenat):
 
-- Espais: CRUD per entitat, finestres d’horari a l’alta/edició (`FinestresDisponibilitat`), el coordinador no crea ni edita (403 + UI).
-- Coordinadors: `InviteCoordinator` / `AcceptInvitation` (Alembic 0003), UI convidar i `/invitar/:token`.
-- Reserves: `CreateReservation` / `ListReservations` (Alembic 0004), solapament i finestres al back. UTC; TZ Europe/Madrid.
-- Calendari Schedule-X: el coordinador entra per la targeta de l’espai (`?espai=`); el responsable veu totes les reserves (capçalera Calendari), color per espai i nom de qui ha reservat. Durada al modal (1 h per defecte, no només 30 min). Títols curts (Tu / Ocupat / nom).
-- Calendari viu (ADR 0007): port `DisparadorCalendari`; adaptador polling ~20 s + refetch en tornar a la pestanya. Porta oberta a SSE/WebSocket (mateix `avisar()`, no reescriure Schedule-X).
+- Revisió `architecture-solid` de fases 3+4: neta. Marcades fetes a `docs/PLA-TREBALL.md`.
+- Assistència: `AttendanceRecord` + port `AttendanceStrategy` / `CountAttendance` (ADR 0003). Alembic `0005`. `PUT /reserves/{id}/assistencia`. `GET /reserves` amb `attendance_count`, aforament i avisos suaus (`exceeds_capacity`, `below_min_attendance`). No bloqueja si el compte supera l’aforament.
+- Permisos: només l’autor registra; el responsable veu el compte de totes; el coordinador no obre el detall d’una reserva aliena (al calendari només «Ocupat»).
+- Calendari: un sol estat de modal declaratiu (`crear` | `detall`) a `CalendariModal.vue`. Formulari de desar; el modal es tanca en desar amb èxit.
+- Correcció: Safari/Brave tractaven el camp com a número i el desament queia en silenci; `parseCompteAssistencia` ho normalitza.
 
-Vitest 61 verds en tancar. pytest no s’ha reexecutat en aquest tancament.
+pytest 106 verds; Vitest 68 verds.
 
-Fase 3 i 4 **no** es tanquen al pla: falta `architecture-solid`.
+Fase 5 **no** es tanca al pla: falta `architecture-solid` del cas d’ús nou + modal.
 
 ## Següent tasca
 
-Revisió `architecture-solid` (capes, SRP, deute) sobre espais + invitacions + reserves + calendari. Si surt neta: marcar Fase 3 i 4 fetes a `docs/PLA-TREBALL.md` i començar Fase 5 (`RecordAttendance`, compte d’assistents). Si hi ha deute: ADR o tasca al pla, no tancar.
+Revisió `architecture-solid` (capes, SRP, deute) sobre `RecordAttendance`, repositori d’assistència i modal de calendari. Si surt neta: marcar Fase 5 feta a `docs/PLA-TREBALL.md` i començar Fase 6 (reprogramar / anul·lar pel responsable + avís al coordinador). Si hi ha deute: ADR o tasca al pla, no tancar.
 
-Skills: `architecture-solid`, `testing-quality`; després `reservations-attendance`, `domain-model`.
+Skills: `architecture-solid`, `testing-quality`; després `reservations-attendance`, `notifications-cancel`, `ui-ux-mobile`.
 
 Remot GitHub: encara sota demanda. Sense `origin`.
 
@@ -51,5 +51,5 @@ Cap ADR nou pendent. Sockets/SSE de calendari: no ara; el port ja existeix.
 - Ús intern i gratuït. Sense cobrament al model.
 - Micromamba: `micromamba run -n espais pytest`; no `env create` si `espais` existeix.
 - Front: `cd frontend && npm test` / `npm run dev`. Vue no global. Tema Daisy `espais`; toc ≥ 44px (`min-h-11`).
-- PWA: instal·lable; no desregistrar el SW en DEV. `navigateFallbackDenylist` per `/salut`, `/registre`, `/sessio`, `/espais`.
-- Deute conscient: tancar Fase 3+4 amb SOLID; assistència i anul·lació/reprogramació (fases 5–6) encara no; ocupació «disponible / parcial» al calendari = millora, no blocker.
+- PWA: instal·lable; no desregistrar el SW en DEV. `navigateFallbackDenylist` per `/salut`, `/registre`, `/sessio`, `/espais`, `/invitacions`, `/reserves`.
+- Deute conscient: tancar Fase 5 amb SOLID; anul·lació/reprogramació (Fase 6) encara no. Obertura/tancament del modal de calendari una mica bruscs: retoc CSS a Fase 8 (UI), no blocker. Ocupació «disponible / parcial» al calendari = millora, no blocker.

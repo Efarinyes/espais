@@ -10,6 +10,7 @@ from fastapi import Depends, HTTPException, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import sessionmaker
 
+from app.adapters.attendance import CountAttendance
 from app.adapters.security import BcryptPasswordHasher
 from app.adapters.sqlalchemy.identity import SqlAlchemyIdentityUnitOfWork
 from app.adapters.sqlalchemy.reservations import SqlAlchemyReservationUnitOfWork
@@ -28,6 +29,7 @@ from app.usecases.get_space import GetSpace
 from app.usecases.invite_coordinator import InviteCoordinator
 from app.usecases.list_reservations import ListReservations
 from app.usecases.list_spaces import ListSpaces
+from app.usecases.record_attendance import RecordAttendance
 from app.usecases.register_entity import RegisterEntity
 from app.usecases.resolve_session import ResolveSession, SessionView
 from app.usecases.update_space import UpdateSpace
@@ -74,6 +76,7 @@ class SpacesHttp:
 class ReservationsHttp:
     create: CreateReservation
     list: ListReservations
+    record: RecordAttendance
 
 
 def get_identity_http(request: Request) -> Iterator[IdentityHttp]:
@@ -135,6 +138,7 @@ def get_reservations_http(request: Request) -> Iterator[ReservationsHttp]:
         yield ReservationsHttp(
             create=CreateReservation(uow, SystemClock(), UuidIdGenerator()),
             list=ListReservations(uow),
+            record=RecordAttendance(uow, CountAttendance(), SystemClock(), UuidIdGenerator()),
         )
     finally:
         uow.close()

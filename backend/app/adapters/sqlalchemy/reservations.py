@@ -8,8 +8,9 @@ from uuid import UUID
 from sqlalchemy import select
 from sqlalchemy.orm import Session, sessionmaker
 
-from app.adapters.sqlalchemy.models import ReservationRow
+from app.adapters.sqlalchemy.models import AttendanceRecordRow, ReservationRow
 from app.adapters.sqlalchemy.spaces import SqlAlchemySpaceRepository
+from app.domain.attendance import AttendanceRecord
 from app.domain.reservation import Reservation, ReservationStatus, as_utc
 
 
@@ -55,6 +56,17 @@ class SqlAlchemyReservationRepository:
         )
         self._session.flush()
 
+    def get_by_id(self, entity_id: UUID, reservation_id: UUID) -> Reservation | None:
+        row = self._session.scalar(
+            select(ReservationRow).where(
+                ReservationRow.id == reservation_id,
+                ReservationRow.entity_id == entity_id,
+            )
+        )
+        if row is None:
+            return None
+        return _from_row(row)
+
     def list_overlapping(
         self,
         entity_id: UUID,
@@ -95,11 +107,78 @@ class SqlAlchemyReservationRepository:
         return [_from_row(row) for row in rows]
 
 
+def _attendance_from_row(row: AttendanceRecordRow) -> AttendanceRecord:
+    return AttendanceRecord(
+        id=row.id,
+        entity_id=row.entity_id,
+        reservation_id=row.reservation_id,
+        strategy=row.strategy,
+        count=row.count,
+        recorded_at=_aware(row.recorded_at),
+    )
+
+
+class SqlAlchemyAttendanceRepository:
+    def __init__(self, session: Session) -> None:
+        self._session = session
+
+    def get_by_reservation_id(self, entity_id: UUID, reservation_id: UUID) -> AttendanceRecord | None:
+        row = self._session.scalar(
+            select(AttendanceRecordRow).where(
+                AttendanceRecordRow.entity_id == entity_id,
+                AttendanceRecordRow.reservation_id == reservation_id,
+            )
+        )
+        if row is None:
+            return None
+        return _attendance_from_row(row)
+
+    def save(self, record: AttendanceRecord) -> None:
+        row = self._session.scalar(
+            select(AttendanceRecordRow).where(
+                AttendanceRecordRow.entity_id == record.entity_id,
+                AttendanceRecordRow.reservation_id == record.reservation_id,
+            )
+        )
+        if row is None:
+            self._session.add(
+                AttendanceRecordRow(
+                    id=record.id,
+                    entity_id=record.entity_id,
+                    reservation_id=record.reservation_id,
+                    strategy=record.strategy,
+                    count=record.count,
+                    recorded_at=record.recorded_at,
+                )
+            )
+        else:
+            row.strategy = record.strategy
+            row.count = record.count
+            row.recorded_at = record.recorded_at
+        self._session.flush()
+
+    def list_by_reservation_ids(
+        self,
+        entity_id: UUID,
+        reservation_ids: list[UUID],
+    ) -> dict[UUID, AttendanceRecord]:
+        if not reservation_ids:
+            return {}
+        rows = self._session.scalars(
+            select(AttendanceRecordRow).where(
+                AttendanceRecordRow.entity_id == entity_id,
+                AttendanceRecordRow.reservation_id.in_(reservation_ids),
+            )
+        ).all()
+        return {row.reservation_id: _attendance_from_row(row) for row in rows}
+
+
 class SqlAlchemyReservationUnitOfWork:
     def __init__(self, session_factory: sessionmaker) -> None:
         self._session = session_factory()
         self.spaces = SqlAlchemySpaceRepository(self._session)
         self.reservations = SqlAlchemyReservationRepository(self._session)
+        self.attendance = SqlAlchemyAttendanceRepository(self._session)
 
     def commit(self) -> None:
         self._session.commit()

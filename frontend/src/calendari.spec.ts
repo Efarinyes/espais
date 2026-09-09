@@ -1,7 +1,7 @@
 import "temporal-polyfill/global";
 import { describe, expect, it } from "vitest";
 
-import { arrodoneixClicAFranja, calendarisPerEspais, titolReserva, valorRangAIso } from "./calendari";
+import { arrodoneixClicAFranja, calendarisPerEspais, parseCompteAssistencia, titolReserva, valorRangAIso } from "./calendari";
 import type { ReservaDto } from "./services/reserves";
 
 const reserva: ReservaDto = {
@@ -13,6 +13,11 @@ const reserva: ReservaDto = {
   status: "confirmed",
   mine: true,
   coordinator_name: "Carla",
+  attendance_count: null,
+  capacity: 40,
+  min_attendance: null,
+  exceeds_capacity: false,
+  below_min_attendance: false,
 };
 
 describe("calendari", () => {
@@ -26,6 +31,13 @@ describe("calendari", () => {
 
   it("marca la reserva pròpia com a Tu", () => {
     expect(titolReserva(reserva, "coordinator")).toBe("Tu");
+  });
+
+  it("accepta un compte escrit o numèric", () => {
+    expect(parseCompteAssistencia("12")).toBe(12);
+    expect(parseCompteAssistencia(12)).toBe(12);
+    expect(parseCompteAssistencia("")).toBeNull();
+    expect(parseCompteAssistencia(-1)).toBeNull();
   });
 
   it("arrodoneix el clic a 1 hora per defecte", () => {

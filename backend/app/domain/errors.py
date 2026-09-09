@@ -51,3 +51,11 @@ class InvalidReservationError(Exception):
 
 class ReservationOverlapError(Exception):
     """Ja hi ha una reserva confirmada que solapa aquest interval."""
+
+
+class ReservationNotFoundError(Exception):
+    """La reserva no existeix dins l’entitat de l’actor."""
+
+
+class InvalidAttendanceError(Exception):
+    """Compte d’assistència invàlid o reserva que no admet registre."""

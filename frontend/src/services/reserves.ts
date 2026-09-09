@@ -11,6 +11,11 @@ export type ReservaDto = {
   status: string;
   mine: boolean;
   coordinator_name: string | null;
+  attendance_count: number | null;
+  capacity: number;
+  min_attendance: number | null;
+  exceeds_capacity: boolean;
+  below_min_attendance: boolean;
 };
 
 export type CreaReservaInput = {
@@ -22,6 +27,7 @@ export type CreaReservaInput = {
 export type ReservesApi = {
   llistar(token: string, des: string, fins: string, espaiId?: string): Promise<ReservaDto[]>;
   crear(token: string, input: CreaReservaInput): Promise<ReservaDto>;
+  registrarAssistencia(token: string, reservaId: string, count: number): Promise<ReservaDto>;
 };
 
 export const reservesApiKey: InjectionKey<ReservesApi> = Symbol("reservesApi");
@@ -78,6 +84,18 @@ export function createReservesApi(baseUrl = ""): ReservesApi {
         method: "POST",
         headers: headers(token, true),
         body: JSON.stringify(input),
+      });
+      if (!res.ok) {
+        throw new ApiError(await detallError(res), res.status);
+      }
+      return (await res.json()) as ReservaDto;
+    },
+
+    async registrarAssistencia(token, reservaId, count) {
+      const res = await fetch(`${baseUrl}/reserves/${reservaId}/assistencia`, {
+        method: "PUT",
+        headers: headers(token, true),
+        body: JSON.stringify({ count }),
       });
       if (!res.ok) {
         throw new ApiError(await detallError(res), res.status);

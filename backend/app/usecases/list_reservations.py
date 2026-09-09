@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from uuid import UUID
 
+from app.domain.attendance import attendance_flags
 from app.domain.identity import MembershipRole
 from app.domain.reservation import ReservationStatus, as_utc
 from app.ports.reservations import ReservationUnitOfWork
@@ -31,6 +32,11 @@ class ReservationListItem:
     status: ReservationStatus
     mine: bool
     coordinator_name: str | None
+    attendance_count: int | None
+    capacity: int
+    min_attendance: int | None
+    exceeds_capacity: bool
+    below_min_attendance: bool
 
 
 class ListReservations:
@@ -47,6 +53,10 @@ class ListReservations:
             query.space_id,
         )
         spaces = {space.id: space for space in self._uow.spaces.list_by_entity_id(query.entity_id)}
+        records = self._uow.attendance.list_by_reservation_ids(
+            query.entity_id,
+            [reservation.id for reservation in reservations],
+        )
         items: list[ReservationListItem] = []
         for reservation in reservations:
             if reservation.status != ReservationStatus.CONFIRMED:
@@ -56,6 +66,9 @@ class ListReservations:
                 continue
             mine = reservation.coordinator_id == query.actor_user_id
             show_name = query.actor_role == MembershipRole.RESPONSIBLE or mine
+            record = records.get(reservation.id)
+            count = record.count if record is not None else None
+            exceeds, below = attendance_flags(count, space.capacity, space.min_attendance)
             items.append(
                 ReservationListItem(
                     id=reservation.id,
@@ -66,6 +79,11 @@ class ListReservations:
                     status=reservation.status,
                     mine=mine,
                     coordinator_name=reservation.coordinator_name if show_name else None,
+                    attendance_count=count,
+                    capacity=space.capacity,
+                    min_attendance=space.min_attendance,
+                    exceeds_capacity=exceeds,
+                    below_min_attendance=below,
                 )
             )
         return items

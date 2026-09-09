@@ -7,7 +7,7 @@ import { createEventsServicePlugin } from "@schedule-x/events-service";
 import "@schedule-x/theme-default/dist/index.css";
 import "temporal-polyfill/global";
 
-import { etiquetaDurada } from "../calendari";
+import CalendariModal from "../components/CalendariModal.vue";
 import { useCalendariReserves } from "../composables/useCalendariReserves";
 import { useRefrescCalendari } from "../composables/useRefrescCalendari";
 
@@ -18,7 +18,8 @@ const {
   calendaris,
   carregant,
   error,
-  pendent,
+  modal,
+  modalObert,
   duradaMinuts,
   durades,
   enviant,
@@ -29,8 +30,17 @@ const {
   eventsDeReserves,
   clicarFranja,
   triarDurada,
-  cancelarPendent,
+  tancarModal,
   confirmarPendent,
+  campAssistencia,
+  errorDetall,
+  okDetall,
+  enviantAssistencia,
+  resumDetall,
+  avisAforament,
+  obrirDetall,
+  desarAssistencia,
+  actualitzarCampAssistencia,
   darrerRang,
 } = useCalendariReserves();
 
@@ -74,6 +84,9 @@ function muntarCalendari() {
         onClickDateTime(dateTime) {
           clicarFranja(dateTime);
         },
+        onEventClick(calendarEvent) {
+          obrirDetall(String(calendarEvent.id));
+        },
       },
     },
     [eventsServiceHolder.current],
@@ -92,7 +105,7 @@ const { engegar, aturarRefresc } = useRefrescCalendari(
   () => {
     void aplicarAvisCalendari();
   },
-  () => Boolean(pendent.value),
+  () => modalObert.value,
 );
 
 async function confirmar() {
@@ -179,33 +192,24 @@ watch(calendarApp, (app) => {
       </div>
     </template>
 
-    <div class="modal" :class="{ 'modal-open': pendent }" role="dialog" aria-modal="true" aria-labelledby="confirma-titol">
-      <div class="modal-box">
-        <h2 id="confirma-titol" class="font-semibold text-lg">Confirmar reserva</h2>
-        <p class="py-4">{{ resumPendent }}</p>
-        <p class="font-medium">Durada</p>
-        <div class="mt-2 flex flex-wrap gap-2">
-          <button
-            v-for="minuts in durades"
-            :key="minuts"
-            class="btn min-h-11"
-            :class="duradaMinuts === minuts ? 'btn-primary' : 'btn-outline'"
-            type="button"
-            :disabled="enviant"
-            @click="triarDurada(minuts)"
-          >
-            {{ etiquetaDurada(minuts) }}
-          </button>
-        </div>
-        <div class="modal-action">
-          <button class="btn btn-ghost min-h-11" type="button" :disabled="enviant" @click="cancelarPendent">
-            Cancel·la
-          </button>
-          <button class="btn btn-primary min-h-11" type="button" :disabled="enviant" @click="confirmar">
-            {{ enviant ? "Reservant…" : "Confirma" }}
-          </button>
-        </div>
-      </div>
-    </div>
+    <CalendariModal
+      v-if="modal"
+      :modal="modal"
+      :resum-pendent="resumPendent"
+      :resum-detall="resumDetall"
+      :durada-minuts="duradaMinuts"
+      :durades="durades"
+      :enviant="enviant"
+      :camp-assistencia="campAssistencia"
+      :error-detall="errorDetall"
+      :ok-detall="okDetall"
+      :avis-aforament="avisAforament"
+      :enviant-assistencia="enviantAssistencia"
+      @tancar="tancarModal"
+      @triar-durada="triarDurada"
+      @confirmar="confirmar"
+      @desar="desarAssistencia"
+      @update:camp-assistencia="actualitzarCampAssistencia"
+    />
   </main>
 </template>

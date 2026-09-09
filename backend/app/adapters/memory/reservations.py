@@ -5,6 +5,7 @@ from __future__ import annotations
 from datetime import datetime
 from uuid import UUID
 
+from app.domain.attendance import AttendanceRecord
 from app.domain.reservation import Reservation, ReservationStatus, intervals_overlap
 from app.domain.space import Space
 from app.usecases.create_space import normalize_space_name
@@ -47,6 +48,12 @@ class InMemoryReservationRepository:
     def add(self, reservation: Reservation) -> None:
         self._uow._working_reservations.append(reservation)
 
+    def get_by_id(self, entity_id: UUID, reservation_id: UUID) -> Reservation | None:
+        for reservation in self._uow._working_reservations:
+            if reservation.entity_id == entity_id and reservation.id == reservation_id:
+                return reservation
+        return None
+
     def list_all(self) -> list[Reservation]:
         return list(self._uow._working_reservations)
 
@@ -85,19 +92,54 @@ class InMemoryReservationRepository:
         return items
 
 
+class InMemoryAttendanceRepository:
+    def __init__(self, uow: InMemoryReservationUnitOfWork) -> None:
+        self._uow = uow
+
+    def get_by_reservation_id(self, entity_id: UUID, reservation_id: UUID) -> AttendanceRecord | None:
+        for record in self._uow._working_attendance:
+            if record.entity_id == entity_id and record.reservation_id == reservation_id:
+                return record
+        return None
+
+    def save(self, record: AttendanceRecord) -> None:
+        for index, existing in enumerate(self._uow._working_attendance):
+            if existing.entity_id == record.entity_id and existing.reservation_id == record.reservation_id:
+                self._uow._working_attendance[index] = record
+                return
+        self._uow._working_attendance.append(record)
+
+    def list_by_reservation_ids(
+        self,
+        entity_id: UUID,
+        reservation_ids: list[UUID],
+    ) -> dict[UUID, AttendanceRecord]:
+        wanted = set(reservation_ids)
+        return {
+            record.reservation_id: record
+            for record in self._uow._working_attendance
+            if record.entity_id == entity_id and record.reservation_id in wanted
+        }
+
+
 class InMemoryReservationUnitOfWork:
     def __init__(self) -> None:
         self._committed_spaces: list[Space] = []
         self._working_spaces: list[Space] = []
         self._committed_reservations: list[Reservation] = []
         self._working_reservations: list[Reservation] = []
+        self._committed_attendance: list[AttendanceRecord] = []
+        self._working_attendance: list[AttendanceRecord] = []
         self.spaces = InMemoryReservationSpaceRepository(self)
         self.reservations = InMemoryReservationRepository(self)
+        self.attendance = InMemoryAttendanceRepository(self)
 
     def commit(self) -> None:
         self._committed_spaces = list(self._working_spaces)
         self._committed_reservations = list(self._working_reservations)
+        self._committed_attendance = list(self._working_attendance)
 
     def rollback(self) -> None:
         self._working_spaces = list(self._committed_spaces)
         self._working_reservations = list(self._committed_reservations)
+        self._working_attendance = list(self._committed_attendance)

@@ -138,3 +138,25 @@ class ReservationRow(Base):
     status: Mapped[str] = mapped_column(String(32), nullable=False)
     notes: Mapped[str | None] = mapped_column(String(512), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+
+class AttendanceRecordRow(Base):
+    __tablename__ = "attendance_records"
+    __table_args__ = (UniqueConstraint("reservation_id", name="uq_attendance_reservation"),)
+
+    id: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), primary_key=True)
+    entity_id: Mapped[UUID] = mapped_column(
+        Uuid(as_uuid=True),
+        ForeignKey("entities.id"),
+        nullable=False,
+        index=True,
+    )
+    reservation_id: Mapped[UUID] = mapped_column(
+        Uuid(as_uuid=True),
+        ForeignKey("reservations.id"),
+        nullable=False,
+        index=True,
+    )
+    strategy: Mapped[str] = mapped_column(String(32), nullable=False)
+    count: Mapped[int] = mapped_column(Integer, nullable=False)
+    recorded_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)

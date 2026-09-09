@@ -34,6 +34,8 @@ class CreateReservationCommand:
 class CreateReservationResult:
     reservation: Reservation
     space_name: str
+    capacity: int
+    min_attendance: int | None
 
 
 class CreateReservation:
@@ -87,4 +89,9 @@ class CreateReservation:
         except Exception:
             self._uow.rollback()
             raise
-        return CreateReservationResult(reservation=reservation, space_name=space.name)
+        return CreateReservationResult(
+            reservation=reservation,
+            space_name=space.name,
+            capacity=space.capacity,
+            min_attendance=space.min_attendance,
+        )

@@ -1,17 +1,26 @@
-"""HTTP de reserves: sessió aporta entity_id; el router no calcula solapament."""
+"""HTTP de reserves: sessió aporta entity_id; el router no calcula solapament ni assistència."""
 
 from datetime import datetime
 from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from app.api.deps import ReservationsHttp, get_reservations_http, require_session
-from app.domain.errors import InvalidReservationError, ReservationOverlapError, SpaceNotFoundError
+from app.domain.errors import (
+    ForbiddenError,
+    InvalidAttendanceError,
+    InvalidReservationError,
+    ReservationNotFoundError,
+    ReservationOverlapError,
+    SpaceNotFoundError,
+)
+from app.domain.identity import MembershipRole
 from app.domain.reservation import ReservationStatus
 from app.usecases.create_reservation import CreateReservationCommand
 from app.usecases.list_reservations import ListReservationsQuery, ReservationListItem
+from app.usecases.record_attendance import RecordAttendanceCommand
 from app.usecases.resolve_session import SessionView
 
 router = APIRouter()
@@ -24,6 +33,10 @@ class CreateReservationRequest(BaseModel):
     notes: str | None = None
 
 
+class RecordAttendanceRequest(BaseModel):
+    count: int = Field(ge=0)
+
+
 class ReservationResponse(BaseModel):
     id: UUID
     space_id: UUID
@@ -33,6 +46,11 @@ class ReservationResponse(BaseModel):
     status: ReservationStatus
     mine: bool
     coordinator_name: str | None
+    attendance_count: int | None
+    capacity: int
+    min_attendance: int | None
+    exceeds_capacity: bool
+    below_min_attendance: bool
 
 
 def _to_response(item: ReservationListItem) -> ReservationResponse:
@@ -45,6 +63,11 @@ def _to_response(item: ReservationListItem) -> ReservationResponse:
         status=item.status,
         mine=item.mine,
         coordinator_name=item.coordinator_name,
+        attendance_count=item.attendance_count,
+        capacity=item.capacity,
+        min_attendance=item.min_attendance,
+        exceeds_capacity=item.exceeds_capacity,
+        below_min_attendance=item.below_min_attendance,
     )
 
 
@@ -84,6 +107,11 @@ def create_reservation(
         status=reservation.status,
         mine=True,
         coordinator_name=reservation.coordinator_name,
+        attendance_count=None,
+        capacity=result.capacity,
+        min_attendance=result.min_attendance,
+        exceeds_capacity=False,
+        below_min_attendance=False,
     )
 
 
@@ -106,3 +134,48 @@ def list_reservations(
         )
     )
     return [_to_response(item) for item in items]
+
+
+@router.put("/reserves/{reservation_id}/assistencia", response_model=ReservationResponse)
+def record_attendance(
+    reservation_id: UUID,
+    body: RecordAttendanceRequest,
+    view: Annotated[SessionView, Depends(require_session)],
+    reservations: Annotated[ReservationsHttp, Depends(get_reservations_http)],
+) -> ReservationResponse:
+    try:
+        result = reservations.record.execute(
+            RecordAttendanceCommand(
+                entity_id=view.entity_id,
+                actor_user_id=view.user_id,
+                reservation_id=reservation_id,
+                count=body.count,
+            )
+        )
+    except ReservationNotFoundError:
+        raise HTTPException(status_code=404, detail="aquesta reserva no existeix a l’entitat") from None
+    except ForbiddenError as exc:
+        raise HTTPException(status_code=403, detail=str(exc)) from None
+    except InvalidAttendanceError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from None
+    except SpaceNotFoundError:
+        raise HTTPException(status_code=404, detail="aquest espai no existeix a l’entitat") from None
+
+    reservation = result.reservation
+    mine = reservation.coordinator_id == view.user_id
+    show_name = view.role == MembershipRole.RESPONSIBLE or mine
+    return ReservationResponse(
+        id=reservation.id,
+        space_id=reservation.space_id,
+        space_name=result.space_name,
+        starts_at=reservation.starts_at,
+        ends_at=reservation.ends_at,
+        status=reservation.status,
+        mine=mine,
+        coordinator_name=reservation.coordinator_name if show_name else None,
+        attendance_count=result.record.count,
+        capacity=result.capacity,
+        min_attendance=result.min_attendance,
+        exceeds_capacity=result.exceeds_capacity,
+        below_min_attendance=result.below_min_attendance,
+    )
