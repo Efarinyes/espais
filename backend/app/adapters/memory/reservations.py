@@ -6,6 +6,7 @@ from datetime import datetime
 from uuid import UUID
 
 from app.domain.attendance import AttendanceRecord
+from app.domain.notification import Notification
 from app.domain.reservation import Reservation, ReservationStatus, intervals_overlap
 from app.domain.space import Space
 from app.usecases.create_space import normalize_space_name
@@ -47,6 +48,12 @@ class InMemoryReservationRepository:
 
     def add(self, reservation: Reservation) -> None:
         self._uow._working_reservations.append(reservation)
+
+    def save(self, reservation: Reservation) -> None:
+        for index, existing in enumerate(self._uow._working_reservations):
+            if existing.entity_id == reservation.entity_id and existing.id == reservation.id:
+                self._uow._working_reservations[index] = reservation
+                return
 
     def get_by_id(self, entity_id: UUID, reservation_id: UUID) -> Reservation | None:
         for reservation in self._uow._working_reservations:
@@ -122,6 +129,34 @@ class InMemoryAttendanceRepository:
         }
 
 
+class InMemoryNotificationRepository:
+    def __init__(self, uow: InMemoryReservationUnitOfWork) -> None:
+        self._uow = uow
+
+    def add(self, notification: Notification) -> None:
+        self._uow._working_notifications.append(notification)
+
+    def save(self, notification: Notification) -> None:
+        for index, existing in enumerate(self._uow._working_notifications):
+            if existing.entity_id == notification.entity_id and existing.id == notification.id:
+                self._uow._working_notifications[index] = notification
+                return
+
+    def get_by_id(self, entity_id: UUID, notification_id: UUID) -> Notification | None:
+        for notification in self._uow._working_notifications:
+            if notification.entity_id == entity_id and notification.id == notification_id:
+                return notification
+        return None
+
+    def list_for_user(self, entity_id: UUID, user_id: UUID) -> list[Notification]:
+        items = [
+            notification
+            for notification in self._uow._working_notifications
+            if notification.entity_id == entity_id and notification.user_id == user_id
+        ]
+        return sorted(items, key=lambda item: item.created_at, reverse=True)
+
+
 class InMemoryReservationUnitOfWork:
     def __init__(self) -> None:
         self._committed_spaces: list[Space] = []
@@ -130,16 +165,21 @@ class InMemoryReservationUnitOfWork:
         self._working_reservations: list[Reservation] = []
         self._committed_attendance: list[AttendanceRecord] = []
         self._working_attendance: list[AttendanceRecord] = []
+        self._committed_notifications: list[Notification] = []
+        self._working_notifications: list[Notification] = []
         self.spaces = InMemoryReservationSpaceRepository(self)
         self.reservations = InMemoryReservationRepository(self)
         self.attendance = InMemoryAttendanceRepository(self)
+        self.notifications = InMemoryNotificationRepository(self)
 
     def commit(self) -> None:
         self._committed_spaces = list(self._working_spaces)
         self._committed_reservations = list(self._working_reservations)
         self._committed_attendance = list(self._working_attendance)
+        self._committed_notifications = list(self._working_notifications)
 
     def rollback(self) -> None:
         self._working_spaces = list(self._committed_spaces)
         self._working_reservations = list(self._committed_reservations)
         self._working_attendance = list(self._committed_attendance)
+        self._working_notifications = list(self._committed_notifications)

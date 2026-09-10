@@ -21,6 +21,7 @@ Cal actualització sense F5, sense Redis, i sense tancar la porta a un canal pus
 - El calendari es pot desfasar fins a ~20 s (o menys en tornar a la pestanya). El solapament el valida sempre el backend.
 - Canviar a push és un adaptador nou + ADR d’infra (Postgres `NOTIFY` o equivalent), no un refactor del cas d’ús `ListReservations`.
 - Tests: el disparador s’injecta; el polling es prova amb rellotge fals, no amb Uvicorn.
+- **Properes sessions (no v1):** calendari en temps real via WebSocket/SSE (mateix port `DisparadorCalendari`) i notificació clara al dispositiu (Web Push / OS) quan el responsable canvia una reserva. SQLite no justifica sockets ara; l’avís in-app + correu (ADR 0005) i el polling cobreixen les proves.
 
 ## Alternatives rebutjades (v1)
 

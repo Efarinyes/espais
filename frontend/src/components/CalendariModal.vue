@@ -14,6 +14,10 @@ defineProps<{
   okDetall: string;
   avisAforament: string;
   enviantAssistencia: boolean;
+  potAnular: boolean;
+  enviantAnulacio: boolean;
+  potReprogramar: boolean;
+  reprogramacioAmbAvis: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -22,6 +26,9 @@ const emit = defineEmits<{
   confirmar: [];
   desar: [];
   "update:campAssistencia": [valor: string];
+  demanarAnulacio: [];
+  tornarDetall: [];
+  confirmarAnulacio: [];
 }>();
 
 function actualitzarAssistencia(event: Event) {
@@ -72,6 +79,9 @@ function actualitzarAssistencia(event: Event) {
     >
       <h2 id="detall-titol" class="font-semibold text-lg">Reserva</h2>
       <p class="py-2">{{ resumDetall }}</p>
+      <p v-if="potReprogramar" class="text-sm text-base-content/80">
+        Arrossega la reserva al calendari per canviar l’horari.
+      </p>
       <label class="label" for="assistencia">Assistència</label>
       <input
         id="assistencia"
@@ -87,7 +97,7 @@ function actualitzarAssistencia(event: Event) {
       <p v-if="errorDetall" class="mt-2 text-error">{{ errorDetall }}</p>
       <p v-else-if="okDetall" class="mt-2 text-success">{{ okDetall }}</p>
       <p v-if="avisAforament" class="mt-2 text-sm">{{ avisAforament }}</p>
-      <div class="modal-action">
+      <div class="modal-action flex-wrap gap-2">
         <button class="btn btn-ghost min-h-11" type="button" :disabled="enviantAssistencia" @click="emit('tancar')">
           Tanca
         </button>
@@ -97,6 +107,27 @@ function actualitzarAssistencia(event: Event) {
       </div>
     </form>
 
+    <div v-else-if="modal.tipus === 'confirmar-anulacio'" class="modal-box" role="document" aria-labelledby="anula-titol">
+      <h2 id="anula-titol" class="font-semibold text-lg">Anul·lar la reserva</h2>
+      <p class="py-2">{{ resumDetall }}</p>
+      <p v-if="modal.reserva.coordinator_name" class="text-base-content/80">{{ modal.reserva.coordinator_name }}</p>
+      <p class="mt-4">S’avisarà el coordinador per in-app i correu.</p>
+      <p v-if="errorDetall" class="mt-2 text-error">{{ errorDetall }}</p>
+      <div class="modal-action flex-wrap gap-2">
+        <button class="btn btn-ghost min-h-11" type="button" :disabled="enviantAnulacio" @click="emit('tornarDetall')">
+          Enrere
+        </button>
+        <button
+          class="btn btn-error min-h-11"
+          type="button"
+          :disabled="enviantAnulacio"
+          @click="emit('confirmarAnulacio')"
+        >
+          {{ enviantAnulacio ? "Anul·lant…" : "Anul·la i avisa" }}
+        </button>
+      </div>
+    </div>
+
     <div v-else-if="modal.tipus === 'detall'" class="modal-box" role="document" aria-labelledby="detall-titol">
       <h2 id="detall-titol" class="font-semibold text-lg">Reserva</h2>
       <p class="py-2">{{ resumDetall }}</p>
@@ -105,9 +136,17 @@ function actualitzarAssistencia(event: Event) {
         Assistència:
         {{ modal.reserva.attendance_count == null ? "encara no registrada" : modal.reserva.attendance_count }}
       </p>
+      <p v-if="potReprogramar" class="mt-2 text-sm text-base-content/80">
+        Arrossega la reserva al calendari per canviar l’horari.
+        <template v-if="reprogramacioAmbAvis"> S’avisarà el coordinador.</template>
+      </p>
       <p v-if="avisAforament" class="mt-2 text-sm">{{ avisAforament }}</p>
-      <div class="modal-action">
+      <p v-if="errorDetall" class="mt-2 text-error">{{ errorDetall }}</p>
+      <div class="modal-action flex-wrap gap-2">
         <button class="btn btn-ghost min-h-11" type="button" @click="emit('tancar')">Tanca</button>
+        <button v-if="potAnular" class="btn btn-error min-h-11" type="button" @click="emit('demanarAnulacio')">
+          Anul·la
+        </button>
       </div>
     </div>
   </dialog>

@@ -5,7 +5,7 @@ import "temporal-polyfill/global";
 import {
   DURADA_PER_DEFECTE_MINUTS,
   DURADES_RESERVA_MINUTS,
-  arrodoneixClicAFranja,
+  arrodoneixInici,
   calendarisPerEspais,
   franjaDesDeInici,
   horaMadrid,
@@ -14,6 +14,13 @@ import {
   valorRangAIso,
   type FranjaReserva,
 } from "../calendari";
+import {
+  clicDinsFinestra,
+  diaObert,
+  encaixaClicAFinestra,
+  weekdayDelModel,
+  type FinestraDto,
+} from "../disponibilitat";
 import { ApiError } from "../services/identitat";
 import { requireEspaisApi, type EspaiDto } from "../services/espais";
 import { requireReservesApi, type ReservaDto } from "../services/reserves";
@@ -21,7 +28,8 @@ import { useSessioStore } from "../stores/sessio";
 
 export type ModalCalendari =
   | { tipus: "crear"; franja: FranjaReserva }
-  | { tipus: "detall"; reserva: ReservaDto };
+  | { tipus: "detall"; reserva: ReservaDto }
+  | { tipus: "confirmar-anulacio"; reserva: ReservaDto };
 
 export function useCalendariReserves() {
   const espaisApi = requireEspaisApi();
@@ -42,19 +50,63 @@ export function useCalendariReserves() {
   const errorDetall = ref("");
   const okDetall = ref("");
   const enviantAssistencia = ref(false);
+  const enviantAnulacio = ref(false);
+  const enviantReprogramacio = ref(false);
+  const okReprogramacio = ref("");
   let clicSobreReserva = false;
+  let temporitzadorAvis: ReturnType<typeof setTimeout> | null = null;
+
+  function tancarAvisTemporitzat() {
+    if (temporitzadorAvis != null) {
+      clearTimeout(temporitzadorAvis);
+      temporitzadorAvis = null;
+    }
+  }
+
+  function mostrarError(text: string) {
+    okReprogramacio.value = "";
+    error.value = text;
+    tancarAvisTemporitzat();
+    temporitzadorAvis = setTimeout(() => {
+      error.value = "";
+      temporitzadorAvis = null;
+    }, 6000);
+  }
+
+  function mostrarOkReprogramacio(text: string) {
+    error.value = "";
+    okReprogramacio.value = text;
+    tancarAvisTemporitzat();
+    temporitzadorAvis = setTimeout(() => {
+      okReprogramacio.value = "";
+      temporitzadorAvis = null;
+    }, 6000);
+  }
 
   const esResponsable = computed(() => sessio.role === "responsible");
   const espaisActius = computed(() => espais.value.filter((espai) => espai.active));
-  const vistaGlobal = computed(() => esResponsable.value && !espaiId.value);
-  const potReservar = computed(() => Boolean(espaiId.value) && !vistaGlobal.value);
+  const potReservar = computed(() => !esResponsable.value && Boolean(espaiId.value));
   const espaiSeleccionat = computed(
     () => espaisActius.value.find((espai) => espai.id === espaiId.value) ?? null,
   );
   const calendaris = computed(() => calendarisPerEspais(espaisActius.value));
   const pendent = computed(() => (modal.value?.tipus === "crear" ? modal.value.franja : null));
-  const detall = computed(() => (modal.value?.tipus === "detall" ? modal.value.reserva : null));
-  const potRegistrarAssistencia = computed(() => Boolean(detall.value?.mine));
+  const detall = computed(() =>
+    modal.value?.tipus === "detall" || modal.value?.tipus === "confirmar-anulacio"
+      ? modal.value.reserva
+      : null,
+  );
+  const potRegistrarAssistencia = computed(() => modal.value?.tipus === "detall" && Boolean(detall.value?.mine));
+  const potAnular = computed(
+    () => esResponsable.value && modal.value?.tipus === "detall" && detall.value != null && !detall.value.mine,
+  );
+  const potReprogramar = computed(() => {
+    if (modal.value?.tipus !== "detall" || detall.value == null) {
+      return false;
+    }
+    return esResponsable.value || Boolean(detall.value.mine);
+  });
+  const reprogramacioAmbAvis = computed(() => esResponsable.value);
   const modalObert = computed(() => modal.value !== null);
 
   const resumPendent = computed(() => {
@@ -89,6 +141,10 @@ export function useCalendariReserves() {
   });
 
   function aplicarEspaiDeRuta() {
+    if (esResponsable.value) {
+      espaiId.value = "";
+      return;
+    }
     const demanat = String(route.query.espai ?? "");
     if (demanat && espaisActius.value.some((espai) => espai.id === demanat)) {
       espaiId.value = demanat;
@@ -117,9 +173,6 @@ export function useCalendariReserves() {
     if (!sessio.token) {
       return [];
     }
-    if (!vistaGlobal.value && !espaiId.value) {
-      return [];
-    }
     darrerRang.value = { des, fins };
     error.value = "";
     try {
@@ -127,7 +180,6 @@ export function useCalendariReserves() {
         sessio.token,
         valorRangAIso(des),
         valorRangAIso(fins),
-        vistaGlobal.value ? undefined : espaiId.value,
       );
       reservesCarregades.value = items;
       const obert = modal.value;
@@ -149,7 +201,10 @@ export function useCalendariReserves() {
 
   function eventsDeReserves(items: ReservaDto[]) {
     const rol = sessio.role === "coordinator" ? "coordinator" : "responsible";
-    return items.map((item) => ({
+    const visibles = esResponsable.value
+      ? items
+      : items.filter((item) => item.mine || (espaiId.value !== "" && item.space_id === espaiId.value));
+    return visibles.map((item) => ({
       id: item.id,
       title: titolReserva(item, rol),
       calendarId: item.space_id,
@@ -165,6 +220,35 @@ export function useCalendariReserves() {
     campAssistencia.value = "";
     errorDetall.value = "";
     okDetall.value = "";
+    enviantAnulacio.value = false;
+    enviantReprogramacio.value = false;
+  }
+
+  function finestresPerClic(spaceId?: string): FinestraDto[] | undefined {
+    const id = spaceId ?? espaiSeleccionat.value?.id;
+    return espaisActius.value.find((espai) => espai.id === id)?.windows;
+  }
+
+  function franjaDesDeClic(
+    dateTime: Temporal.ZonedDateTime,
+    windows: FinestraDto[] | undefined,
+    durada: number,
+  ): FranjaReserva | null {
+    if (!diaObert(windows, weekdayDelModel(dateTime))) {
+      mostrarError("Aquest dia no és accessible.");
+      return null;
+    }
+    const iniciArrodonit = arrodoneixInici(dateTime);
+    let inici = iniciArrodonit;
+    if (!clicDinsFinestra(windows, inici, durada)) {
+      const encaixat = encaixaClicAFinestra(windows, inici, durada);
+      if (!encaixat) {
+        mostrarError("Aquesta hora queda fora de l’horari de l’espai.");
+        return null;
+      }
+      inici = encaixat;
+    }
+    return franjaDesDeInici(inici, durada);
   }
 
   function clicarFranja(dateTime: Temporal.ZonedDateTime) {
@@ -177,7 +261,11 @@ export function useCalendariReserves() {
     }
     error.value = "";
     duradaMinuts.value = DURADA_PER_DEFECTE_MINUTS;
-    modal.value = { tipus: "crear", franja: arrodoneixClicAFranja(dateTime, duradaMinuts.value) };
+    const franja = franjaDesDeClic(dateTime, finestresPerClic(), duradaMinuts.value);
+    if (!franja) {
+      return;
+    }
+    modal.value = { tipus: "crear", franja };
   }
 
   function triarDurada(minuts: number) {
@@ -293,6 +381,124 @@ export function useCalendariReserves() {
     }
   }
 
+  function demanarAnulacio() {
+    if (modal.value?.tipus !== "detall" || !potAnular.value) {
+      return;
+    }
+    errorDetall.value = "";
+    modal.value = { tipus: "confirmar-anulacio", reserva: modal.value.reserva };
+  }
+
+  function tornarDetall() {
+    if (modal.value?.tipus !== "confirmar-anulacio") {
+      return;
+    }
+    errorDetall.value = "";
+    modal.value = { tipus: "detall", reserva: modal.value.reserva };
+  }
+
+  function duradaDeReserva(reserva: ReservaDto): number {
+    const minuts = Math.round(
+      (Date.parse(reserva.ends_at) - Date.parse(reserva.starts_at)) / 60_000,
+    );
+    return minuts > 0 ? minuts : DURADA_PER_DEFECTE_MINUTS;
+  }
+
+  function potMoureReserva(reserva: ReservaDto): boolean {
+    return esResponsable.value || reserva.mine;
+  }
+
+  function esReservaMovible(reservaId: string): boolean {
+    const reserva = reservesCarregades.value.find((item) => item.id === reservaId);
+    return reserva != null && potMoureReserva(reserva);
+  }
+
+  function reservaCarregada(reservaId: string) {
+    return reservesCarregades.value.find((item) => item.id === reservaId) ?? null;
+  }
+
+  async function moureReserva(reservaId: string, inici: unknown, fi: unknown): Promise<ReservaDto | null> {
+    if (!sessio.token) {
+      return null;
+    }
+    const reserva = reservesCarregades.value.find((item) => item.id === reservaId);
+    if (!reserva || !potMoureReserva(reserva)) {
+      mostrarError("No pots reprogramar aquesta reserva.");
+      return null;
+    }
+    const start = Temporal.Instant.from(valorRangAIso(inici)).toZonedDateTimeISO("Europe/Madrid");
+    const end = Temporal.Instant.from(valorRangAIso(fi)).toZonedDateTimeISO("Europe/Madrid");
+    const durada = Math.round(Number(end.epochMilliseconds - start.epochMilliseconds) / 60_000);
+    const windows = finestresPerClic(reserva.space_id);
+    if (!diaObert(windows, weekdayDelModel(start))) {
+      mostrarError("Aquest dia no és accessible.");
+      return null;
+    }
+    if (!clicDinsFinestra(windows, start, durada)) {
+      mostrarError("Aquesta hora queda fora de l’horari de l’espai.");
+      return null;
+    }
+    const startsAt = start.toInstant().toString();
+    const endsAt = end.toInstant().toString();
+    if (startsAt === reserva.starts_at && endsAt === reserva.ends_at) {
+      return reserva;
+    }
+    enviantReprogramacio.value = true;
+    error.value = "";
+    errorDetall.value = "";
+    okReprogramacio.value = "";
+    try {
+      const moguda = await reservesApi.reprogramar(sessio.token, reserva.id, {
+        starts_at: startsAt,
+        ends_at: endsAt,
+      });
+      reservesCarregades.value = reservesCarregades.value.map((item) =>
+        item.id === moguda.id ? moguda : item,
+      );
+      tancarModal();
+      if (esResponsable.value) {
+        mostrarOkReprogramacio("S’ha canviat l’horari. S’ha avisat el coordinador.");
+      }
+      return moguda;
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 409) {
+        mostrarError("Aquest interval ja està ocupat.");
+      } else if (err instanceof ApiError) {
+        mostrarError(err.message || "No pots reprogramar aquesta reserva.");
+      } else {
+        mostrarError("No s’ha pogut reprogramar la reserva.");
+      }
+      return null;
+    } finally {
+      enviantReprogramacio.value = false;
+    }
+  }
+
+  async function confirmarAnulacio(): Promise<ReservaDto | null> {
+    if (!sessio.token || modal.value?.tipus !== "confirmar-anulacio") {
+      return null;
+    }
+    enviantAnulacio.value = true;
+    errorDetall.value = "";
+    try {
+      const anulada = await reservesApi.anular(sessio.token, modal.value.reserva.id);
+      reservesCarregades.value = reservesCarregades.value.filter((reserva) => reserva.id !== anulada.id);
+      tancarModal();
+      return anulada;
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 403) {
+        errorDetall.value = "Només el responsable pot anul·lar una reserva amb avís al coordinador.";
+      } else if (err instanceof ApiError) {
+        errorDetall.value = err.message;
+      } else {
+        errorDetall.value = "No s’ha pogut anul·lar la reserva.";
+      }
+      return null;
+    } finally {
+      enviantAnulacio.value = false;
+    }
+  }
+
   watch(
     () => route.query.espai,
     () => {
@@ -304,7 +510,6 @@ export function useCalendariReserves() {
 
   return {
     esResponsable,
-    vistaGlobal,
     potReservar,
     espaisActius,
     espaiId,
@@ -334,6 +539,19 @@ export function useCalendariReserves() {
     okDetall,
     enviantAssistencia,
     potRegistrarAssistencia,
+    potAnular,
+    enviantAnulacio,
+    demanarAnulacio,
+    tornarDetall,
+    confirmarAnulacio,
+    potReprogramar,
+    reprogramacioAmbAvis,
+    enviantReprogramacio,
+    okReprogramacio,
+    esReservaMovible,
+    duradaDeReserva,
+    reservaCarregada,
+    moureReserva,
     resumDetall,
     avisAforament,
     obrirDetall,

@@ -20,4 +20,4 @@ def test_alembic_upgrade_creates_identity_tables(tmp_path: Path) -> None:
     finally:
         engine.dispose()
 
-    assert {"entities", "users", "memberships", "spaces", "space_availability_windows", "attendance_records", "alembic_version"} <= names
+    assert {"entities", "users", "memberships", "spaces", "space_availability_windows", "attendance_records", "notifications", "alembic_version"} <= names

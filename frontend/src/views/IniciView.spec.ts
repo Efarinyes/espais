@@ -128,7 +128,8 @@ describe("IniciView", () => {
     expect(wrapper.text()).toContain("Aquest espai no té equipament");
     expect(wrapper.text()).toContain("Disponibilitat: Tots els dies 08:00–22:00");
     expect(wrapper.text()).toContain("Editar");
-    expect(wrapper.get('a[href="/calendari?espai=s1"]').text()).toContain("Sala Pau Casals");
+    expect(wrapper.get('a[href="/calendari"]').text()).toContain("Sala Pau Casals");
+    expect(wrapper.find('a[href="/calendari?espai=s1"]').exists()).toBe(false);
     expect(wrapper.find("#buit-titol").exists()).toBe(false);
     expect(wrapper.find("#llista-titol").exists()).toBe(true);
     expect(wrapper.text()).not.toContain("Veure tots els espais");

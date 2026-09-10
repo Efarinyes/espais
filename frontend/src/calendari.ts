@@ -26,7 +26,7 @@ export function titolReserva(item: ReservaDto, role: RolSessio): string {
   if (role === "responsible") {
     return item.coordinator_name?.trim() || "Reserva";
   }
-  return "Tu";
+  return item.space_name?.trim() || "Tu";
 }
 
 export const DURADES_RESERVA_MINUTS = [30, 60, 90, 120, 180] as const;
@@ -85,6 +85,18 @@ export function calendarisPerEspais(espais: { id: string }[]): Record<string, Co
 export function horaMadrid(iso: string): string {
   return new Intl.DateTimeFormat("ca-ES", {
     timeZone: "Europe/Madrid",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).format(new Date(iso));
+}
+
+export function dataHoraMadrid(iso: string): string {
+  return new Intl.DateTimeFormat("ca-ES", {
+    timeZone: "Europe/Madrid",
+    weekday: "short",
+    day: "numeric",
+    month: "short",
     hour: "2-digit",
     minute: "2-digit",
     hour12: false,

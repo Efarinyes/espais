@@ -37,7 +37,7 @@ const pwa =
           workbox: {
             globPatterns: ["**/*.{js,css,html,svg,ico,webmanifest}"],
             navigateFallback: "index.html",
-            navigateFallbackDenylist: [/^\/salut/, /^\/registre/, /^\/sessio/, /^\/espais/, /^\/invitacions/, /^\/reserves/],
+            navigateFallbackDenylist: [/^\/salut/, /^\/registre/, /^\/sessio/, /^\/espais/, /^\/invitacions/, /^\/reserves/, /^\/avisos/],
           },
           devOptions: {
             enabled: true,
@@ -56,6 +56,7 @@ export default defineConfig({
       "/espais": api,
       "/invitacions": api,
       "/reserves": api,
+      "/avisos": api,
     },
   },
   test: {

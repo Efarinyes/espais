@@ -5,14 +5,17 @@ from __future__ import annotations
 from collections.abc import Iterator
 from dataclasses import dataclass
 from typing import Annotated
+from uuid import UUID
 
 from fastapi import Depends, HTTPException, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import sessionmaker
 
 from app.adapters.attendance import CountAttendance
+from app.adapters.notifier import LoggingNotifier, SmtpNotifier, build_notifier
 from app.adapters.security import BcryptPasswordHasher
 from app.adapters.sqlalchemy.identity import SqlAlchemyIdentityUnitOfWork
+from app.adapters.sqlalchemy.models import UserRow
 from app.adapters.sqlalchemy.reservations import SqlAlchemyReservationUnitOfWork
 from app.adapters.sqlalchemy.schema import bootstrap_session_factory
 from app.adapters.sqlalchemy.spaces import SqlAlchemySpaceUnitOfWork
@@ -20,17 +23,22 @@ from app.adapters.system import SecretsInvitationTokenGenerator, SystemClock, Uu
 from app.adapters.tokens import HmacTokenIssuer
 from app.domain.errors import SessionNotFoundError
 from app.ports.identity import TokenIssuer
+from app.ports.notifications import Notifier
 from app.usecases.accept_invitation import AcceptInvitation
 from app.usecases.authenticate_user import AuthenticateUser
+from app.usecases.cancel_reservation_by_responsible import CancelReservationByResponsible
 from app.usecases.create_reservation import CreateReservation
 from app.usecases.create_space import CreateSpace
 from app.usecases.get_invitation import GetInvitation
 from app.usecases.get_space import GetSpace
 from app.usecases.invite_coordinator import InviteCoordinator
+from app.usecases.list_notifications import ListNotifications
 from app.usecases.list_reservations import ListReservations
 from app.usecases.list_spaces import ListSpaces
+from app.usecases.mark_notification_read import MarkNotificationRead
 from app.usecases.record_attendance import RecordAttendance
 from app.usecases.register_entity import RegisterEntity
+from app.usecases.reschedule_reservation import RescheduleReservation
 from app.usecases.resolve_session import ResolveSession, SessionView
 from app.usecases.update_space import UpdateSpace
 
@@ -77,6 +85,14 @@ class ReservationsHttp:
     create: CreateReservation
     list: ListReservations
     record: RecordAttendance
+    cancel: CancelReservationByResponsible
+    reschedule: RescheduleReservation
+
+
+@dataclass
+class NotificationsHttp:
+    list: ListNotifications
+    mark_read: MarkNotificationRead
 
 
 def get_identity_http(request: Request) -> Iterator[IdentityHttp]:
@@ -132,6 +148,25 @@ def get_spaces_http(request: Request) -> Iterator[SpacesHttp]:
         uow.close()
 
 
+def get_notifier(request: Request) -> Notifier:
+    cached = getattr(request.app.state, "notifier", None)
+    if cached is not None:
+        return cached
+    factory = get_session_factory(request)
+
+    def lookup_email(user_id: UUID) -> str | None:
+        session = factory()
+        try:
+            row = session.get(UserRow, user_id)
+            return row.email if row is not None else None
+        finally:
+            session.close()
+
+    notifier: LoggingNotifier | SmtpNotifier = build_notifier(lookup_email)
+    request.app.state.notifier = notifier
+    return notifier
+
+
 def get_reservations_http(request: Request) -> Iterator[ReservationsHttp]:
     uow = SqlAlchemyReservationUnitOfWork(get_session_factory(request))
     try:
@@ -139,6 +174,23 @@ def get_reservations_http(request: Request) -> Iterator[ReservationsHttp]:
             create=CreateReservation(uow, SystemClock(), UuidIdGenerator()),
             list=ListReservations(uow),
             record=RecordAttendance(uow, CountAttendance(), SystemClock(), UuidIdGenerator()),
+            cancel=CancelReservationByResponsible(
+                uow, get_notifier(request), SystemClock(), UuidIdGenerator()
+            ),
+            reschedule=RescheduleReservation(
+                uow, get_notifier(request), SystemClock(), UuidIdGenerator()
+            ),
+        )
+    finally:
+        uow.close()
+
+
+def get_notifications_http(request: Request) -> Iterator[NotificationsHttp]:
+    uow = SqlAlchemyReservationUnitOfWork(get_session_factory(request))
+    try:
+        yield NotificationsHttp(
+            list=ListNotifications(uow),
+            mark_read=MarkNotificationRead(uow, SystemClock()),
         )
     finally:
         uow.close()

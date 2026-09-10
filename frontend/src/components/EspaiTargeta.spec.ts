@@ -16,7 +16,12 @@ const base: EspaiDto = {
   windows: finestresPerDefecte(),
 };
 
-function muntar(espai: EspaiDto, potEditar = false) {
+function muntar(
+  espai: EspaiDto,
+  potEditar = false,
+  accioCalendari?: string,
+  calendariGlobal = false,
+) {
   const router = createRouter({
     history: createMemoryHistory(),
     routes: [
@@ -25,7 +30,7 @@ function muntar(espai: EspaiDto, potEditar = false) {
     ],
   });
   return mount(EspaiTargeta, {
-    props: { espai, potEditar },
+    props: { espai, potEditar, accioCalendari, calendariGlobal },
     global: { plugins: [router] },
   });
 }
@@ -61,6 +66,14 @@ describe("EspaiTargeta", () => {
     const wrapper = muntar(base);
     expect(wrapper.get('a[href="/calendari?espai=s1"]').text()).toContain("Sala Pau Casals");
     expect(wrapper.text()).toContain("Reservar");
+  });
+
+  it("el responsable veu Calendari en lloc de Reservar", () => {
+    const wrapper = muntar(base, true, "Calendari", true);
+    expect(wrapper.text()).toContain("Calendari");
+    expect(wrapper.text()).not.toContain("Reservar");
+    expect(wrapper.get('a[href="/calendari"]').text()).toContain("Sala Pau Casals");
+    expect(wrapper.find('a[href="/calendari?espai=s1"]').exists()).toBe(false);
   });
 
   it("mostra l’enllaç d’edició per al responsable", () => {

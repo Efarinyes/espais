@@ -28,13 +28,18 @@ def _slot_iso(hour: int = 10) -> tuple[str, str]:
     return start.isoformat(), end.isoformat()
 
 
-def _space_and_reservation(client: TestClient, headers: dict[str, str], capacity: int = 40) -> dict[str, object]:
-    space = client.post("/espais", headers=headers, json={"name": "Sala 1", "capacity": capacity})
+def _space_and_reservation(
+    client: TestClient,
+    headers_resp: dict[str, str],
+    headers_coord: dict[str, str],
+    capacity: int = 40,
+) -> dict[str, object]:
+    space = client.post("/espais", headers=headers_resp, json={"name": "Sala 1", "capacity": capacity})
     assert space.status_code == 201
     start, end = _slot_iso()
     posted = client.post(
         "/reserves",
-        headers=headers,
+        headers=headers_coord,
         json={"space_id": space.json()["id"], "starts_at": start, "ends_at": end},
     )
     assert posted.status_code == 201
@@ -87,12 +92,14 @@ def test_other_coordinator_cannot_record_attendance(sqlite_session_factory) -> N
     client = TestClient(create_app(session_factory=sqlite_session_factory))
     created = _register(client, email="anna-assist-403@example.com")
     headers_resp = {"Authorization": f"Bearer {created['token']}"}
-    reservation = _space_and_reservation(client, headers_resp)
-    coord = _invite_coordinator(client, headers_resp, "carla-aliena@example.com")
-    headers_coord = {"Authorization": f"Bearer {coord['token']}"}
+    autor = _invite_coordinator(client, headers_resp, "carla-autora@example.com")
+    aliena = _invite_coordinator(client, headers_resp, "carla-aliena@example.com")
+    headers_autor = {"Authorization": f"Bearer {autor['token']}"}
+    headers_aliena = {"Authorization": f"Bearer {aliena['token']}"}
+    reservation = _space_and_reservation(client, headers_resp, headers_autor)
     response = client.put(
         f"/reserves/{reservation['id']}/assistencia",
-        headers=headers_coord,
+        headers=headers_aliena,
         json={"count": 3},
     )
     assert response.status_code == 403
@@ -101,11 +108,13 @@ def test_other_coordinator_cannot_record_attendance(sqlite_session_factory) -> N
 def test_count_above_capacity_returns_warning(sqlite_session_factory) -> None:
     client = TestClient(create_app(session_factory=sqlite_session_factory))
     created = _register(client, email="anna-assist-cap@example.com")
-    headers = {"Authorization": f"Bearer {created['token']}"}
-    reservation = _space_and_reservation(client, headers, capacity=10)
+    headers_resp = {"Authorization": f"Bearer {created['token']}"}
+    coord = _invite_coordinator(client, headers_resp, "carla-assist-cap@example.com")
+    headers_coord = {"Authorization": f"Bearer {coord['token']}"}
+    reservation = _space_and_reservation(client, headers_resp, headers_coord, capacity=10)
     response = client.put(
         f"/reserves/{reservation['id']}/assistencia",
-        headers=headers,
+        headers=headers_coord,
         json={"count": 11},
     )
     assert response.status_code == 200
@@ -124,7 +133,9 @@ def test_other_entity_does_not_find_reservation(sqlite_session_factory) -> None:
     b = _register(client, email="b-assist@example.com", entity_name="Entitat B", responsible_name="Berta")
     headers_a = {"Authorization": f"Bearer {a['token']}"}
     headers_b = {"Authorization": f"Bearer {b['token']}"}
-    reservation = _space_and_reservation(client, headers_a)
+    coord = _invite_coordinator(client, headers_a, "carla-a-assist@example.com")
+    headers_coord = {"Authorization": f"Bearer {coord['token']}"}
+    reservation = _space_and_reservation(client, headers_a, headers_coord)
     response = client.put(
         f"/reserves/{reservation['id']}/assistencia",
         headers=headers_b,

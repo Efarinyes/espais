@@ -37,6 +37,7 @@ Punt de mapa. Llegeix [`SESSION.md`](../SESSION.md) abans de qualsevol capítol.
 - [adr/0005-avis-anulacio-coordinador.md](adr/0005-avis-anulacio-coordinador.md)
 - [adr/0006-tailwind-daisy-pwa.md](adr/0006-tailwind-daisy-pwa.md)
 - [adr/0007-calendari-polling.md](adr/0007-calendari-polling.md)
+- [adr/0008-responsable-no-crea-reserves.md](adr/0008-responsable-no-crea-reserves.md)
 
 ## Skills i rules
 

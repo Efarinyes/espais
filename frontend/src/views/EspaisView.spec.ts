@@ -122,6 +122,8 @@ describe("EspaisView", () => {
     expect(wrapper.text()).toContain("Editar");
     expect(wrapper.find("#buit-espais").exists()).toBe(false);
     expect(wrapper.get("a[href='/espais/nou']").text()).toContain("Afegeix un espai");
+    expect(wrapper.get('a[href="/calendari"]').exists()).toBe(true);
+    expect(wrapper.find('a[href="/calendari?espai=s1"]').exists()).toBe(false);
   });
 
   it("no deixa el coordinador definir ni afegir espais", async () => {

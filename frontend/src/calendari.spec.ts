@@ -29,8 +29,8 @@ describe("calendari", () => {
     expect(titolReserva({ ...reserva, mine: false }, "responsible")).toBe("Carla");
   });
 
-  it("marca la reserva pròpia com a Tu", () => {
-    expect(titolReserva(reserva, "coordinator")).toBe("Tu");
+  it("mostra l’espai a la reserva pròpia del coordinador", () => {
+    expect(titolReserva(reserva, "coordinator")).toBe("Sala 1");
   });
 
   it("accepta un compte escrit o numèric", () => {

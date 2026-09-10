@@ -28,6 +28,12 @@ export type ReservesApi = {
   llistar(token: string, des: string, fins: string, espaiId?: string): Promise<ReservaDto[]>;
   crear(token: string, input: CreaReservaInput): Promise<ReservaDto>;
   registrarAssistencia(token: string, reservaId: string, count: number): Promise<ReservaDto>;
+  anular(token: string, reservaId: string, reason?: string): Promise<ReservaDto>;
+  reprogramar(
+    token: string,
+    reservaId: string,
+    input: { starts_at: string; ends_at: string; reason?: string },
+  ): Promise<ReservaDto>;
 };
 
 export const reservesApiKey: InjectionKey<ReservesApi> = Symbol("reservesApi");
@@ -96,6 +102,34 @@ export function createReservesApi(baseUrl = ""): ReservesApi {
         method: "PUT",
         headers: headers(token, true),
         body: JSON.stringify({ count }),
+      });
+      if (!res.ok) {
+        throw new ApiError(await detallError(res), res.status);
+      }
+      return (await res.json()) as ReservaDto;
+    },
+
+    async anular(token, reservaId, reason) {
+      const res = await fetch(`${baseUrl}/reserves/${reservaId}/anulacio`, {
+        method: "POST",
+        headers: headers(token, true),
+        body: JSON.stringify({ reason: reason ?? null }),
+      });
+      if (!res.ok) {
+        throw new ApiError(await detallError(res), res.status);
+      }
+      return (await res.json()) as ReservaDto;
+    },
+
+    async reprogramar(token, reservaId, input) {
+      const res = await fetch(`${baseUrl}/reserves/${reservaId}/reprogramacio`, {
+        method: "POST",
+        headers: headers(token, true),
+        body: JSON.stringify({
+          starts_at: input.starts_at,
+          ends_at: input.ends_at,
+          reason: input.reason ?? null,
+        }),
       });
       if (!res.ok) {
         throw new ApiError(await detallError(res), res.status);

@@ -11,6 +11,7 @@ from sqlalchemy.orm import sessionmaker
 from app.adapters.sqlalchemy.schema import bootstrap_session_factory
 from app.adapters.system import SystemClock
 from app.adapters.tokens import HmacTokenIssuer
+from app.api.avisos import router as avisos_router
 from app.api.health import router as health_router
 from app.api.invitations import router as invitations_router
 from app.api.register import router as register_router
@@ -54,6 +55,7 @@ def create_app(
     application.include_router(invitations_router)
     application.include_router(spaces_router)
     application.include_router(reserves_router)
+    application.include_router(avisos_router)
     return application
 
 

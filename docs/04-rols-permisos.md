@@ -13,7 +13,7 @@ Pot:
 - Reprogramar i anul·lar qualsevol reserva.
 - Veure l’anàlisi d’ús.
 
-No cal que creï reserves, però no està prohibit (pot actuar com a coordinador si també té el rol, o se li permet crear-ne: v1 **permet** al responsable crear reserva, per no bloquejar entitats petites).
+No crea reserves. Reprograma i anul·la (suspensió) les que fan els coordinadors, amb avís in-app i correu (ADR [0008](adr/0008-responsable-no-crea-reserves.md)).
 
 ## Coordinador
 
@@ -40,7 +40,7 @@ No pot:
 | Editar entitat | sí | no |
 | CRUD espais | sí | no |
 | Convidar coordinador | sí | no |
-| Crear reserva | sí | sí |
+| Crear reserva | no | sí |
 | Veure totes les reserves | sí | no |
 | Veure les seves reserves | sí | sí |
 | Registrar assistència (pròpia reserva) | sí si n’és l’autor | sí |

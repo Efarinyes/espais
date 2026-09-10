@@ -4,28 +4,25 @@ Actualitza aquest arxiu al final de cada sessió. És el punt d’arrencada del 
 
 ## Fase
 
-- **Fase actual:** 5 — Assistència (al disc: `RecordAttendance`; no tancada: manca `architecture-solid` sobre assistència + modal)
-- **Següent fase:** 6 — Govern del responsable (`RescheduleReservation`, `CancelReservationByResponsible`), després de tancar 5 amb la revisió SOLID
+- **Fase actual:** 7 — Anàlisi (ocupació, reserves per espai, anul·lades, assistència mitjana)
+- **Fase anterior:** 6 — Govern del responsable (feta: `RescheduleReservation`, `CancelReservationByResponsible`, avís in-app + correu)
 
 ## Darrera feina
 
-A `fase/3-espais` (el producte ja ha passat d’espais a assistència; la branca no s’ha reanomenat):
+A `fase/3-espais` (el producte ja ha passat d’espais a govern del responsable; la branca no s’ha reanomenat):
 
-- Revisió `architecture-solid` de fases 3+4: neta. Marcades fetes a `docs/PLA-TREBALL.md`.
-- Assistència: `AttendanceRecord` + port `AttendanceStrategy` / `CountAttendance` (ADR 0003). Alembic `0005`. `PUT /reserves/{id}/assistencia`. `GET /reserves` amb `attendance_count`, aforament i avisos suaus (`exceeds_capacity`, `below_min_attendance`). No bloqueja si el compte supera l’aforament.
-- Permisos: només l’autor registra; el responsable veu el compte de totes; el coordinador no obre el detall d’una reserva aliena (al calendari només «Ocupat»).
-- Calendari: un sol estat de modal declaratiu (`crear` | `detall`) a `CalendariModal.vue`. Formulari de desar; el modal es tanca en desar amb èxit.
-- Correcció: Safari/Brave tractaven el camp com a número i el desament queia en silenci; `parseCompteAssistencia` ho normalitza.
+- Fase 5 i 6 al disc i marcades fetes al pla. Revisió `architecture-solid` de calendari, rols i avisos: neta a capes de negoci.
+- El responsable no crea reserves (ADR 0008). Reprograma i anul·la; el coordinador reserva des de la targeta de l’espai (`?espai=`).
+- Calendari: setmana de totes les reserves (responsable: totes; coordinador: les seves, i ocupat de l’espai si ve de la targeta). Graella des de l’obertura real dels espais, arrodonida a `HH:00` per Schedule-X (Sala Tècnica 17:30 pinta des de 17:00).
+- Reprogramar pel responsable avisa el coordinador (in-app + `Notifier`); verd al responsable: «S’ha avisat el coordinador.» Badge d’avisos via el disparador de polling (ADR 0007).
+- Neteja SRP: tret `vistaGlobal` (computed mort) i branques de dies tancats / «Tria un espai».
+- Deute conscient (al pla, sense ADR): no partir `useCalendariReserves` ni extraure el drag de `CalendariView` ara; split = Fase 8 si cal.
 
-pytest 106 verds; Vitest 68 verds.
-
-Fase 5 **no** es tanca al pla: falta `architecture-solid` del cas d’ús nou + modal.
+Vitest 94 verds; `vue-tsc --noEmit` verd; pytest 134 verds.
 
 ## Següent tasca
 
-Revisió `architecture-solid` (capes, SRP, deute) sobre `RecordAttendance`, repositori d’assistència i modal de calendari. Si surt neta: marcar Fase 5 feta a `docs/PLA-TREBALL.md` i començar Fase 6 (reprogramar / anul·lar pel responsable + avís al coordinador). Si hi ha deute: ADR o tasca al pla, no tancar.
-
-Skills: `architecture-solid`, `testing-quality`; després `reservations-attendance`, `notifications-cancel`, `ui-ux-mobile`.
+Arrencar Fase 7: primer test del cas d’ús d’agregació (ocupació / reserves per espai de l’entitat, sempre amb `entity_id`). Skills: `session-start`, `domain-model`, `testing-quality`, `backend-fastapi`.
 
 Remot GitHub: encara sota demanda. Sense `origin`.
 
@@ -42,6 +39,7 @@ Cap. API `http://127.0.0.1:8000`; front `http://127.0.0.1:5173`.
 - [0005](docs/adr/0005-avis-anulacio-coordinador.md) — acceptat
 - [0006](docs/adr/0006-tailwind-daisy-pwa.md) — acceptat
 - [0007](docs/adr/0007-calendari-polling.md) — acceptat (polling v1; sockets = adaptador futur)
+- [0008](docs/adr/0008-responsable-no-crea-reserves.md) — acceptat (el responsable reprograma i anul·la; no crea)
 
 Cap ADR nou pendent. Sockets/SSE de calendari: no ara; el port ja existeix.
 
@@ -51,5 +49,6 @@ Cap ADR nou pendent. Sockets/SSE de calendari: no ara; el port ja existeix.
 - Ús intern i gratuït. Sense cobrament al model.
 - Micromamba: `micromamba run -n espais pytest`; no `env create` si `espais` existeix.
 - Front: `cd frontend && npm test` / `npm run dev`. Vue no global. Tema Daisy `espais`; toc ≥ 44px (`min-h-11`).
-- PWA: instal·lable; no desregistrar el SW en DEV. `navigateFallbackDenylist` per `/salut`, `/registre`, `/sessio`, `/espais`, `/invitacions`, `/reserves`.
-- Deute conscient: tancar Fase 5 amb SOLID; anul·lació/reprogramació (Fase 6) encara no. Obertura/tancament del modal de calendari una mica bruscs: retoc CSS a Fase 8 (UI), no blocker. Ocupació «disponible / parcial» al calendari = millora, no blocker.
+- PWA: instal·lable; no desregistrar el SW en DEV. `navigateFallbackDenylist` inclou `/avisos`.
+- Deute conscient: split de `useCalendariReserves` / drag = Fase 8 si el composable creix. Obertura/tancament del modal una mica bruscs: retoc CSS a Fase 8, no blocker. Ocupació «disponible / parcial» al calendari = millora, no blocker.
+- El coordinador reprograma la seva reserva sense avís; l’avís només el dispara el responsable.

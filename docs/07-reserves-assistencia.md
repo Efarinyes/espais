@@ -10,7 +10,7 @@ Pot correspondre a una activitat interna (entrenament, junta) o oberta a la ciut
 
 ### Creació (`CreateReservation`)
 
-1. Actor amb membership a l’entitat de l’espai.
+1. Actor **coordinador** amb membership a l’entitat de l’espai. El responsable no crea reserves (ADR [0008](adr/0008-responsable-no-crea-reserves.md)).
 2. Interval dins la disponibilitat de l’espai.
 3. Sense solapament amb una altra reserva `confirmed` del mateix espai.
 4. Aforament de l’espai no es valida contra assistència (encara no hi ha compte).

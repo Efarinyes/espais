@@ -1,3 +1,5 @@
+import "temporal-polyfill/global";
+
 export type FinestraDto = {
   weekday: number;
   start: string;
@@ -90,4 +92,146 @@ export function resumFinestres(windows: FinestraDto[] | null | undefined): strin
     return `${etiq.join(", ")} ${[...franges][0]}`;
   }
   return `${windows.length} finestres`;
+}
+
+export const PIXELS_PER_HORA = 140;
+const PROXIMITAT_FINESTRA_MINUTS = 30;
+const GRAELLA_DEFECTE = { start: OBERTURA, end: TANCAMENT };
+
+export function weekdayDelModel(data: { dayOfWeek: number }): number {
+  return data.dayOfWeek - 1;
+}
+
+export function envolupantHorari(windows: FinestraDto[] | null | undefined): { start: string; end: string } {
+  const llista = windows ?? [];
+  if (llista.length === 0) {
+    return { ...GRAELLA_DEFECTE };
+  }
+  let start = "24:00";
+  let end = "00:00";
+  for (const finestra of llista) {
+    const inici = horaCurta(finestra.start);
+    const fi = horaCurta(finestra.end);
+    if (inici < start) {
+      start = inici;
+    }
+    if (fi > end) {
+      end = fi;
+    }
+  }
+  return { start, end };
+}
+
+export function diaObert(windows: FinestraDto[] | null | undefined, weekday: number): boolean {
+  return (windows ?? []).some((finestra) => Number(finestra.weekday) === weekday);
+}
+
+export function diesOberts(windows: FinestraDto[] | null | undefined): { weekday: number; etiqueta: string }[] {
+  return DIES_SETMANA.filter((dia) => diaObert(windows, dia.weekday));
+}
+
+export function attrDiesTancats(windows: FinestraDto[] | null | undefined): string {
+  return DIES_SETMANA.filter((dia) => !diaObert(windows, dia.weekday))
+    .map((dia) => String(dia.weekday))
+    .join(" ");
+}
+
+export function minutsDeHora(hora: string): number {
+  const [h, m] = horaCurta(hora).split(":").map(Number);
+  return h * 60 + m;
+}
+
+export function alcadaGraella(start: string, end: string): number {
+  const hores = (minutsDeHora(end) - minutsDeHora(start)) / 60;
+  return Math.max(hores, 1) * PIXELS_PER_HORA;
+}
+
+export function horaSenceraAvall(hora: string): string {
+  const hores = Math.floor(minutsDeHora(hora) / 60);
+  return `${String(Math.max(0, hores)).padStart(2, "0")}:00`;
+}
+
+export function horaSenceraAmunt(hora: string): string {
+  const minuts = minutsDeHora(hora);
+  const hores = minuts % 60 === 0 ? minuts / 60 : Math.ceil(minuts / 60);
+  if (hores >= 24) {
+    return "24:00";
+  }
+  return `${String(hores).padStart(2, "0")}:00`;
+}
+
+export function finestresDelsEspais(
+  espais: { windows?: FinestraDto[] | null }[] | null | undefined,
+): FinestraDto[] {
+  return (espais ?? []).flatMap((espai) => espai.windows ?? []);
+}
+
+export function configGraella(
+  windows: FinestraDto[] | null | undefined,
+): { start: string; end: string; gridHeight: number } {
+  const envolupant = envolupantHorari(windows);
+  const start = horaSenceraAvall(envolupant.start);
+  const end = horaSenceraAmunt(envolupant.end);
+  return { start, end, gridHeight: alcadaGraella(start, end) };
+}
+
+export function finestraDelDia(
+  windows: FinestraDto[] | null | undefined,
+  weekday: number,
+): FinestraDto | null {
+  return (windows ?? []).find((finestra) => Number(finestra.weekday) === weekday) ?? null;
+}
+
+export function clicDinsFinestra(
+  windows: FinestraDto[] | null | undefined,
+  dateTime: Temporal.ZonedDateTime,
+  duradaMinuts: number,
+): boolean {
+  const finestra = finestraDelDia(windows, weekdayDelModel(dateTime));
+  if (!finestra) {
+    return false;
+  }
+  const inici = dateTime.hour * 60 + dateTime.minute;
+  return inici >= minutsDeHora(finestra.start) && inici + duradaMinuts <= minutsDeHora(finestra.end);
+}
+
+export function encaixaClicAFinestra(
+  windows: FinestraDto[] | null | undefined,
+  dateTime: Temporal.ZonedDateTime,
+  duradaMinuts: number,
+): Temporal.ZonedDateTime | null {
+  const finestra = finestraDelDia(windows, weekdayDelModel(dateTime));
+  if (!finestra) {
+    return null;
+  }
+  const winStart = minutsDeHora(finestra.start);
+  const winEnd = minutsDeHora(finestra.end);
+  const clic = dateTime.hour * 60 + dateTime.minute;
+  if (clic >= winStart && clic + duradaMinuts <= winEnd) {
+    return dateTime.with({ second: 0, millisecond: 0, microsecond: 0, nanosecond: 0 });
+  }
+  if (clic < winStart && winStart - clic <= PROXIMITAT_FINESTRA_MINUTS && winStart + duradaMinuts <= winEnd) {
+    const [hour, minute] = horaCurta(finestra.start).split(":").map(Number);
+    return dateTime.with({ hour, minute, second: 0, millisecond: 0, microsecond: 0, nanosecond: 0 });
+  }
+  return null;
+}
+
+export function proximaDataDelWeekday(desDe: Temporal.PlainDate, weekday: number): Temporal.PlainDate {
+  const actual = weekdayDelModel(desDe);
+  const delta = (weekday - actual + 7) % 7;
+  return desDe.add({ days: delta });
+}
+
+export function properDiaObert(
+  windows: FinestraDto[] | null | undefined,
+  desDe: Temporal.PlainDate,
+): Temporal.PlainDate {
+  for (let delta = 0; delta < 7; delta += 1) {
+    const data = desDe.add({ days: delta });
+    if (diaObert(windows, weekdayDelModel(data))) {
+      return data;
+    }
+  }
+  return desDe;
 }

@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from "vue-router";
 
 import { useSessioStore } from "../stores/sessio";
 import AcceptaInvitacioView from "../views/AcceptaInvitacioView.vue";
+import AvisosView from "../views/AvisosView.vue";
 import CalendariView from "../views/CalendariView.vue";
 import ConvidaCoordinadorView from "../views/ConvidaCoordinadorView.vue";
 import EspaiEditarView from "../views/EspaiEditarView.vue";
@@ -27,6 +28,12 @@ export const router = createRouter({
       path: "/calendari",
       name: "calendari",
       component: CalendariView,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: "/avisos",
+      name: "avisos",
+      component: AvisosView,
       meta: { requiresAuth: true },
     },
     {

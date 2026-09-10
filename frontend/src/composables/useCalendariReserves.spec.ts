@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import "temporal-polyfill/global";
 import { createPinia, setActivePinia } from "pinia";
 import { defineComponent } from "vue";
@@ -7,7 +7,7 @@ import { flushPromises, mount } from "@vue/test-utils";
 
 import { useCalendariReserves } from "./useCalendariReserves";
 import { ApiError } from "../services/identitat";
-import { espaisApiKey, type EspaisApi } from "../services/espais";
+import { espaisApiKey, type EspaiDto, type EspaisApi } from "../services/espais";
 import { finestresPerDefecte } from "../disponibilitat";
 import { reservesApiKey, type ReservesApi } from "../services/reserves";
 import { useSessioStore } from "../stores/sessio";
@@ -62,10 +62,16 @@ function reserva(overrides: Partial<ReservaDto> = {}): ReservaDto {
 
 const reservaCarla = reserva();
 
+const espaiLaborables = {
+  ...espai,
+  windows: [0, 1, 2, 3, 4].map((weekday) => ({ weekday, start: "18:00", end: "22:00" })),
+};
+
 async function muntar(
   reserves: Partial<ReservesApi> = {},
   query: Record<string, string> = { espai: "s1" },
   sessio: SessioDto = sessioCoord,
+  espaisDto: EspaiDto | EspaiDto[] = espai,
 ) {
   localStorage.clear();
   const pinia = createPinia();
@@ -81,11 +87,13 @@ async function muntar(
     setup: () => useCalendariReserves(),
     template: "<div />",
   });
+  const llista = Array.isArray(espaisDto) ? espaisDto : [espaisDto];
+  const primer = llista[0];
   const espaisApi: EspaisApi = {
-    llistar: async () => [espai],
-    obtenir: async () => espai,
-    crear: async () => espai,
-    actualitzar: async () => espai,
+    llistar: async () => llista,
+    obtenir: async (_token, id) => llista.find((item) => item.id === id) ?? primer,
+    crear: async () => primer,
+    actualitzar: async () => primer,
   };
   return mount(Host, {
     global: {
@@ -96,6 +104,9 @@ async function muntar(
           llistar: async () => [],
           crear: async () => reserva({ mine: true }),
           registrarAssistencia: async () => reserva({ mine: true, attendance_count: 0 }),
+          anular: async () => reserva({ status: "cancelled" }),
+          reprogramar: async (_token, id, input) =>
+            reserva({ id, starts_at: input.starts_at, ends_at: input.ends_at }),
           ...reserves,
         } satisfies ReservesApi,
       },
@@ -104,6 +115,10 @@ async function muntar(
 }
 
 describe("useCalendariReserves", () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it("crea una reserva d’1 hora després de confirmar", async () => {
     let creat: { space_id: string; starts_at: string; ends_at: string } | null = null;
     const wrapper = await muntar({
@@ -168,13 +183,66 @@ describe("useCalendariReserves", () => {
     expect(wrapper.vm.pendent).not.toBeNull();
   });
 
-  it("el coordinador sense espai a la ruta no reserva", async () => {
-    const wrapper = await muntar({}, {});
+  it("el coordinador sense espai a la ruta veu la setmana de tots els espais", async () => {
+    let espaiFiltrat: string | undefined = "sentinel";
+    const wrapper = await muntar(
+      {
+        llistar: async (_token, _des, _fins, espaiId) => {
+          espaiFiltrat = espaiId;
+          return [
+            reserva({ mine: true, id: "r1", space_id: "s1", space_name: "Sala 1" }),
+            reserva({ mine: true, id: "r2", space_id: "s2", space_name: "Sala 2" }),
+            reserva({ mine: false, id: "r3", space_id: "s2", space_name: "Sala 2" }),
+          ];
+        },
+      },
+      {},
+      sessioCoord,
+      [espai, { ...espai, id: "s2", name: "Sala 2" }],
+    );
     await wrapper.vm.carregarEspais();
     expect(wrapper.vm.espaiId).toBe("");
     expect(wrapper.vm.potReservar).toBe(false);
-    wrapper.vm.clicarFranja(Temporal.ZonedDateTime.from("2026-09-08T10:00:00+02:00[Europe/Madrid]"));
-    expect(wrapper.vm.pendent).toBeNull();
+    const items = await wrapper.vm.carregarReserves("2026-09-07T22:00:00Z", "2026-09-14T22:00:00Z");
+    expect(espaiFiltrat).toBeUndefined();
+    expect(items).toHaveLength(3);
+    const events = wrapper.vm.eventsDeReserves(items);
+    expect(events.map((event) => event.calendarId)).toEqual(["s1", "s2"]);
+    expect(events.map((event) => event.title)).toEqual(["Sala 1", "Sala 2"]);
+  });
+
+  it("canviar l’espai de la ruta permet reservar-hi sense amagar la setmana", async () => {
+    let espaiFiltrat: string | undefined = "sentinel";
+    const wrapper = await muntar(
+      {
+        llistar: async (_token, _des, _fins, espaiId) => {
+          espaiFiltrat = espaiId;
+          return [
+            reserva({ mine: true, id: "r1", space_id: "s1", space_name: "Sala 1" }),
+            reserva({ mine: true, id: "r2", space_id: "s2", space_name: "Sala 2" }),
+            reserva({ mine: false, id: "r3", space_id: "s3", space_name: "Sala 3" }),
+          ];
+        },
+      },
+      {},
+      sessioCoord,
+      [
+        espai,
+        { ...espai, id: "s2", name: "Sala 2" },
+        { ...espai, id: "s3", name: "Sala 3" },
+      ],
+    );
+    await wrapper.vm.carregarEspais();
+    expect(wrapper.vm.espaiId).toBe("");
+    await wrapper.vm.$router.push({ name: "calendari", query: { espai: "s3" } });
+    await flushPromises();
+    expect(wrapper.vm.espaiId).toBe("s3");
+    expect(wrapper.vm.espaiSeleccionat?.name).toBe("Sala 3");
+    expect(wrapper.vm.potReservar).toBe(true);
+    const items = await wrapper.vm.carregarReserves("2026-09-07T22:00:00Z", "2026-09-14T22:00:00Z");
+    expect(espaiFiltrat).toBeUndefined();
+    const events = wrapper.vm.eventsDeReserves(items);
+    expect(events.map((event) => event.id)).toEqual(["r1", "r2", "r3"]);
   });
 
   it("el responsable sense espai a la ruta llista totes les reserves", async () => {
@@ -190,7 +258,6 @@ describe("useCalendariReserves", () => {
       sessioResp,
     );
     await wrapper.vm.carregarEspais();
-    expect(wrapper.vm.vistaGlobal).toBe(true);
     expect(wrapper.vm.potReservar).toBe(false);
     const items = await wrapper.vm.carregarReserves("2026-09-07T22:00:00Z", "2026-09-14T22:00:00Z");
     expect(espaiFiltrat).toBeUndefined();
@@ -198,6 +265,33 @@ describe("useCalendariReserves", () => {
     expect(event.title).toBe("Carla");
     expect(event.calendarId).toBe("s1");
     expect(event.people).toEqual(["Carla"]);
+  });
+
+  it("el responsable ignora ?espai= i llista totes les reserves", async () => {
+    let espaiFiltrat: string | undefined = "sentinel";
+    const wrapper = await muntar(
+      {
+        llistar: async (_token, _des, _fins, espaiId) => {
+          espaiFiltrat = espaiId;
+          return [
+            reservaCarla,
+            reserva({ id: "r2", space_id: "s2", space_name: "Sala 2", coordinator_name: "Núria" }),
+          ];
+        },
+      },
+      { espai: "s1" },
+      sessioResp,
+      [espai, { ...espai, id: "s2", name: "Sala 2" }],
+    );
+    await wrapper.vm.carregarEspais();
+    expect(wrapper.vm.espaiId).toBe("");
+    expect(wrapper.vm.potReservar).toBe(false);
+    const items = await wrapper.vm.carregarReserves("2026-09-07T22:00:00Z", "2026-09-14T22:00:00Z");
+    expect(espaiFiltrat).toBeUndefined();
+    expect(items).toHaveLength(2);
+    wrapper.vm.clicarFranja(Temporal.ZonedDateTime.from("2026-09-08T10:00:00+02:00[Europe/Madrid]"));
+    expect(wrapper.vm.pendent).toBeNull();
+    expect(wrapper.vm.modal).toBeNull();
   });
 
   it("refresca el mateix rang ja carregat", async () => {
@@ -333,5 +427,165 @@ describe("useCalendariReserves", () => {
     wrapper.vm.campAssistencia = "3";
     await wrapper.vm.desarAssistencia();
     expect(wrapper.vm.errorDetall).toContain("qui ha fet la reserva");
+  });
+
+  it("el responsable confirma l’anul·lació i treu la reserva de la llista", async () => {
+    let cridat: string | null = null;
+    const wrapper = await muntar(
+      {
+        llistar: async () => [reservaCarla],
+        anular: async (_token, id) => {
+          cridat = id;
+          return reserva({ id, status: "cancelled" });
+        },
+      },
+      {},
+      sessioResp,
+    );
+    await wrapper.vm.carregarEspais();
+    await wrapper.vm.carregarReserves("2026-09-07T22:00:00Z", "2026-09-14T22:00:00Z");
+    wrapper.vm.obrirDetall("r1");
+    expect(wrapper.vm.potAnular).toBe(true);
+    wrapper.vm.demanarAnulacio();
+    expect(wrapper.vm.modal?.tipus).toBe("confirmar-anulacio");
+    const anulada = await wrapper.vm.confirmarAnulacio();
+    expect(anulada?.status).toBe("cancelled");
+    expect(cridat).toBe("r1");
+    expect(wrapper.vm.modal).toBeNull();
+  });
+
+  it("el coordinador no pot anul·lar des del detall", async () => {
+    const wrapper = await muntar({
+      llistar: async () => [reserva({ mine: true })],
+    });
+    await wrapper.vm.carregarEspais();
+    await wrapper.vm.carregarReserves("2026-09-07T22:00:00Z", "2026-09-14T22:00:00Z");
+    wrapper.vm.obrirDetall("r1");
+    expect(wrapper.vm.potAnular).toBe(false);
+    wrapper.vm.demanarAnulacio();
+    expect(wrapper.vm.modal?.tipus).toBe("detall");
+  });
+
+  it("el responsable reprograma l’horari sense modal", async () => {
+    let enviat: { id: string; starts_at: string; ends_at: string } | null = null;
+    const wrapper = await muntar(
+      {
+        llistar: async () => [reservaCarla],
+        reprogramar: async (_token, id, input) => {
+          enviat = { id, starts_at: input.starts_at, ends_at: input.ends_at };
+          return reserva({ id, starts_at: input.starts_at, ends_at: input.ends_at, mine: false });
+        },
+      },
+      { espai: "s1" },
+      sessioResp,
+    );
+    await wrapper.vm.carregarEspais();
+    await wrapper.vm.carregarReserves("2026-09-07T22:00:00Z", "2026-09-14T22:00:00Z");
+    expect(wrapper.vm.esReservaMovible("r1")).toBe(true);
+    const moguda = await wrapper.vm.moureReserva(
+      "r1",
+      Temporal.ZonedDateTime.from("2026-09-08T12:00:00+02:00[Europe/Madrid]"),
+      Temporal.ZonedDateTime.from("2026-09-08T12:30:00+02:00[Europe/Madrid]"),
+    );
+    expect(moguda?.starts_at).toBe("2026-09-08T10:00:00Z");
+    expect(enviat).toEqual({
+      id: "r1",
+      starts_at: "2026-09-08T10:00:00Z",
+      ends_at: "2026-09-08T10:30:00Z",
+    });
+    expect(wrapper.vm.modal).toBeNull();
+    expect(wrapper.vm.okReprogramacio).toContain("avisat el coordinador");
+  });
+
+  it("el coordinador reprograma la seva reserva sense modal", async () => {
+    let enviat: { id: string; starts_at: string } | null = null;
+    const wrapper = await muntar({
+      llistar: async () => [reserva({ mine: true })],
+      reprogramar: async (_token, id, input) => {
+        enviat = { id, starts_at: input.starts_at };
+        return reserva({ mine: true, id, starts_at: input.starts_at, ends_at: input.ends_at });
+      },
+    });
+    await wrapper.vm.carregarEspais();
+    await wrapper.vm.carregarReserves("2026-09-07T22:00:00Z", "2026-09-14T22:00:00Z");
+    const moguda = await wrapper.vm.moureReserva(
+      "r1",
+      Temporal.ZonedDateTime.from("2026-09-09T10:00:00+02:00[Europe/Madrid]"),
+      Temporal.ZonedDateTime.from("2026-09-09T10:30:00+02:00[Europe/Madrid]"),
+    );
+    expect(moguda?.starts_at).toBe("2026-09-09T08:00:00Z");
+    expect(enviat?.id).toBe("r1");
+    expect(wrapper.vm.modal).toBeNull();
+    expect(wrapper.vm.okReprogramacio).toBe("");
+  });
+
+  it("el coordinador no reprograma una reserva d’altri", async () => {
+    let cridat = false;
+    const wrapper = await muntar({
+      llistar: async () => [reserva({ mine: false })],
+      reprogramar: async () => {
+        cridat = true;
+        return reserva();
+      },
+    });
+    await wrapper.vm.carregarEspais();
+    await wrapper.vm.carregarReserves("2026-09-07T22:00:00Z", "2026-09-14T22:00:00Z");
+    expect(wrapper.vm.esReservaMovible("r1")).toBe(false);
+    expect(wrapper.vm.obrirDetall("r1")).toBeUndefined();
+    expect(wrapper.vm.modal).toBeNull();
+    const moguda = await wrapper.vm.moureReserva(
+      "r1",
+      Temporal.ZonedDateTime.from("2026-09-08T12:00:00+02:00[Europe/Madrid]"),
+      Temporal.ZonedDateTime.from("2026-09-08T12:30:00+02:00[Europe/Madrid]"),
+    );
+    expect(moguda).toBeNull();
+    expect(cridat).toBe(false);
+    expect(wrapper.vm.modal).toBeNull();
+  });
+
+  it("no obre el modal de crear en un dia tancat ni fora d’hora", async () => {
+    const wrapper = await muntar({}, { espai: "s1" }, sessioCoord, espaiLaborables);
+    await wrapper.vm.carregarEspais();
+    wrapper.vm.clicarFranja(Temporal.ZonedDateTime.from("2026-09-13T18:00:00+02:00[Europe/Madrid]"));
+    expect(wrapper.vm.pendent).toBeNull();
+    expect(wrapper.vm.error).toContain("no és accessible");
+    wrapper.vm.clicarFranja(Temporal.ZonedDateTime.from("2026-09-08T10:00:00+02:00[Europe/Madrid]"));
+    expect(wrapper.vm.pendent).toBeNull();
+    expect(wrapper.vm.error).toContain("fora de l’horari");
+    wrapper.vm.clicarFranja(Temporal.ZonedDateTime.from("2026-09-08T17:45:00+02:00[Europe/Madrid]"));
+    expect(wrapper.vm.pendent?.starts_at).toBe("2026-09-08T16:00:00Z");
+    wrapper.vm.clicarFranja(Temporal.ZonedDateTime.from("2026-09-08T18:00:00+02:00[Europe/Madrid]"));
+    expect(wrapper.vm.pendent).not.toBeNull();
+  });
+
+  it("a Sala Tècnica el dijous és tancat i el divendres 18:00 es pot reservar", async () => {
+    const wrapper = await muntar(
+      {},
+      { espai: "s1" },
+      sessioCoord,
+      {
+        ...espai,
+        name: "Sala Tècnica",
+        windows: [0, 2, 4].map((weekday) => ({ weekday, start: "17:30", end: "22:00" })),
+      },
+    );
+    await wrapper.vm.carregarEspais();
+    wrapper.vm.clicarFranja(Temporal.ZonedDateTime.from("2026-09-10T18:00:00+02:00[Europe/Madrid]"));
+    expect(wrapper.vm.pendent).toBeNull();
+    expect(wrapper.vm.error).toContain("no és accessible");
+    wrapper.vm.clicarFranja(Temporal.ZonedDateTime.from("2026-09-11T18:00:00+02:00[Europe/Madrid]"));
+    expect(wrapper.vm.pendent).not.toBeNull();
+    expect(wrapper.vm.pendent?.starts_at).toBe("2026-09-11T16:00:00Z");
+  });
+
+  it("l’avís de dia tancat desapareix sol", async () => {
+    vi.useFakeTimers();
+    const wrapper = await muntar({}, { espai: "s1" }, sessioCoord, espaiLaborables);
+    await wrapper.vm.carregarEspais();
+    wrapper.vm.clicarFranja(Temporal.ZonedDateTime.from("2026-09-13T18:00:00+02:00[Europe/Madrid]"));
+    expect(wrapper.vm.error).toContain("no és accessible");
+    vi.advanceTimersByTime(6000);
+    expect(wrapper.vm.error).toBe("");
+    wrapper.unmount();
   });
 });

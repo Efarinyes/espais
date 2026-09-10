@@ -44,7 +44,7 @@ Peces de producte que sí són backlog explícit a [PLA-TREBALL.md](PLA-TREBALL.
 - App nativa.
 - Temes visuals per tipologia d’activitat.
 - Participants amb compte, llista nominativa d’assistència.
-- Reserva en autoservei per a ciutadania sense rol a l’entitat (el veí o l’usuari de biblioteca reserva ell mateix, sense ser coordinador). A v1 només reserven responsable i coordinador; l’acte pot ser igualment obert al públic.
+- Reserva en autoservei per a ciutadania sense rol a l’entitat (el veí o l’usuari de biblioteca reserva ell mateix, sense ser coordinador). A v1 només reserva el **coordinador**; l’acte pot ser igualment obert al públic. El responsable reprograma o anul·la.
 - Diversos responsables, transferència de rol, fusió d’entitats, coordinador multi-entitat.
 
 El cobrament (passarel·la, cost de la reserva, pagament per ús, facturació) **no forma part del producte ni del backlog**. Si un dia calgués, es faria un estudi específic i s’adaptaria aleshores; no es reserva lloc al model ni a la UI.

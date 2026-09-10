@@ -11,6 +11,7 @@ from app.api.deps import ReservationsHttp, get_reservations_http, require_sessio
 from app.domain.errors import (
     ForbiddenError,
     InvalidAttendanceError,
+    InvalidCancellationError,
     InvalidReservationError,
     ReservationNotFoundError,
     ReservationOverlapError,
@@ -18,9 +19,11 @@ from app.domain.errors import (
 )
 from app.domain.identity import MembershipRole
 from app.domain.reservation import ReservationStatus
+from app.usecases.cancel_reservation_by_responsible import CancelReservationByResponsibleCommand
 from app.usecases.create_reservation import CreateReservationCommand
 from app.usecases.list_reservations import ListReservationsQuery, ReservationListItem
 from app.usecases.record_attendance import RecordAttendanceCommand
+from app.usecases.reschedule_reservation import RescheduleReservationCommand
 from app.usecases.resolve_session import SessionView
 
 router = APIRouter()
@@ -35,6 +38,16 @@ class CreateReservationRequest(BaseModel):
 
 class RecordAttendanceRequest(BaseModel):
     count: int = Field(ge=0)
+
+
+class CancelReservationRequest(BaseModel):
+    reason: str | None = None
+
+
+class RescheduleReservationRequest(BaseModel):
+    starts_at: datetime
+    ends_at: datetime
+    reason: str | None = None
 
 
 class ReservationResponse(BaseModel):
@@ -92,6 +105,8 @@ def create_reservation(
         )
     except SpaceNotFoundError:
         raise HTTPException(status_code=404, detail="aquest espai no existeix a l’entitat") from None
+    except ForbiddenError as exc:
+        raise HTTPException(status_code=403, detail=str(exc)) from None
     except ReservationOverlapError:
         raise HTTPException(status_code=409, detail="aquest interval ja està ocupat") from None
     except InvalidReservationError as exc:
@@ -178,4 +193,101 @@ def record_attendance(
         min_attendance=result.min_attendance,
         exceeds_capacity=result.exceeds_capacity,
         below_min_attendance=result.below_min_attendance,
+    )
+
+
+@router.post("/reserves/{reservation_id}/anulacio", response_model=ReservationResponse)
+def cancel_reservation(
+    reservation_id: UUID,
+    view: Annotated[SessionView, Depends(require_session)],
+    reservations: Annotated[ReservationsHttp, Depends(get_reservations_http)],
+    body: CancelReservationRequest | None = None,
+) -> ReservationResponse:
+    payload = body or CancelReservationRequest()
+    try:
+        result = reservations.cancel.execute(
+            CancelReservationByResponsibleCommand(
+                entity_id=view.entity_id,
+                actor_user_id=view.user_id,
+                actor_role=view.role,
+                actor_name=view.user_name,
+                entity_name=view.entity_name,
+                reservation_id=reservation_id,
+                reason=payload.reason,
+            )
+        )
+    except ReservationNotFoundError:
+        raise HTTPException(status_code=404, detail="aquesta reserva no existeix a l’entitat") from None
+    except ForbiddenError as exc:
+        raise HTTPException(status_code=403, detail=str(exc)) from None
+    except InvalidCancellationError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from None
+    except SpaceNotFoundError:
+        raise HTTPException(status_code=404, detail="aquest espai no existeix a l’entitat") from None
+
+    reservation = result.reservation
+    return ReservationResponse(
+        id=reservation.id,
+        space_id=reservation.space_id,
+        space_name=result.space_name,
+        starts_at=reservation.starts_at,
+        ends_at=reservation.ends_at,
+        status=reservation.status,
+        mine=reservation.coordinator_id == view.user_id,
+        coordinator_name=reservation.coordinator_name,
+        attendance_count=None,
+        capacity=result.capacity,
+        min_attendance=result.min_attendance,
+        exceeds_capacity=False,
+        below_min_attendance=False,
+    )
+
+
+@router.post("/reserves/{reservation_id}/reprogramacio", response_model=ReservationResponse)
+def reschedule_reservation(
+    reservation_id: UUID,
+    body: RescheduleReservationRequest,
+    view: Annotated[SessionView, Depends(require_session)],
+    reservations: Annotated[ReservationsHttp, Depends(get_reservations_http)],
+) -> ReservationResponse:
+    try:
+        result = reservations.reschedule.execute(
+            RescheduleReservationCommand(
+                entity_id=view.entity_id,
+                actor_user_id=view.user_id,
+                actor_role=view.role,
+                actor_name=view.user_name,
+                entity_name=view.entity_name,
+                reservation_id=reservation_id,
+                starts_at=body.starts_at,
+                ends_at=body.ends_at,
+                reason=body.reason,
+            )
+        )
+    except ReservationNotFoundError:
+        raise HTTPException(status_code=404, detail="aquesta reserva no existeix a l’entitat") from None
+    except ForbiddenError as exc:
+        raise HTTPException(status_code=403, detail=str(exc)) from None
+    except ReservationOverlapError:
+        raise HTTPException(status_code=409, detail="aquest interval ja està ocupat") from None
+    except InvalidReservationError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from None
+    except SpaceNotFoundError:
+        raise HTTPException(status_code=404, detail="aquest espai no existeix a l’entitat") from None
+
+    reservation = result.reservation
+    return ReservationResponse(
+        id=reservation.id,
+        space_id=reservation.space_id,
+        space_name=result.space_name,
+        starts_at=reservation.starts_at,
+        ends_at=reservation.ends_at,
+        status=reservation.status,
+        mine=reservation.coordinator_id == view.user_id,
+        coordinator_name=reservation.coordinator_name,
+        attendance_count=None,
+        capacity=result.capacity,
+        min_attendance=result.min_attendance,
+        exceeds_capacity=False,
+        below_min_attendance=False,
     )

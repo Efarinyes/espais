@@ -59,3 +59,11 @@ class ReservationNotFoundError(Exception):
 
 class InvalidAttendanceError(Exception):
     """Compte d’assistència invàlid o reserva que no admet registre."""
+
+
+class InvalidCancellationError(Exception):
+    """La reserva no es pot anul·lar (ja anul·lada o estat invàlid)."""
+
+
+class NotificationNotFoundError(Exception):
+    """L’avís no existeix per a aquest usuari i entitat."""

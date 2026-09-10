@@ -42,6 +42,8 @@ const llistaAmpla = computed(() => !error.value && !carregant.value && espais.va
         :key="espai.id"
         :espai="espai"
         :pot-editar="esResponsable"
+        :accio-calendari="esResponsable ? 'Calendari' : 'Reservar'"
+        :calendari-global="esResponsable"
       />
     </ul>
 

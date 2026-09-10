@@ -8,11 +8,14 @@ from uuid import UUID
 
 from app.domain.attendance import AttendanceRecord
 from app.domain.reservation import Reservation
+from app.ports.notifications import NotificationRepository
 from app.ports.spaces import SpaceRepository
 
 
 class ReservationRepository(Protocol):
     def add(self, reservation: Reservation) -> None: ...
+
+    def save(self, reservation: Reservation) -> None: ...
 
     def get_by_id(self, entity_id: UUID, reservation_id: UUID) -> Reservation | None: ...
 
@@ -49,6 +52,7 @@ class ReservationUnitOfWork(Protocol):
     spaces: SpaceRepository
     reservations: ReservationRepository
     attendance: AttendanceRepository
+    notifications: NotificationRepository
 
     def commit(self) -> None: ...
 

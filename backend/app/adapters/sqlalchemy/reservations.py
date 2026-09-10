@@ -8,9 +8,10 @@ from uuid import UUID
 from sqlalchemy import select
 from sqlalchemy.orm import Session, sessionmaker
 
-from app.adapters.sqlalchemy.models import AttendanceRecordRow, ReservationRow
+from app.adapters.sqlalchemy.models import AttendanceRecordRow, NotificationRow, ReservationRow
 from app.adapters.sqlalchemy.spaces import SqlAlchemySpaceRepository
 from app.domain.attendance import AttendanceRecord
+from app.domain.notification import Notification, NotificationType, payload_as_dict, payload_from_dict
 from app.domain.reservation import Reservation, ReservationStatus, as_utc
 
 
@@ -54,6 +55,25 @@ class SqlAlchemyReservationRepository:
                 created_at=reservation.created_at,
             )
         )
+        self._session.flush()
+
+    def save(self, reservation: Reservation) -> None:
+        row = self._session.scalar(
+            select(ReservationRow).where(
+                ReservationRow.id == reservation.id,
+                ReservationRow.entity_id == reservation.entity_id,
+            )
+        )
+        if row is None:
+            self.add(reservation)
+            return
+        row.space_id = reservation.space_id
+        row.coordinator_id = reservation.coordinator_id
+        row.coordinator_name = reservation.coordinator_name
+        row.starts_at = reservation.starts_at
+        row.ends_at = reservation.ends_at
+        row.status = reservation.status.value
+        row.notes = reservation.notes
         self._session.flush()
 
     def get_by_id(self, entity_id: UUID, reservation_id: UUID) -> Reservation | None:
@@ -173,12 +193,84 @@ class SqlAlchemyAttendanceRepository:
         return {row.reservation_id: _attendance_from_row(row) for row in rows}
 
 
+def _notification_from_row(row: NotificationRow) -> Notification:
+    raw = row.payload if isinstance(row.payload, dict) else {}
+    return Notification(
+        id=row.id,
+        entity_id=row.entity_id,
+        user_id=row.user_id,
+        reservation_id=row.reservation_id,
+        type=NotificationType(row.type),
+        payload=payload_from_dict(raw),
+        created_at=_aware(row.created_at),
+        read_at=_aware(row.read_at) if row.read_at is not None else None,
+    )
+
+
+class SqlAlchemyNotificationRepository:
+    def __init__(self, session: Session) -> None:
+        self._session = session
+
+    def add(self, notification: Notification) -> None:
+        self._session.add(
+            NotificationRow(
+                id=notification.id,
+                entity_id=notification.entity_id,
+                user_id=notification.user_id,
+                reservation_id=notification.reservation_id,
+                type=notification.type.value,
+                payload=payload_as_dict(notification.payload),
+                created_at=notification.created_at,
+                read_at=notification.read_at,
+            )
+        )
+        self._session.flush()
+
+    def save(self, notification: Notification) -> None:
+        row = self._session.scalar(
+            select(NotificationRow).where(
+                NotificationRow.id == notification.id,
+                NotificationRow.entity_id == notification.entity_id,
+            )
+        )
+        if row is None:
+            self.add(notification)
+            return
+        row.type = notification.type.value
+        row.payload = payload_as_dict(notification.payload)
+        row.read_at = notification.read_at
+        self._session.flush()
+
+    def get_by_id(self, entity_id: UUID, notification_id: UUID) -> Notification | None:
+        row = self._session.scalar(
+            select(NotificationRow).where(
+                NotificationRow.id == notification_id,
+                NotificationRow.entity_id == entity_id,
+            )
+        )
+        if row is None:
+            return None
+        return _notification_from_row(row)
+
+    def list_for_user(self, entity_id: UUID, user_id: UUID) -> list[Notification]:
+        rows = self._session.scalars(
+            select(NotificationRow)
+            .where(
+                NotificationRow.entity_id == entity_id,
+                NotificationRow.user_id == user_id,
+            )
+            .order_by(NotificationRow.created_at.desc())
+        ).all()
+        return [_notification_from_row(row) for row in rows]
+
+
 class SqlAlchemyReservationUnitOfWork:
     def __init__(self, session_factory: sessionmaker) -> None:
         self._session = session_factory()
         self.spaces = SqlAlchemySpaceRepository(self._session)
         self.reservations = SqlAlchemyReservationRepository(self._session)
         self.attendance = SqlAlchemyAttendanceRepository(self._session)
+        self.notifications = SqlAlchemyNotificationRepository(self._session)
 
     def commit(self) -> None:
         self._session.commit()

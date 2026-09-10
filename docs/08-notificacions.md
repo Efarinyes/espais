@@ -6,7 +6,7 @@ Skill: `notifications-cancel`. ADR: [0005](adr/0005-avis-anulacio-coordinador.md
 
 Quan el **responsable** anul·la o reprograma una reserva, el **coordinador** n’ha de quedar assabentat per poder avisar els participants (que no són usuaris de l’app).
 
-Canals v1: **in-app + correu**. No push, no WhatsApp.
+Canals v1: **in-app + correu**. No push, no WhatsApp. Una notificació clara al dispositiu (Web Push / OS, mòbil o escriptori) quan el responsable anul·la o reprograma queda per **properes sessions**; no cal per a les proves bàsiques.
 
 ## Esdeveniments que disparen avís
 

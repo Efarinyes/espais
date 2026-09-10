@@ -66,6 +66,8 @@ const llistaAmpla = computed(
             :key="espai.id"
             :espai="espai"
             :pot-editar="sessio.role === 'responsible'"
+            :accio-calendari="sessio.role === 'responsible' ? 'Calendari' : 'Reservar'"
+            :calendari-global="sessio.role === 'responsible'"
           />
         </ul>
       </section>

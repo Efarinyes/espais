@@ -7,6 +7,7 @@ import pytest
 from app.adapters.memory.identity import FixedClock, SequentialIdGenerator
 from app.adapters.memory.reservations import InMemoryReservationUnitOfWork
 from app.domain.errors import (
+    ForbiddenError,
     InvalidReservationError,
     ReservationOverlapError,
     SpaceNotFoundError,
@@ -98,10 +99,11 @@ def test_create_reservation_is_confirmed_inside_windows() -> None:
     assert listed[0].space_name == "Sala 1"
 
 
-def test_responsible_can_create_reservation() -> None:
-    use_case, _uow = _use_case()
-    result = use_case.execute(_command(actor_role=MembershipRole.RESPONSIBLE, actor_name="Anna"))
-    assert result.reservation.coordinator_name == "Anna"
+def test_responsible_cannot_create_reservation() -> None:
+    use_case, uow = _use_case()
+    with pytest.raises(ForbiddenError, match="responsable no crea"):
+        use_case.execute(_command(actor_role=MembershipRole.RESPONSIBLE, actor_name="Anna"))
+    assert uow.reservations.list_all() == []
 
 
 def test_overlapping_confirmed_reservation_is_rejected() -> None:
