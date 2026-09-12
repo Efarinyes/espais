@@ -137,6 +137,7 @@ def list_reservations(
     des: Annotated[datetime, Query()],
     fins: Annotated[datetime, Query()],
     espai_id: Annotated[UUID | None, Query()] = None,
+    inclou_anulades: Annotated[bool, Query()] = False,
 ) -> list[ReservationResponse]:
     items = reservations.list.execute(
         ListReservationsQuery(
@@ -146,6 +147,7 @@ def list_reservations(
             starts_at=des,
             ends_at=fins,
             space_id=espai_id,
+            include_cancelled=inclou_anulades,
         )
     )
     return [_to_response(item) for item in items]

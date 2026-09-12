@@ -20,6 +20,7 @@ class ListReservationsQuery:
     starts_at: datetime
     ends_at: datetime
     space_id: UUID | None = None
+    include_cancelled: bool = False
 
 
 @dataclass(frozen=True)
@@ -58,8 +59,11 @@ class ListReservations:
             [reservation.id for reservation in reservations],
         )
         items: list[ReservationListItem] = []
+        allowed = {ReservationStatus.CONFIRMED}
+        if query.include_cancelled:
+            allowed.add(ReservationStatus.CANCELLED)
         for reservation in reservations:
-            if reservation.status != ReservationStatus.CONFIRMED:
+            if reservation.status not in allowed:
                 continue
             space = spaces.get(reservation.space_id)
             if space is None:

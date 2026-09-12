@@ -25,7 +25,13 @@ export type CreaReservaInput = {
 };
 
 export type ReservesApi = {
-  llistar(token: string, des: string, fins: string, espaiId?: string): Promise<ReservaDto[]>;
+  llistar(
+    token: string,
+    des: string,
+    fins: string,
+    espaiId?: string,
+    inclouAnulades?: boolean,
+  ): Promise<ReservaDto[]>;
   crear(token: string, input: CreaReservaInput): Promise<ReservaDto>;
   registrarAssistencia(token: string, reservaId: string, count: number): Promise<ReservaDto>;
   anular(token: string, reservaId: string, reason?: string): Promise<ReservaDto>;
@@ -73,10 +79,13 @@ export function createReservesApi(baseUrl = ""): ReservesApi {
   }
 
   return {
-    async llistar(token, des, fins, espaiId) {
+    async llistar(token, des, fins, espaiId, inclouAnulades) {
       const params = new URLSearchParams({ des, fins });
       if (espaiId) {
         params.set("espai_id", espaiId);
+      }
+      if (inclouAnulades) {
+        params.set("inclou_anulades", "true");
       }
       const res = await fetch(`${baseUrl}/reserves?${params.toString()}`, { headers: headers(token) });
       if (!res.ok) {

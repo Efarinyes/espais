@@ -31,6 +31,7 @@ from app.usecases.create_reservation import CreateReservation
 from app.usecases.create_space import CreateSpace
 from app.usecases.get_invitation import GetInvitation
 from app.usecases.get_space import GetSpace
+from app.usecases.get_usage_summary import GetUsageSummary
 from app.usecases.invite_coordinator import InviteCoordinator
 from app.usecases.list_notifications import ListNotifications
 from app.usecases.list_reservations import ListReservations
@@ -87,6 +88,11 @@ class ReservationsHttp:
     record: RecordAttendance
     cancel: CancelReservationByResponsible
     reschedule: RescheduleReservation
+
+
+@dataclass
+class AnalysisHttp:
+    summary: GetUsageSummary
 
 
 @dataclass
@@ -181,6 +187,14 @@ def get_reservations_http(request: Request) -> Iterator[ReservationsHttp]:
                 uow, get_notifier(request), SystemClock(), UuidIdGenerator()
             ),
         )
+    finally:
+        uow.close()
+
+
+def get_analysis_http(request: Request) -> Iterator[AnalysisHttp]:
+    uow = SqlAlchemyReservationUnitOfWork(get_session_factory(request))
+    try:
+        yield AnalysisHttp(summary=GetUsageSummary(uow))
     finally:
         uow.close()
 

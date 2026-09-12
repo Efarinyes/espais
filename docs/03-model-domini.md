@@ -70,4 +70,4 @@ Vegeu [07-reserves-assistencia.md](07-reserves-assistencia.md).
 | `RecordAttendance` | 5 |
 | `RescheduleReservation` | 6 |
 | `CancelReservationByResponsible` | 6 |
-| Consultes d’anàlisi | 7 |
+| `GetUsageSummary` | 7 |

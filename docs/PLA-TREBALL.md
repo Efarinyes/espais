@@ -131,11 +131,11 @@ Revisió `architecture-solid` (2026-09-10): neta. Capes i `entity_id` correctes;
 
 Revisió `architecture-solid` (2026-09-10): neta a capes de negoci. Deute conscient (sense ADR): no partir `useCalendariReserves` ni extraure el drag de `CalendariView` ara; split = Fase 8 si el composable torna a créixer.
 
-## Fase 7 — Anàlisi
+## Fase 7 — Anàlisi (feta)
 
 **Objectiu:** el responsable veu l’ús dels espais.
 
-**Casos d’ús:** consultes d’agregació (ocupació, reserves per espai, anul·lades, assistència mitjana).
+**Casos d’ús:** `GetUsageSummary` (ocupació, reserves per espai, anul·lades, assistència mitjana).
 
 **Tasques:**
 
@@ -145,6 +145,8 @@ Revisió `architecture-solid` (2026-09-10): neta a capes de negoci. Deute consci
 **Skills:** `domain-model`, `backend-fastapi`, `ui-ux-mobile`, `testing-quality`.
 
 **Criteri fet:** el responsable obté xifres només de la seva entitat.
+
+Revisió `architecture-solid` (2026-09-12): neta a capes de negoci. `GetUsageSummary` agrega amb `entity_id`; el càlcul d’hores viu a `domain/occupancy`; el router i la vista no agreguen. El coordinador no depèn d’interfícies d’anàlisi (`AnalysisHttp` separat). Anul·lades «per qui» queda fora (no hi ha `cancelled_by`). CSV i gràfics pesats = backlog.
 
 ## Fase 8 — Poliment
 

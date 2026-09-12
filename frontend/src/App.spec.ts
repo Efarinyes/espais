@@ -33,6 +33,7 @@ function muntar(dto?: SessioDto) {
       { path: "/espais", name: "espais", component: { template: "<div />" } },
       { path: "/calendari", name: "calendari", component: { template: "<div />" } },
       { path: "/avisos", name: "avisos", component: { template: "<div />" } },
+      { path: "/analisi", name: "analisi", component: { template: "<div />" } },
       { path: "/coordinadors/convidar", name: "convidar-coordinador", component: { template: "<div />" } },
     ],
   });
@@ -70,12 +71,14 @@ describe("App", () => {
     const wrapper = muntar(sessioResp);
     expect(wrapper.text()).toContain("Responsable");
     expect(wrapper.text()).not.toContain("Coordinador");
+    expect(wrapper.text()).toContain("Anàlisi");
   });
 
   it("mostra l’insígnia de coordinador", () => {
     const wrapper = muntar({ ...sessioResp, role: "coordinator", user_name: "Carla" });
     expect(wrapper.text()).toContain("Coordinador");
     expect(wrapper.text()).not.toContain("Responsable");
+    expect(wrapper.text()).not.toContain("Anàlisi");
   });
 
   it("no mostra rol sense sessió", () => {

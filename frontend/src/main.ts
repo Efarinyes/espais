@@ -3,6 +3,7 @@ import { createPinia } from "pinia";
 
 import App from "./App.vue";
 import { router } from "./router";
+import { createAnalisiApi, analisiApiKey } from "./services/analisi";
 import { createAvisosApi, avisosApiKey } from "./services/avisos";
 import { createEspaisApi, espaisApiKey } from "./services/espais";
 import { createIdentityApi, identityApiKey } from "./services/identitat";
@@ -16,6 +17,7 @@ app.provide(identityApiKey, createIdentityApi());
 app.provide(espaisApiKey, createEspaisApi());
 app.provide(reservesApiKey, createReservesApi());
 app.provide(avisosApiKey, createAvisosApi());
+app.provide(analisiApiKey, createAnalisiApi());
 app.provide(disparadorCalendariKey, createDisparadorPolling());
 app.use(router);
 app.mount("#app");

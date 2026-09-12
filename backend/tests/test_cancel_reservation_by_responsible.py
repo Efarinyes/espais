@@ -122,6 +122,18 @@ def test_responsible_cancels_and_notifies_coordinator() -> None:
         )
     )
     assert listed == []
+    with_cancelled = ListReservations(uow).execute(
+        ListReservationsQuery(
+            entity_id=ENTITY_A,
+            actor_user_id=USER_B,
+            actor_role=MembershipRole.RESPONSIBLE,
+            starts_at=_slot(8)[0],
+            ends_at=_slot(20)[1],
+            include_cancelled=True,
+        )
+    )
+    assert len(with_cancelled) == 1
+    assert with_cancelled[0].status == ReservationStatus.CANCELLED
 
 
 def test_coordinator_cannot_cancel_with_this_use_case() -> None:

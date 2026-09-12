@@ -35,6 +35,13 @@ function sortir() {
       <div v-if="sessio.iniciada" class="flex-none gap-1">
         <RouterLink class="btn btn-ghost min-h-11" to="/espais">Espais</RouterLink>
         <RouterLink class="btn btn-ghost min-h-11" to="/calendari">Calendari</RouterLink>
+        <RouterLink
+          v-if="sessio.role === 'responsible'"
+          class="btn btn-ghost min-h-11"
+          to="/analisi"
+        >
+          Anàlisi
+        </RouterLink>
         <RouterLink class="btn btn-ghost min-h-11" to="/avisos">
           Avisos
           <span

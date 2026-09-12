@@ -66,6 +66,14 @@ def test_responsible_cancels_and_coordinator_reads_aviso(sqlite_session_factory)
     listed = client.get("/reserves", headers=headers_resp, params={"des": start, "fins": end})
     assert listed.status_code == 200
     assert listed.json() == []
+    with_cancelled = client.get(
+        "/reserves",
+        headers=headers_resp,
+        params={"des": start, "fins": end, "inclou_anulades": True},
+    )
+    assert with_cancelled.status_code == 200
+    assert len(with_cancelled.json()) == 1
+    assert with_cancelled.json()[0]["status"] == "cancelled"
 
     avisos = client.get("/avisos", headers=headers_coord)
     assert avisos.status_code == 200

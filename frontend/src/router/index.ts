@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from "vue-router";
 
 import { useSessioStore } from "../stores/sessio";
 import AcceptaInvitacioView from "../views/AcceptaInvitacioView.vue";
+import AnalisiView from "../views/AnalisiView.vue";
 import AvisosView from "../views/AvisosView.vue";
 import CalendariView from "../views/CalendariView.vue";
 import ConvidaCoordinadorView from "../views/ConvidaCoordinadorView.vue";
@@ -35,6 +36,12 @@ export const router = createRouter({
       name: "avisos",
       component: AvisosView,
       meta: { requiresAuth: true },
+    },
+    {
+      path: "/analisi",
+      name: "analisi",
+      component: AnalisiView,
+      meta: { requiresAuth: true, requiresResponsible: true },
     },
     {
       path: "/espais/nou",
