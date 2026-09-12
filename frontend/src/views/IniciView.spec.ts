@@ -80,12 +80,23 @@ const sessioAnna: SessioDto = {
 };
 
 describe("IniciView", () => {
-  it("mostra el títol de l’app en català sense sessió", () => {
+  it("mostra el problema, la solució i com funciona sense CTAs d’accés", () => {
     const wrapper = muntar();
-    expect(wrapper.text()).toContain("Espais");
-    expect(wrapper.text()).toContain("gratuït");
-    expect(wrapper.text()).toContain("Registra l’entitat");
-    expect(wrapper.text()).toContain("Inicia sessió");
+    expect(wrapper.text()).toContain("Qui té la sala, a quina hora, i amb quants?");
+    expect(wrapper.text()).toContain("Gestionar un col·lectiu és molt més que tenir un grup de xat");
+    expect(wrapper.text()).toContain("app interna i gratuïta");
+    expect(wrapper.get("#com-funciona").text()).toBe("Com funciona");
+    expect(wrapper.text()).toContain("Defineix els espais");
+    expect(wrapper.text()).toContain("Reserva al calendari");
+    expect(wrapper.text()).toContain("Governa i avisa");
+    expect(wrapper.find("a[href='/registre']").exists()).toBe(false);
+    expect(wrapper.find("a[href='/iniciar-sessio']").exists()).toBe(false);
+    expect(wrapper.text()).not.toContain("Registra l’entitat");
+    expect(wrapper.text()).not.toContain("Inicia sessió");
+    expect(wrapper.get(".landing-hero img").attributes("src")).toBe("/landing/hero.jpg");
+    expect(wrapper.findAll(".landing-hero img")).toHaveLength(4);
+    expect(wrapper.text()).toContain("Atura el fons");
+    expect(wrapper.find("nav[aria-label='Prova de foto del hero']").exists()).toBe(false);
   });
 
   it("mostra l’empty state accionable quan no hi ha espais", async () => {

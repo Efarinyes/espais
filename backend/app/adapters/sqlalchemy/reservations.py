@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import UTC, datetime
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import delete, select
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.adapters.sqlalchemy.models import AttendanceRecordRow, NotificationRow, ReservationRow
@@ -204,6 +204,7 @@ def _notification_from_row(row: NotificationRow) -> Notification:
         payload=payload_from_dict(raw),
         created_at=_aware(row.created_at),
         read_at=_aware(row.read_at) if row.read_at is not None else None,
+        archived_at=_aware(row.archived_at) if row.archived_at is not None else None,
     )
 
 
@@ -222,6 +223,7 @@ class SqlAlchemyNotificationRepository:
                 payload=payload_as_dict(notification.payload),
                 created_at=notification.created_at,
                 read_at=notification.read_at,
+                archived_at=notification.archived_at,
             )
         )
         self._session.flush()
@@ -239,6 +241,7 @@ class SqlAlchemyNotificationRepository:
         row.type = notification.type.value
         row.payload = payload_as_dict(notification.payload)
         row.read_at = notification.read_at
+        row.archived_at = notification.archived_at
         self._session.flush()
 
     def get_by_id(self, entity_id: UUID, notification_id: UUID) -> Notification | None:
@@ -258,10 +261,21 @@ class SqlAlchemyNotificationRepository:
             .where(
                 NotificationRow.entity_id == entity_id,
                 NotificationRow.user_id == user_id,
+                NotificationRow.archived_at.is_(None),
             )
             .order_by(NotificationRow.created_at.desc())
         ).all()
         return [_notification_from_row(row) for row in rows]
+
+    def delete_archived_before(self, cutoff: datetime) -> int:
+        result = self._session.execute(
+            delete(NotificationRow).where(
+                NotificationRow.archived_at.is_not(None),
+                NotificationRow.archived_at <= cutoff,
+            )
+        )
+        self._session.flush()
+        return int(result.rowcount or 0)
 
 
 class SqlAlchemyReservationUnitOfWork:

@@ -21,6 +21,7 @@ export type AvisDto = {
 export type AvisosApi = {
   llistar(token: string): Promise<AvisDto[]>;
   marcarLlegit(token: string, avisId: string): Promise<AvisDto>;
+  arxivar(token: string, avisId: string): Promise<void>;
 };
 
 export function titolAvis(avis: Pick<AvisDto, "type" | "space_name">): string {
@@ -84,6 +85,16 @@ export function createAvisosApi(baseUrl = ""): AvisosApi {
         throw new ApiError(await detallError(res), res.status);
       }
       return (await res.json()) as AvisDto;
+    },
+
+    async arxivar(token, avisId) {
+      const res = await fetch(`${baseUrl}/avisos/${avisId}/arxivat`, {
+        method: "POST",
+        headers: headers(token),
+      });
+      if (!res.ok) {
+        throw new ApiError(await detallError(res), res.status);
+      }
     },
   };
 }

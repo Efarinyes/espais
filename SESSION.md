@@ -4,22 +4,23 @@ Actualitza aquest arxiu al final de cada sessió. És el punt d’arrencada del 
 
 ## Fase
 
-- **Fase actual:** v1 tancada al pla (fases 0–8). Backlog explícit.
+- **Fase actual:** v1 tancada al pla (fases 0–8). Cosmètica / landing (fora del pla de fases).
 - **Fase anterior:** 8 — Poliment (feta: navbar mòbil, skip-link, empty/error, modal suau)
 
 ## Darrera feina
 
 A `fase/3-espais`:
 
-- Fase 8: menú compacte a mòbil (`details` + `Menú`); enllaços complets des de `lg`. Skip-link «Ves al contingut». Empty del calendari amb CTA si ets responsable. Anàlisi: targetes per espai a mòbil, taula a `md+`; `label` del mes. Modal del calendari amb animació curta. Login: copy sense «del responsable».
-- `mesEnCursTimeZone` + `FUS_HORARI_PER_DEFECTE` (Europe/Madrid a v1).
-- No s’ha partit `useCalendariReserves`.
+- Landing merament informativa: accés al capçal (Registra / Inicia sessió); hero a ple ample amb foto lliure, overlay i copy de problema/solució; «Com funciona» amb captures reals; peu `© any Eduard Farinyes · Codi obert`.
+- Fons del hero en carrusel (4 fotos, fos 7 s, «Atura el fons»; sense rotació si `prefers-reduced-motion`). Alternatives a `frontend/public/landing/opcions/`.
+- Cosmètica prèvia: marca `text-2xl`, «Els espais», títol `Espais de {{ entityName }}`, Avisos només coordinador, resum de finestres per dies, peu sticky, formulari de disponibilitat `max-w-5xl`.
+- Avisos: arxivar (només llegits; llista sense arxivats). Purga als 21 dies (`archived_at`); ADR [0009](docs/adr/0009-purga-avisos-arxivats.md). Lifespan arrencada + 24 h; tests amb `enable_maintenance=False`.
 
-Vitest 99 verds; `vue-tsc --noEmit` verd.
+Vitest 104+ verds (landing/carrusel); `vue-tsc --noEmit` verd.
 
 ## Següent tasca
 
-Backlog o publicar GitHub, només sota demanda. PWA: instal·lar des d’un mòbil real (ADR 0006 ja a l’esquelet).
+Continuar cosmètica (jornada nova): polir UI restant (contrastos, calendaris, empty states, mòbil) un cop validat el carrusel de la landing.
 
 Remot GitHub: encara sota demanda. Sense `origin`.
 
@@ -37,8 +38,7 @@ Cap. API `http://127.0.0.1:8000`; front `http://127.0.0.1:5173`.
 - [0006](docs/adr/0006-tailwind-daisy-pwa.md) — acceptat
 - [0007](docs/adr/0007-calendari-polling.md) — acceptat (polling v1; sockets = adaptador futur)
 - [0008](docs/adr/0008-responsable-no-crea-reserves.md) — acceptat (el responsable reprograma i anul·la; no crea)
-
-Cap ADR nou.
+- [0009](docs/adr/0009-purga-avisos-arxivats.md) — acceptat (purga 21 dies des de `archived_at`)
 
 ## Notes
 
@@ -49,3 +49,4 @@ Cap ADR nou.
 - PWA: instal·lable; no desregistrar el SW en DEV. `navigateFallbackDenylist` inclou `/avisos` i `/analisi`.
 - Deute conscient: split de `useCalendariReserves` / drag = si el composable torna a créixer. CSV d’anàlisi = backlog.
 - El coordinador reprograma la seva reserva sense avís; l’avís només el dispara el responsable.
+- Landing: sense CTAs al cos; fotos a `frontend/public/landing/` (hero + opcions + captures).

@@ -26,7 +26,7 @@ FastAPI (routers prims)
 | Repositoris (port + adaptador) | Persistència | Regles d’anul·lació |
 | Infra | DB, correu, config | Lògica de reserva |
 
-Un cas d’ús = un mòdul/classe (`RegisterEntity`, `CreateSpace`, `CreateReservation`, `RecordAttendance`, `CancelReservationByResponsible`, `RescheduleReservation`, `GetUsageSummary`).
+Un cas d’ús = un mòdul/classe (`RegisterEntity`, `CreateSpace`, `CreateReservation`, `RecordAttendance`, `CancelReservationByResponsible`, `RescheduleReservation`, `GetUsageSummary`, `ArchiveNotification`, `PurgeArchivedNotifications`).
 
 ## Multi-tenant
 
@@ -36,6 +36,7 @@ ADR [0001](adr/0001-multi-tenant-una-app.md).
 - El context d’auth aporta `user_id` + `entity_id` + `role`.
 - Repositoris exigeixen `entity_id`; prohibides queries “globals” d’espais o reserves.
 - Tests d’aïllament: entitat B no llegeix files d’A.
+- Excepció de manteniment: `PurgeArchivedNotifications` (ADR [0009](adr/0009-purga-avisos-arxivats.md)) aplica la mateixa retenció a totes les entitats i no retorna dades d’un tenant a un altre. El bucle (arrencada + cada 24 h) viu al lifespan, no a un router.
 
 ## Front
 

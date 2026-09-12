@@ -21,6 +21,7 @@ Contrast WCAG AA en text normal. Focus visible. Labels lligades als inputs. Erro
 
 | Pantalla | Rol | Empty / error |
 |---|---|---|
+| Landing (`/` sense sessió) | visitant | capçal amb registre i sessió; cos informatiu |
 | Registre | nou | validació inline |
 | Inici responsable | responsable | Defineix el primer espai |
 | Espais | responsable | CTA alta |
@@ -29,6 +30,8 @@ Contrast WCAG AA en text normal. Focus visible. Labels lligades als inputs. Erro
 | Govern de reserves | responsable | encara no n’hi ha |
 | Avís d’anul·lació | coordinador | detall + interval |
 | Anàlisi | responsable | període sense dades |
+
+El menú d’**Avisos** només el veu el coordinador. Sense sessió, `/` és una landing merament informativa: hero a ple ample (problema i solució, fons en carrusel de fotos de sales) i «Com funciona» amb captures de l’app. **Registra l’entitat** i **Inicia sessió** van al capçal, no al cos. Amb sessió, `/` és el tauler de l’entitat. El peu mostra any, autor i «codi obert».
 
 ## Patrons Vue
 

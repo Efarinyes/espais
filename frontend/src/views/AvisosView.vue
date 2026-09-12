@@ -7,7 +7,7 @@ import { titolAvis } from "../services/avisos";
 import { useSessioStore } from "../stores/sessio";
 
 const sessio = useSessioStore();
-const { avisos, carregant, error, seleccionat, carregar, obrir } = useAvisos();
+const { avisos, carregant, error, seleccionat, arxivant, carregar, obrir, arxivar } = useAvisos();
 
 onMounted(() => {
   void carregar();
@@ -20,14 +20,20 @@ onMounted(() => {
     <p v-if="sessio.role === 'responsible'" class="mt-2 text-base-content/80">
       Quan canvies o anul·les una reserva, l’avís el rep el coordinador, no aquesta llista.
     </p>
-    <p v-else class="mt-2 text-base-content/80">Canvis que el responsable ha fet a les teves reserves.</p>
+    <p v-else class="mt-2 text-base-content/80">
+      Canvis que el responsable ha fet a les teves reserves. Pots arxivar els ja llegits; s’esborren al cap de tres setmanes.
+    </p>
 
     <div v-if="error" class="alert alert-error mt-6" role="alert">
       <span>{{ error }}</span>
     </div>
-    <p v-else-if="carregant" class="mt-6">Carregant…</p>
+    <p v-if="carregant && avisos.length === 0" class="mt-6">Carregant…</p>
 
-    <section v-else-if="avisos.length === 0" class="card bg-base-100 shadow-sm mt-6" aria-labelledby="buit-avisos">
+    <section
+      v-else-if="!carregant && avisos.length === 0"
+      class="card bg-base-100 shadow-sm mt-6"
+      aria-labelledby="buit-avisos"
+    >
       <div class="card-body">
         <h2 id="buit-avisos" class="card-title">No tens avisos</h2>
         <p v-if="sessio.role === 'responsible'">
@@ -37,15 +43,15 @@ onMounted(() => {
       </div>
     </section>
 
-    <ul v-else class="mt-6 space-y-3">
+    <ul v-else-if="avisos.length" class="mt-6 space-y-3">
       <li v-for="avis in avisos" :key="avis.id">
-        <button
-          class="card bg-base-100 shadow-sm w-full text-left min-h-11"
-          type="button"
-          :aria-expanded="seleccionat === avis.id"
-          @click="obrir(avis.id)"
-        >
-          <div class="card-body">
+        <article class="card bg-base-100 shadow-sm">
+          <button
+            class="card-body w-full text-left min-h-11"
+            type="button"
+            :aria-expanded="seleccionat === avis.id"
+            @click="obrir(avis.id)"
+          >
             <h2 class="card-title text-base" :class="avis.read_at ? 'font-medium' : 'font-semibold'">
               {{ titolAvis(avis) }}
             </h2>
@@ -58,8 +64,19 @@ onMounted(() => {
               <template v-if="avis.reason">. Motiu: {{ avis.reason }}</template>.
             </p>
             <p v-if="!avis.read_at" class="text-sm text-primary">No llegit</p>
+          </button>
+          <div v-if="avis.read_at" class="card-actions justify-end px-8 pb-6 pt-0">
+            <button
+              class="btn btn-ghost min-h-11"
+              type="button"
+              :disabled="arxivant === avis.id"
+              :aria-label="`Arxiva ${titolAvis(avis)}`"
+              @click="arxivar(avis.id)"
+            >
+              Arxiva
+            </button>
           </div>
-        </button>
+        </article>
       </li>
     </ul>
   </main>

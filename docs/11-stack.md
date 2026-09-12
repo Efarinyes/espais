@@ -8,6 +8,7 @@ ADR: [0004](adr/0004-stack-fastapi-vue3-micromamba.md).
 - **Mai** `.venv`, `virtualenv` ni instal·lació global de paquets del projecte.
 - FastAPI, Uvicorn, Pydantic v2, SQLAlchemy 2, Alembic.
 - SQLite en desenvolupament i tests; esquema compatible amb PostgreSQL (tipus, sense extensions SQLite-only a producció futura).
+- Manteniment v1: bucle al lifespan (purga d’avisos arxivats, ADR [0009](adr/0009-purga-avisos-arxivats.md)). Sense Celery ni cron.
 - pytest, httpx.
 
 L’entorn local **ja existeix** (`micromamba/envs/espais`, Python 3.12, stack anterior a conda-forge). No es recrea.

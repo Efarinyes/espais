@@ -75,6 +75,7 @@ describe("EspaisView", () => {
     const wrapper = muntar(apiBuit);
     await flushPromises();
     expect(wrapper.text()).toContain("Encara no heu definit cap espai");
+    expect(wrapper.text()).toContain("Espais de AAVV Barri A");
     expect(wrapper.get("a[href='/espais/nou']").text()).toContain("Defineix el primer espai");
     expect(wrapper.find("#buit-espais").exists()).toBe(true);
   });

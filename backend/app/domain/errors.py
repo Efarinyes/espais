@@ -67,3 +67,7 @@ class InvalidCancellationError(Exception):
 
 class NotificationNotFoundError(Exception):
     """L’avís no existeix per a aquest usuari i entitat."""
+
+
+class NotificationNotReadError(Exception):
+    """Només es poden arxivar avisos ja llegits."""

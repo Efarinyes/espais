@@ -152,9 +152,22 @@ class InMemoryNotificationRepository:
         items = [
             notification
             for notification in self._uow._working_notifications
-            if notification.entity_id == entity_id and notification.user_id == user_id
+            if notification.entity_id == entity_id
+            and notification.user_id == user_id
+            and notification.archived_at is None
         ]
         return sorted(items, key=lambda item: item.created_at, reverse=True)
+
+    def delete_archived_before(self, cutoff: datetime) -> int:
+        kept: list[Notification] = []
+        deleted = 0
+        for notification in self._uow._working_notifications:
+            if notification.archived_at is not None and notification.archived_at <= cutoff:
+                deleted += 1
+            else:
+                kept.append(notification)
+        self._uow._working_notifications = kept
+        return deleted
 
 
 class InMemoryReservationUnitOfWork:

@@ -39,6 +39,23 @@ describe("disponibilitat", () => {
     expect(resumFinestres(diesAFinestres(dies))).toBe("Dilluns 09:00–18:00");
   });
 
+  it("llista els dies amb la mateixa franja i no diu finestres", () => {
+    const dies = diesPerDefecte().map((dia) => ({
+      ...dia,
+      actiu: dia.weekday === 0 || dia.weekday === 2 || dia.weekday === 4,
+    }));
+    expect(resumFinestres(diesAFinestres(dies))).toBe("Dilluns, Dimecres i Divendres 08:00–22:00");
+  });
+
+  it("llista cada dia amb la seva franja si els horaris difereixen", () => {
+    expect(
+      resumFinestres([
+        { weekday: 0, start: "08:00", end: "14:00" },
+        { weekday: 2, start: "16:00", end: "22:00" },
+      ]),
+    ).toBe("Dilluns 08:00–14:00, Dimecres 16:00–22:00");
+  });
+
   it("no trenca si l’API no envia finestres", () => {
     expect(resumFinestres(undefined)).toBe("Sense horari");
     expect(finestresADies(undefined)[0]?.actiu).toBe(false);

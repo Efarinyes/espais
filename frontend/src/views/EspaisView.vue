@@ -15,7 +15,7 @@ const llistaAmpla = computed(() => !error.value && !carregant.value && espais.va
 
 <template>
   <main class="mx-auto w-full px-4 py-6" :class="llistaAmpla ? 'max-w-6xl' : 'max-w-md'">
-    <h1 class="text-3xl font-semibold">Espais de l’entitat</h1>
+    <h1 class="text-3xl font-semibold">Espais de {{ sessio.entityName }}</h1>
 
     <div v-if="error" class="alert alert-error mt-6" role="alert">
       <span>{{ error }}</span>

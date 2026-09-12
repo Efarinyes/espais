@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Protocol
 from uuid import UUID
 
@@ -16,6 +17,8 @@ class NotificationRepository(Protocol):
     def get_by_id(self, entity_id: UUID, notification_id: UUID) -> Notification | None: ...
 
     def list_for_user(self, entity_id: UUID, user_id: UUID) -> list[Notification]: ...
+
+    def delete_archived_before(self, cutoff: datetime) -> int: ...
 
 
 class Notifier(Protocol):

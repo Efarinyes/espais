@@ -3,9 +3,12 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timedelta
 from enum import StrEnum
 from uuid import UUID
+
+
+ARCHIVED_NOTIFICATION_RETENTION = timedelta(weeks=3)
 
 
 class NotificationType(StrEnum):
@@ -35,6 +38,7 @@ class Notification:
     payload: NotificationPayload
     created_at: datetime
     read_at: datetime | None = None
+    archived_at: datetime | None = None
 
 
 def payload_as_dict(payload: NotificationPayload) -> dict[str, str | None]:

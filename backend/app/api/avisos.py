@@ -8,8 +8,9 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
 from app.api.deps import NotificationsHttp, get_notifications_http, require_session
-from app.domain.errors import NotificationNotFoundError
+from app.domain.errors import NotificationNotFoundError, NotificationNotReadError
 from app.domain.notification import NotificationType
+from app.usecases.archive_notification import ArchiveNotificationCommand
 from app.usecases.list_notifications import ListNotificationsQuery, NotificationListItem
 from app.usecases.mark_notification_read import MarkNotificationReadCommand
 from app.usecases.resolve_session import SessionView
@@ -95,3 +96,23 @@ def mark_avis_llegit(
         read_at=notification.read_at,
         created_at=notification.created_at,
     )
+
+
+@router.post("/avisos/{notification_id}/arxivat", status_code=204)
+def archive_avis(
+    notification_id: UUID,
+    view: Annotated[SessionView, Depends(require_session)],
+    notifications: Annotated[NotificationsHttp, Depends(get_notifications_http)],
+) -> None:
+    try:
+        notifications.archive.execute(
+            ArchiveNotificationCommand(
+                entity_id=view.entity_id,
+                actor_user_id=view.user_id,
+                notification_id=notification_id,
+            )
+        )
+    except NotificationNotFoundError:
+        raise HTTPException(status_code=404, detail="aquest avís no existeix") from None
+    except NotificationNotReadError:
+        raise HTTPException(status_code=409, detail="només es poden arxivar avisos ja llegits") from None

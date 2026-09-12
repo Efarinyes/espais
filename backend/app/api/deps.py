@@ -25,6 +25,7 @@ from app.domain.errors import SessionNotFoundError
 from app.ports.identity import TokenIssuer
 from app.ports.notifications import Notifier
 from app.usecases.accept_invitation import AcceptInvitation
+from app.usecases.archive_notification import ArchiveNotification
 from app.usecases.authenticate_user import AuthenticateUser
 from app.usecases.cancel_reservation_by_responsible import CancelReservationByResponsible
 from app.usecases.create_reservation import CreateReservation
@@ -99,6 +100,7 @@ class AnalysisHttp:
 class NotificationsHttp:
     list: ListNotifications
     mark_read: MarkNotificationRead
+    archive: ArchiveNotification
 
 
 def get_identity_http(request: Request) -> Iterator[IdentityHttp]:
@@ -205,6 +207,7 @@ def get_notifications_http(request: Request) -> Iterator[NotificationsHttp]:
         yield NotificationsHttp(
             list=ListNotifications(uow),
             mark_read=MarkNotificationRead(uow, SystemClock()),
+            archive=ArchiveNotification(uow, SystemClock()),
         )
     finally:
         uow.close()

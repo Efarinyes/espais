@@ -19,6 +19,8 @@ Skill: `testing-quality`. Contracte: **cap cas d’ús sense test**.
 - `RecordAttendance` amb `count`; estratègia extensible no trenca.
 - `CancelReservationByResponsible` persisteix avís i crida `Notifier`.
 - Fallada de correu no reverteix l’anul·lació.
+- `ArchiveNotification`: només el destinatari; només avisos ja llegits; tenant A no arxiva B.
+- `PurgeArchivedNotifications`: elimina només arxivats de fa ≥ 3 setmanes; no toca no llegits ni llegits sense arxivar.
 - `GetUsageSummary`: només el responsable; tenant A no veu B; `cancelled` no entra a ocupació; assistència sense zero silenciós.
 
 ## Eines

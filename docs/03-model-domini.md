@@ -71,3 +71,6 @@ Vegeu [07-reserves-assistencia.md](07-reserves-assistencia.md).
 | `RescheduleReservation` | 6 |
 | `CancelReservationByResponsible` | 6 |
 | `GetUsageSummary` | 7 |
+| `ListNotifications` / `MarkNotificationRead` | 6 |
+| `ArchiveNotification` | post-v1 |
+| `PurgeArchivedNotifications` | post-v1 |

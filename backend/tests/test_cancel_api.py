@@ -91,6 +91,34 @@ def test_responsible_cancels_and_coordinator_reads_aviso(sqlite_session_factory)
     assert marked.status_code == 200
     assert marked.json()["read_at"] is not None
 
+    archived = client.post(f"/avisos/{avis_id}/arxivat", headers=headers_coord)
+    assert archived.status_code == 204
+    assert client.get("/avisos", headers=headers_coord).json() == []
+
+
+def test_coordinator_cannot_archive_unread_aviso(sqlite_session_factory) -> None:
+    client = TestClient(create_app(session_factory=sqlite_session_factory))
+    created = _register(client, email="anna-archive-unread@example.com")
+    headers_resp = {"Authorization": f"Bearer {created['token']}"}
+    coord = _invite_coordinator(client, headers_resp, "carla-archive-unread@example.com")
+    headers_coord = {"Authorization": f"Bearer {coord['token']}"}
+    space = client.post("/espais", headers=headers_resp, json={"name": "Sala 1", "capacity": 40})
+    start, end = _slot_iso()
+    posted = client.post(
+        "/reserves",
+        headers=headers_coord,
+        json={"space_id": space.json()["id"], "starts_at": start, "ends_at": end},
+    )
+    assert posted.status_code == 201
+    cancelled = client.post(f"/reserves/{posted.json()['id']}/anulacio", headers=headers_resp)
+    assert cancelled.status_code == 200
+    avis_id = client.get("/avisos", headers=headers_coord).json()[0]["id"]
+
+    response = client.post(f"/avisos/{avis_id}/arxivat", headers=headers_coord)
+    assert response.status_code == 409
+    assert "ja llegits" in response.json()["detail"]
+    assert len(client.get("/avisos", headers=headers_coord).json()) == 1
+
 
 def test_coordinator_cannot_cancel_via_api(sqlite_session_factory) -> None:
     client = TestClient(create_app(session_factory=sqlite_session_factory))
@@ -141,3 +169,4 @@ def test_other_entity_cannot_cancel_or_read_aviso(sqlite_session_factory) -> Non
     avis_id = avisos.json()[0]["id"]
     assert client.get("/avisos", headers=headers_b).json() == []
     assert client.post(f"/avisos/{avis_id}/llegit", headers=headers_b).status_code == 404
+    assert client.post(f"/avisos/{avis_id}/arxivat", headers=headers_b).status_code == 404

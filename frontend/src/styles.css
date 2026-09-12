@@ -47,6 +47,11 @@
   color: var(--color-heading);
 }
 
+[data-theme="espais"] .landing-hero h1,
+[data-theme="espais"] .landing-hero p {
+  color: #ffffff;
+}
+
 [data-theme="espais"] .btn-primary:hover,
 [data-theme="espais"] .btn-primary:active,
 [data-theme="espais"] .btn-primary:focus-visible {

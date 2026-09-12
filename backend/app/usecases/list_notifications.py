@@ -58,4 +58,4 @@ class ListNotifications:
 
     def execute(self, query: ListNotificationsQuery) -> list[NotificationListItem]:
         items = self._uow.notifications.list_for_user(query.entity_id, query.actor_user_id)
-        return [_to_item(item) for item in items]
+        return [_to_item(item) for item in items if item.archived_at is None]

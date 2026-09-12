@@ -20,7 +20,7 @@ Canals v1: **in-app + correu**. No push, no WhatsApp. Una notificació clara al 
 
 ## Model
 
-`Notification`: `entity_id`, `user_id` (coordinador), `reservation_id`, `type` (`reservation_cancelled` \| `reservation_rescheduled`), `payload` (espai, interval antic/nou, motiu opcional), `read_at`, `created_at`.
+`Notification`: `entity_id`, `user_id` (coordinador), `reservation_id`, `type` (`reservation_cancelled` \| `reservation_rescheduled`), `payload` (espai, interval antic/nou, motiu opcional), `read_at`, `archived_at`, `created_at`.
 
 Enviar correu és un **port** (`Notifier`). Implementació v1: SMTP configurable; en tests, fake in-memory. El cas d’ús no parla d’SMTP.
 
@@ -42,4 +42,6 @@ El coordinador és qui avisa els participants; l’app no té la llista.
 
 - Indicador de no llegits a la navegació del coordinador.
 - Llista d’avisos; marcar com a llegit en obrir.
+- El coordinador pot **arxivar** un avís ja llegit: surt de la safata. No es poden arxivar els no llegits. No hi ha restaurar.
+- Els avisos arxivats s’**eliminen automàticament al cap de 3 setmanes** (`PurgeArchivedNotifications`, ADR [0009](adr/0009-purga-avisos-arxivats.md)). Els no arxivats no es toquen.
 - Confirmació d’anul·lació al responsable: avís explícit que es notificarà el coordinador.

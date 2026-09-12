@@ -5,9 +5,9 @@ import { createMemoryHistory, createRouter } from "vue-router";
 import { mount } from "@vue/test-utils";
 
 import { useAvisos } from "./useAvisos";
+import { ApiError, type SessioDto } from "../services/identitat";
 import { avisosApiKey, titolAvis, type AvisDto, type AvisosApi } from "../services/avisos";
 import { useSessioStore } from "../stores/sessio";
-import type { SessioDto } from "../services/identitat";
 
 const sessioCoord: SessioDto = {
   token: "tok",
@@ -60,6 +60,7 @@ async function muntar(api: Partial<AvisosApi> = {}) {
         [avisosApiKey as symbol]: {
           llistar: async () => [avis()],
           marcarLlegit: async (_token, id) => avis({ id, read_at: "2026-09-08T11:00:00Z" }),
+          arxivar: async () => undefined,
           ...api,
         } satisfies AvisosApi,
       },
@@ -100,5 +101,45 @@ describe("useAvisos", () => {
     await wrapper.vm.carregar();
     expect(wrapper.vm.avisos).toEqual([]);
     expect(wrapper.vm.noLlegits).toBe(0);
+  });
+
+  it("arxiva un avís ja llegit i el treu de la llista", async () => {
+    let arxivat: string | null = null;
+    const wrapper = await muntar({
+      llistar: async () => [avis({ read_at: "2026-09-08T11:00:00Z" })],
+      arxivar: async (_token, id) => {
+        arxivat = id;
+      },
+    });
+    await wrapper.vm.carregar();
+    await wrapper.vm.arxivar("n1");
+    expect(arxivat).toBe("n1");
+    expect(wrapper.vm.avisos).toEqual([]);
+  });
+
+  it("no arxiva un avís no llegit", async () => {
+    let cridat = false;
+    const wrapper = await muntar({
+      arxivar: async () => {
+        cridat = true;
+      },
+    });
+    await wrapper.vm.carregar();
+    await wrapper.vm.arxivar("n1");
+    expect(cridat).toBe(false);
+    expect(wrapper.vm.avisos).toHaveLength(1);
+  });
+
+  it("si arxivar falla, manté l’avís i mostra error", async () => {
+    const wrapper = await muntar({
+      llistar: async () => [avis({ read_at: "2026-09-08T11:00:00Z" })],
+      arxivar: async () => {
+        throw new ApiError("només es poden arxivar avisos ja llegits", 409);
+      },
+    });
+    await wrapper.vm.carregar();
+    await wrapper.vm.arxivar("n1");
+    expect(wrapper.vm.avisos).toHaveLength(1);
+    expect(wrapper.vm.error).toBe("només es poden arxivar avisos ja llegits");
   });
 });

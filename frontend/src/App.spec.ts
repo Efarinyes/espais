@@ -30,6 +30,8 @@ function muntar(dto?: SessioDto) {
     history: createMemoryHistory(),
     routes: [
       { path: "/", name: "inici", component: { template: "<div />" } },
+      { path: "/registre", name: "registre", component: { template: "<div />" } },
+      { path: "/iniciar-sessio", name: "iniciar-sessio", component: { template: "<div />" } },
       { path: "/espais", name: "espais", component: { template: "<div />" } },
       { path: "/calendari", name: "calendari", component: { template: "<div />" } },
       { path: "/avisos", name: "avisos", component: { template: "<div />" } },
@@ -54,6 +56,7 @@ function muntar(dto?: SessioDto) {
       read_at: "2026-09-08T11:00:00Z",
       created_at: "2026-09-08T10:00:00Z",
     }),
+    arxivar: async () => undefined,
   };
   return mount(App, {
     global: {
@@ -73,6 +76,11 @@ describe("App", () => {
     expect(wrapper.text()).not.toContain("Coordinador");
     expect(wrapper.text()).toContain("Anàlisi");
     expect(wrapper.get("nav[aria-label='Principal']").text()).toContain("Menú");
+    expect(wrapper.get("nav[aria-label='Principal']").text()).toContain("Els espais");
+    expect(wrapper.get("nav[aria-label='Principal']").text()).not.toContain("Avisos");
+    expect(wrapper.get("footer").text()).toContain("Eduard Farinyes");
+    expect(wrapper.get("footer").text()).toContain("Codi obert");
+    expect(wrapper.get("footer").text()).toContain("ús intern i gratuït");
   });
 
   it("mostra l’insígnia de coordinador", () => {
@@ -80,11 +88,18 @@ describe("App", () => {
     expect(wrapper.text()).toContain("Coordinador");
     expect(wrapper.text()).not.toContain("Responsable");
     expect(wrapper.text()).not.toContain("Anàlisi");
+    expect(wrapper.get("nav[aria-label='Principal']").text()).toContain("Avisos");
+    expect(wrapper.get("nav[aria-label='Principal']").text()).toContain("Els espais");
   });
 
-  it("no mostra rol sense sessió", () => {
+  it("no mostra rol sense sessió i posa l’accés al capçal", () => {
     const wrapper = muntar();
     expect(wrapper.text()).not.toContain("Responsable");
     expect(wrapper.text()).not.toContain("Coordinador");
+    expect(wrapper.find("nav[aria-label='Principal']").exists()).toBe(false);
+    const acces = wrapper.get("nav[aria-label='Accés']");
+    expect(acces.get("a[href='/iniciar-sessio']").text()).toContain("Inicia sessió");
+    expect(acces.get("a[href='/registre']").text()).toContain("Registra l’entitat");
+    expect(wrapper.get("footer").text()).toMatch(/© \d{4} Eduard Farinyes · Codi obert/);
   });
 });

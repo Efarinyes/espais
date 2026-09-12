@@ -81,17 +81,30 @@ export function resumFinestres(windows: FinestraDto[] | null | undefined): strin
   if (!windows?.length) {
     return "Sense horari";
   }
-  const franges = new Set(windows.map((finestra) => `${horaCurta(finestra.start)}–${horaCurta(finestra.end)}`));
-  const etiq = windows
-    .map((finestra) => DIES_SETMANA.find((dia) => dia.weekday === finestra.weekday)?.etiqueta ?? "")
-    .filter(Boolean);
+  const ambEtiqueta = windows
+    .map((finestra) => {
+      const etiqueta = DIES_SETMANA.find((dia) => dia.weekday === finestra.weekday)?.etiqueta ?? "";
+      return { etiqueta, franja: `${horaCurta(finestra.start)}–${horaCurta(finestra.end)}` };
+    })
+    .filter((item) => item.etiqueta);
+  const franges = new Set(ambEtiqueta.map((item) => item.franja));
   if (windows.length === 7 && franges.size === 1) {
     return `Tots els dies ${[...franges][0]}`;
   }
   if (franges.size === 1) {
-    return `${etiq.join(", ")} ${[...franges][0]}`;
+    return `${uneixNoms(ambEtiqueta.map((item) => item.etiqueta))} ${[...franges][0]}`;
   }
-  return `${windows.length} finestres`;
+  return ambEtiqueta.map((item) => `${item.etiqueta} ${item.franja}`).join(", ");
+}
+
+function uneixNoms(noms: string[]): string {
+  if (noms.length <= 1) {
+    return noms[0] ?? "";
+  }
+  if (noms.length === 2) {
+    return `${noms[0]} i ${noms[1]}`;
+  }
+  return `${noms.slice(0, -1).join(", ")} i ${noms[noms.length - 1]}`;
 }
 
 export const PIXELS_PER_HORA = 140;

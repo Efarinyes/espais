@@ -13,6 +13,7 @@ export function useAvisos() {
   const carregant = ref(false);
   const error = ref("");
   const seleccionat = ref<string | null>(null);
+  const arxivant = ref<string | null>(null);
 
   const noLlegits = computed(() => avisos.value.filter((avis) => avis.read_at == null).length);
 
@@ -47,7 +48,27 @@ export function useAvisos() {
     }
   }
 
-  return { avisos, carregant, error, seleccionat, noLlegits, carregar, obrir };
+  async function arxivar(avisId: string) {
+    const actual = avisos.value.find((avis) => avis.id === avisId);
+    if (!sessio.token || !actual || !actual.read_at || arxivant.value) {
+      return;
+    }
+    arxivant.value = avisId;
+    error.value = "";
+    try {
+      await api.arxivar(sessio.token, avisId);
+      avisos.value = avisos.value.filter((avis) => avis.id !== avisId);
+      if (seleccionat.value === avisId) {
+        seleccionat.value = null;
+      }
+    } catch (err) {
+      error.value = err instanceof ApiError ? err.message : "No s’ha pogut arxivar l’avís.";
+    } finally {
+      arxivant.value = null;
+    }
+  }
+
+  return { avisos, carregant, error, seleccionat, arxivant, noLlegits, carregar, obrir, arxivar };
 }
 
 export function useComptadorAvisos() {

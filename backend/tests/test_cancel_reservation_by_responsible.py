@@ -11,6 +11,7 @@ from app.domain.errors import (
     ForbiddenError,
     InvalidCancellationError,
     NotificationNotFoundError,
+    NotificationNotReadError,
     ReservationNotFoundError,
 )
 from app.domain.identity import MembershipRole
@@ -22,6 +23,7 @@ from app.usecases.cancel_reservation_by_responsible import (
     CancelReservationByResponsibleCommand,
 )
 from app.usecases.create_reservation import CreateReservation, CreateReservationCommand
+from app.usecases.archive_notification import ArchiveNotification, ArchiveNotificationCommand
 from app.usecases.list_notifications import ListNotifications, ListNotificationsQuery
 from app.usecases.list_reservations import ListReservations, ListReservationsQuery
 from app.usecases.mark_notification_read import MarkNotificationRead, MarkNotificationReadCommand
@@ -227,6 +229,78 @@ def test_cannot_mark_someone_elses_notification() -> None:
     with pytest.raises(NotificationNotFoundError):
         marker.execute(
             MarkNotificationReadCommand(
+                entity_id=ENTITY_B,
+                actor_user_id=USER_A,
+                notification_id=cancelled.notification.id,
+            )
+        )
+
+
+def test_coordinator_archives_read_notification() -> None:
+    canceller, uow, _mail, reservation_id = _setup()
+    cancelled = canceller.execute(_command(reservation_id))
+    MarkNotificationRead(uow, FixedClock()).execute(
+        MarkNotificationReadCommand(
+            entity_id=ENTITY_A,
+            actor_user_id=USER_A,
+            notification_id=cancelled.notification.id,
+        )
+    )
+    result = ArchiveNotification(uow, FixedClock()).execute(
+        ArchiveNotificationCommand(
+            entity_id=ENTITY_A,
+            actor_user_id=USER_A,
+            notification_id=cancelled.notification.id,
+        )
+    )
+    assert result.notification.archived_at is not None
+    stored = uow.notifications.get_by_id(ENTITY_A, cancelled.notification.id)
+    assert stored is not None
+    assert stored.archived_at is not None
+    inbox = ListNotifications(uow).execute(ListNotificationsQuery(entity_id=ENTITY_A, actor_user_id=USER_A))
+    assert inbox == []
+
+
+def test_cannot_archive_unread_notification() -> None:
+    canceller, uow, _mail, reservation_id = _setup()
+    cancelled = canceller.execute(_command(reservation_id))
+    with pytest.raises(NotificationNotReadError):
+        ArchiveNotification(uow, FixedClock()).execute(
+            ArchiveNotificationCommand(
+                entity_id=ENTITY_A,
+                actor_user_id=USER_A,
+                notification_id=cancelled.notification.id,
+            )
+        )
+    stored = uow.notifications.get_by_id(ENTITY_A, cancelled.notification.id)
+    assert stored is not None
+    assert stored.archived_at is None
+    inbox = ListNotifications(uow).execute(ListNotificationsQuery(entity_id=ENTITY_A, actor_user_id=USER_A))
+    assert len(inbox) == 1
+
+
+def test_cannot_archive_someone_elses_notification() -> None:
+    canceller, uow, _mail, reservation_id = _setup()
+    cancelled = canceller.execute(_command(reservation_id))
+    MarkNotificationRead(uow, FixedClock()).execute(
+        MarkNotificationReadCommand(
+            entity_id=ENTITY_A,
+            actor_user_id=USER_A,
+            notification_id=cancelled.notification.id,
+        )
+    )
+    archiver = ArchiveNotification(uow, FixedClock())
+    with pytest.raises(NotificationNotFoundError):
+        archiver.execute(
+            ArchiveNotificationCommand(
+                entity_id=ENTITY_A,
+                actor_user_id=USER_B,
+                notification_id=cancelled.notification.id,
+            )
+        )
+    with pytest.raises(NotificationNotFoundError):
+        archiver.execute(
+            ArchiveNotificationCommand(
                 entity_id=ENTITY_B,
                 actor_user_id=USER_A,
                 notification_id=cancelled.notification.id,

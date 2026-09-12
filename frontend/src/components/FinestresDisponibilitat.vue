@@ -28,9 +28,13 @@ function marcaHora(weekday: number, camp: "start" | "end", event: Event) {
   <div>
     <h2 class="text-base font-semibold">Disponibilitat</h2>
     <p class="mt-1 text-sm text-base-content/70">Dies i horari en què es pot reservar. Fus Europe/Madrid.</p>
-    <ul class="mt-3 space-y-3">
-      <li v-for="dia in dies" :key="dia.weekday" class="rounded-box border border-base-300 bg-base-100 p-3">
-        <label class="flex cursor-pointer items-center gap-3 min-h-11">
+    <ul class="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-7 md:gap-2">
+      <li
+        v-for="dia in dies"
+        :key="dia.weekday"
+        class="rounded-box border border-base-300 bg-base-100 p-3 md:p-2"
+      >
+        <label class="flex cursor-pointer items-center gap-3 min-h-11 md:flex-col md:items-start md:gap-1">
           <input
             class="checkbox"
             type="checkbox"
@@ -39,7 +43,7 @@ function marcaHora(weekday: number, camp: "start" | "end", event: Event) {
           />
           <span class="font-medium">{{ dia.etiqueta }}</span>
         </label>
-        <div v-if="dia.actiu" class="mt-2 grid grid-cols-2 gap-2">
+        <div v-if="dia.actiu" class="mt-2 grid grid-cols-2 gap-2 md:grid-cols-1">
           <div>
             <label class="text-sm" :for="`inici-${dia.weekday}`">Inici</label>
             <input
