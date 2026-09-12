@@ -55,6 +55,50 @@
   border-color: #075985;
 }
 
+.skip-link {
+  position: absolute;
+  left: 1rem;
+  top: -3rem;
+  z-index: 100;
+  padding: 0.5rem 1rem;
+  border-radius: 0.75rem;
+  background: #075985;
+  color: #fff;
+  min-height: 2.75rem;
+}
+
+.skip-link:focus {
+  top: 1rem;
+}
+
+dialog.modal.modal-open {
+  animation: modal-fons 0.2s ease;
+}
+
+dialog.modal.modal-open .modal-box {
+  animation: modal-caixa 0.2s ease;
+}
+
+@keyframes modal-fons {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modal-caixa {
+  from {
+    opacity: 0;
+    transform: translateY(0.75rem);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 .calendari-espais .sx-vue-calendar-wrapper {
   width: 100%;
   height: min(78vh, var(--cal-alcada, 880px));

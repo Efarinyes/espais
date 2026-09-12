@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, shallowRef, watch } from "vue";
+import { RouterLink } from "vue-router";
 import { ScheduleXCalendar } from "@schedule-x/vue";
 import { createCalendar, createViewDay, createViewWeek } from "@schedule-x/calendar";
 import { createEventsServicePlugin } from "@schedule-x/events-service";
@@ -322,8 +323,15 @@ watch(calendarApp, (app) => {
       aria-labelledby="buit-cal-titol"
     >
       <div class="card-body">
-        <h2 id="buit-cal-titol" class="card-title">Encara no hi ha espais</h2>
-        <p>Cal que el responsable n’hagi definit un abans de reservar.</p>
+        <template v-if="esResponsable">
+          <h2 id="buit-cal-titol" class="card-title">Encara no heu definit cap espai</h2>
+          <p>El nom el trieu vosaltres (Sala 1 o Sala Pau Casals).</p>
+          <RouterLink class="btn btn-primary min-h-11" to="/espais/nou">Defineix el primer espai</RouterLink>
+        </template>
+        <template v-else>
+          <h2 id="buit-cal-titol" class="card-title">Encara no hi ha espais</h2>
+          <p>Cal que el responsable n’hagi definit un abans de reservar.</p>
+        </template>
       </div>
     </section>
 

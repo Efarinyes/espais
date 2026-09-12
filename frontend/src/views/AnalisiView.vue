@@ -35,11 +35,11 @@ function etiquetaEstat(status: string): string {
     <h1 class="text-3xl font-semibold">Anàlisi d’ús</h1>
     <p class="mt-2 text-base-content/80">Ocupació, reserves i assistència de la vostra entitat.</p>
 
-    <label class="form-control mt-6 max-w-xs">
+    <label class="form-control mt-6 max-w-xs" for="mes">
       <span class="label">
         <span class="label-text">Mes</span>
       </span>
-      <input v-model="mes" class="input input-bordered min-h-11" type="month" name="mes" />
+      <input id="mes" v-model="mes" class="input input-bordered min-h-11" type="month" name="mes" />
     </label>
 
     <div v-if="error" class="alert alert-error mt-6" role="alert">
@@ -109,7 +109,28 @@ function etiquetaEstat(status: string): string {
 
         <section class="mt-8" aria-labelledby="per-espai">
           <h2 id="per-espai" class="text-xl font-semibold">Per espai</h2>
-          <div class="mt-3 overflow-x-auto">
+          <ul class="mt-3 space-y-3 md:hidden">
+            <li v-for="espai in resum.spaces" :key="espai.space_id">
+              <article class="card bg-base-100 shadow-sm">
+                <div class="card-body">
+                  <h3 class="card-title text-base">{{ espai.space_name }}</h3>
+                  <p>Reserves: {{ espai.confirmed_count }} · Anul·lades: {{ espai.cancelled_count }}</p>
+                  <p>
+                    Ocupació: {{ percentatgeOcupacio(espai.occupancy_ratio) }}
+                    ({{ horesEtiqueta(espai.reserved_hours) }} / {{ horesEtiqueta(espai.available_hours) }})
+                  </p>
+                  <p>
+                    Assistència:
+                    {{ assistenciaEtiqueta(espai.average_attendance, espai.unregistered_count) }}
+                  </p>
+                  <p v-if="espai.below_min_attendance" class="text-sm text-error">
+                    Per sota de l’aforament mínim
+                  </p>
+                </div>
+              </article>
+            </li>
+          </ul>
+          <div class="mt-3 hidden overflow-x-auto md:block">
             <table class="table">
               <thead>
                 <tr>

@@ -1,6 +1,6 @@
 import { onMounted, ref, watch } from "vue";
 
-import { periodeDelMes, mesEnCursMadrid } from "../analisi";
+import { FUS_HORARI_PER_DEFECTE, periodeDelMes, mesEnCursTimeZone } from "../analisi";
 import { ApiError } from "../services/identitat";
 import { requireAnalisiApi, type ResumUsDto } from "../services/analisi";
 import { requireReservesApi, type ReservaDto } from "../services/reserves";
@@ -10,7 +10,8 @@ export function useAnalisi() {
   const analisiApi = requireAnalisiApi();
   const reservesApi = requireReservesApi();
   const sessio = useSessioStore();
-  const mes = ref(mesEnCursMadrid());
+  const fusHorari = FUS_HORARI_PER_DEFECTE;
+  const mes = ref(mesEnCursTimeZone(fusHorari));
   const resum = ref<ResumUsDto | null>(null);
   const reserves = ref<ReservaDto[]>([]);
   const carregant = ref(false);
@@ -24,7 +25,7 @@ export function useAnalisi() {
     }
     carregant.value = true;
     error.value = "";
-    const { des, fins } = periodeDelMes(mes.value);
+    const { des, fins } = periodeDelMes(mes.value, fusHorari);
     try {
       const [usage, llista] = await Promise.all([
         analisiApi.resum(sessio.token, des, fins),

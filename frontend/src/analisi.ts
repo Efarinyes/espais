@@ -1,15 +1,24 @@
 import "temporal-polyfill/global";
 
-export function mesEnCursMadrid(ara = Temporal.Now.zonedDateTimeISO("Europe/Madrid")): string {
-  return `${ara.year.toString().padStart(4, "0")}-${ara.month.toString().padStart(2, "0")}`;
+export const FUS_HORARI_PER_DEFECTE = "Europe/Madrid";
+
+export function mesEnCursTimeZone(
+  timeZone: string = FUS_HORARI_PER_DEFECTE,
+  ara: Temporal.ZonedDateTime = Temporal.Now.zonedDateTimeISO(timeZone),
+): string {
+  const local = ara.withTimeZone(timeZone);
+  return `${local.year.toString().padStart(4, "0")}-${local.month.toString().padStart(2, "0")}`;
 }
 
-export function periodeDelMes(yyyyMm: string): { des: string; fins: string } {
+export function periodeDelMes(
+  yyyyMm: string,
+  timeZone: string = FUS_HORARI_PER_DEFECTE,
+): { des: string; fins: string } {
   const [yearText, monthText] = yyyyMm.split("-");
   const year = Number(yearText);
   const month = Number(monthText);
   const inici = Temporal.ZonedDateTime.from({
-    timeZone: "Europe/Madrid",
+    timeZone,
     year,
     month,
     day: 1,

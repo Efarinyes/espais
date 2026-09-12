@@ -4,29 +4,28 @@ Actualitza aquest arxiu al final de cada sessió. És el punt d’arrencada del 
 
 ## Fase
 
-- **Fase actual:** 8 — Poliment (mobile, a11y, empty/error, PWA en mòbil real)
-- **Fase anterior:** 7 — Anàlisi (feta: `GetUsageSummary`, ocupació, anul·lades, assistència mitjana)
+- **Fase actual:** v1 tancada al pla (fases 0–8). Backlog explícit.
+- **Fase anterior:** 8 — Poliment (feta: navbar mòbil, skip-link, empty/error, modal suau)
 
 ## Darrera feina
 
 A `fase/3-espais`:
 
-- Fase 7: cas d’ús `GetUsageSummary` (només responsable, sempre `entity_id`). Ocupació = hores `confirmed` / finestres del període (`domain/occupancy`). Anul·lades compten a part; assistència mitjana ignora les reserves sense `AttendanceRecord`.
-- API `GET /analisi` i llista `GET /reserves?inclou_anulades=` (el calendari segueix sense anul·lades).
-- UI `/analisi`: mes en curs, resum, taula per espai, empty «període sense dades». Navbar Anàlisi només al responsable.
-- Revisió `architecture-solid`: neta. El coordinador no depèn d’`AnalysisHttp`. Anul·lades «per qui» fora (no hi ha `cancelled_by`).
+- Fase 8: menú compacte a mòbil (`details` + `Menú`); enllaços complets des de `lg`. Skip-link «Ves al contingut». Empty del calendari amb CTA si ets responsable. Anàlisi: targetes per espai a mòbil, taula a `md+`; `label` del mes. Modal del calendari amb animació curta. Login: copy sense «del responsable».
+- `mesEnCursTimeZone` + `FUS_HORARI_PER_DEFECTE` (Europe/Madrid a v1).
+- No s’ha partit `useCalendariReserves`.
 
-pytest 145 verds; Vitest 99 verds; `vue-tsc --noEmit` verd.
+Vitest 99 verds; `vue-tsc --noEmit` verd.
 
 ## Següent tasca
 
-Arrencar Fase 8: recorregut mobile dels fluxos crítics (registre, espais, reserva, anul·lació, anàlisi) i empty/error. Skills: `session-start`, `ui-ux-mobile`, `architecture-solid`, `testing-quality`.
+Backlog o publicar GitHub, només sota demanda. PWA: instal·lar des d’un mòbil real (ADR 0006 ja a l’esquelet).
 
 Remot GitHub: encara sota demanda. Sense `origin`.
 
 ## Blockers
 
-Cap. API `http://127.0.0.1:8000`; front `http://127.0.0.1:5173`. El login interactiu al navegador de l’agent va quedar bloquejat; la ruta `/analisi` sense sessió redirigeix a iniciar sessió.
+Cap. API `http://127.0.0.1:8000`; front `http://127.0.0.1:5173`.
 
 ## ADRs oberts / recents
 
@@ -39,7 +38,7 @@ Cap. API `http://127.0.0.1:8000`; front `http://127.0.0.1:5173`. El login intera
 - [0007](docs/adr/0007-calendari-polling.md) — acceptat (polling v1; sockets = adaptador futur)
 - [0008](docs/adr/0008-responsable-no-crea-reserves.md) — acceptat (el responsable reprograma i anul·la; no crea)
 
-Cap ADR nou. Distingir anul·lació responsable vs coordinador a l’anàlisi: no ara.
+Cap ADR nou.
 
 ## Notes
 
@@ -48,5 +47,5 @@ Cap ADR nou. Distingir anul·lació responsable vs coordinador a l’anàlisi: n
 - Micromamba: `micromamba run -n espais pytest`; no `env create` si `espais` existeix.
 - Front: `cd frontend && npm test` / `npm run dev`. Vue no global. Tema Daisy `espais`; toc ≥ 44px (`min-h-11`).
 - PWA: instal·lable; no desregistrar el SW en DEV. `navigateFallbackDenylist` inclou `/avisos` i `/analisi`.
-- Deute conscient: split de `useCalendariReserves` / drag = Fase 8 si el composable creix. Obertura/tancament del modal una mica bruscs: retoc CSS a Fase 8. CSV d’anàlisi = backlog.
+- Deute conscient: split de `useCalendariReserves` / drag = si el composable torna a créixer. CSV d’anàlisi = backlog.
 - El coordinador reprograma la seva reserva sense avís; l’avís només el dispara el responsable.

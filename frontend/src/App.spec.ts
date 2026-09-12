@@ -67,11 +67,12 @@ function muntar(dto?: SessioDto) {
 }
 
 describe("App", () => {
-  it("mostra l’insígnia de responsable", () => {
+  it("mostra el menú compacte i Anàlisi al responsable", () => {
     const wrapper = muntar(sessioResp);
     expect(wrapper.text()).toContain("Responsable");
     expect(wrapper.text()).not.toContain("Coordinador");
     expect(wrapper.text()).toContain("Anàlisi");
+    expect(wrapper.get("nav[aria-label='Principal']").text()).toContain("Menú");
   });
 
   it("mostra l’insígnia de coordinador", () => {

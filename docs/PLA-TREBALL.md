@@ -148,7 +148,7 @@ Revisió `architecture-solid` (2026-09-10): neta a capes de negoci. Deute consci
 
 Revisió `architecture-solid` (2026-09-12): neta a capes de negoci. `GetUsageSummary` agrega amb `entity_id`; el càlcul d’hores viu a `domain/occupancy`; el router i la vista no agreguen. El coordinador no depèn d’interfícies d’anàlisi (`AnalysisHttp` separat). Anul·lades «per qui» queda fora (no hi ha `cancelled_by`). CSV i gràfics pesats = backlog.
 
-## Fase 8 — Poliment
+## Fase 8 — Poliment (feta)
 
 **Objectiu:** producte usable en mòbil, accessible, errors i buits clars.
 
@@ -163,6 +163,8 @@ Revisió `architecture-solid` (2026-09-12): neta a capes de negoci. `GetUsageSum
 **Skills:** `ui-ux-mobile`, `architecture-solid`, `testing-quality`.
 
 **Criteri fet:** verificació visual dels fluxos crítics; cap regressió de tests.
+
+Revisió `architecture-solid` (2026-09-12): neta. Navbar compacta (`<details>` a mòbil, enllaços a `lg`); skip-link; empty del calendari amb CTA al responsable. No s’ha partit `useCalendariReserves` (no ha crescut). PWA: instal·lable (ADR 0006); verificació en mòbil físic = l’usuari.
 
 ## Backlog explícit (fora de v1)
 
