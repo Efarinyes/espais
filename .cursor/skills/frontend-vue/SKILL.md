@@ -20,7 +20,7 @@ Només `frontend/`. Mai `npm install -g vue` ni Vue CLI global.
 
 - [ ] Copy en català, glossari respectat
 - [ ] Mobile-first (toc ≥ 44px, `min-h-11`)
-- [ ] Tailwind + DaisyUI, tema `espais` paleta mediterrània (ADR 0006)
+- [ ] Tailwind + DaisyUI, paleta d’entitat ADR 0011 (defecte `mar-cel`; mode al navegador)
 - [ ] PWA instal·lable; l’API no és offline
 - [ ] Estats loading / error / empty
 - [ ] Sense regles de solapament només al client (el back valida)

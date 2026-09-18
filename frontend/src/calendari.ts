@@ -45,13 +45,14 @@ export function etiquetaDurada(minuts: number): string {
 }
 
 const PALETA = [
-  { main: "#1677A8", container: "#DFF3FA", onContainer: "#202A2E" },
-  { main: "#C9922E", container: "#F2E5CC", onContainer: "#202A2E" },
-  { main: "#657A35", container: "#E8F0D8", onContainer: "#202A2E" },
-  { main: "#D83A4B", container: "#FADCE0", onContainer: "#202A2E" },
-  { main: "#075985", container: "#D6EEF8", onContainer: "#202A2E" },
-  { main: "#E97825", container: "#FDE4D0", onContainer: "#202A2E" },
-  { main: "#7A5528", container: "#EFE0CC", onContainer: "#202A2E" },
+  { main: "#0B5ED7", container: "#BFDBFE", onContainer: "#0F172A", darkContainer: "#163A5F", darkOn: "#F1F5F9" },
+  { main: "#14B8A6", container: "#CCFBF1", onContainer: "#0F172A", darkContainer: "#134E4A", darkOn: "#F1F5F9" },
+  { main: "#F7B955", container: "#EAD9C6", onContainer: "#202A2E", darkContainer: "#3D3226", darkOn: "#F5EDE3" },
+  { main: "#6B8E5A", container: "#E8F0D8", onContainer: "#202A2E", darkContainer: "#1F2E1A", darkOn: "#F5EDE3" },
+  { main: "#C96F4A", container: "#F6E0D6", onContainer: "#202A2E", darkContainer: "#4A2A1C", darkOn: "#F5EDE3" },
+  { main: "#F97316", container: "#FFEDD5", onContainer: "#202A2E", darkContainer: "#3D2810", darkOn: "#FFF7E6" },
+  { main: "#9B2C3D", container: "#F4D6DB", onContainer: "#202A2E", darkContainer: "#3F1520", darkOn: "#F5EDE6" },
+  { main: "#8B5CF6", container: "#EDE9FE", onContainer: "#202A2E", darkContainer: "#2E1A5C", darkOn: "#F5EDE6" },
 ] as const;
 
 function colorNom(index: number): string {
@@ -68,17 +69,22 @@ function colorNom(index: number): string {
 export type ColorCalendari = {
   colorName: string;
   lightColors: { main: string; container: string; onContainer: string };
+  darkColors: { main: string; container: string; onContainer: string };
 };
 
 export function calendarisPerEspais(espais: { id: string }[]): Record<string, ColorCalendari> {
   return Object.fromEntries(
-    espais.map((espai, index) => [
-      espai.id,
-      {
-        colorName: colorNom(index),
-        lightColors: { ...PALETA[index % PALETA.length] },
-      },
-    ]),
+    espais.map((espai, index) => {
+      const to = PALETA[index % PALETA.length];
+      return [
+        espai.id,
+        {
+          colorName: colorNom(index),
+          lightColors: { main: to.main, container: to.container, onContainer: to.onContainer },
+          darkColors: { main: to.main, container: to.darkContainer, onContainer: to.darkOn },
+        },
+      ];
+    }),
   );
 }
 

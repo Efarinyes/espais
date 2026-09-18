@@ -27,6 +27,7 @@ def _entity_from_row(row: EntityRow) -> Entity:
         name=row.name,
         typology=row.typology,
         created_at=_aware(row.created_at),
+        palette=row.palette,
     )
 
 
@@ -71,6 +72,7 @@ class SqlAlchemyEntityRepository:
                 id=entity.id,
                 name=entity.name,
                 typology=entity.typology,
+                palette=entity.palette,
                 created_at=entity.created_at,
             )
         )
@@ -81,6 +83,15 @@ class SqlAlchemyEntityRepository:
         if row is None:
             return None
         return _entity_from_row(row)
+
+    def save(self, entity: Entity) -> None:
+        row = self._session.get(EntityRow, entity.id)
+        if row is None:
+            return
+        row.name = entity.name
+        row.typology = entity.typology
+        row.palette = entity.palette
+        self._session.flush()
 
     def list_all(self) -> list[Entity]:
         rows = self._session.scalars(select(EntityRow)).all()

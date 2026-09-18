@@ -17,7 +17,7 @@ Termes estables. No substituir-los per sinònims al codi, a la UI ni als docs.
 | **Reserva** | Ocupació d’un espai per un coordinador en un interval. Pot ser per a una activitat interna o oberta al públic. Sense preu. | booking (a la UI), slot, venda |
 | **Assistència** | Nombre d’assistents registrat pel coordinador (v1). | llista, check-in, participant |
 | **Avís** | Notificació in-app + correu al coordinador quan el responsable anul·la (o reprograma). | alerta, push (v1 no promet push) |
-| **Anàlisi** | Vistes d’ús per al responsable (ocupació, reserves, assistència). | dashboard BI, informe PDF (v1) |
+| **Anàlisi** | Vistes d’ús per al responsable (ocupació, reserves, assistència). A la UI: **Estadístiques**. | dashboard BI, informe PDF (v1) |
 
 ## Identificadors al codi
 

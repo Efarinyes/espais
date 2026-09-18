@@ -18,6 +18,7 @@ class SessionView:
     entity_name: str
     user_name: str
     typology: str | None
+    palette: str
 
 
 class ResolveSession:
@@ -39,4 +40,5 @@ class ResolveSession:
             entity_name=entity.name,
             user_name=user.name,
             typology=entity.typology,
+            palette=entity.palette,
         )

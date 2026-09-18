@@ -8,4 +8,4 @@ alwaysApply: false
 
 Només aquest directori; mai Vue global. Vistes primes; lògica a composables; HTTP amb `provide`/`inject`. Pinia per sessió, no per cada llista.
 
-Copy català (glossari). Mobile-first, empty/loading/error. Tailwind + DaisyUI (paleta mediterrània). PWA instal·lable. El backend valida solapaments. Skills: `frontend-vue`, `ui-ux-mobile`.
+Copy català (glossari). Mobile-first, empty/loading/error. Tailwind + DaisyUI (paletes ADR 0010). PWA instal·lable. El backend valida solapaments. Skills: `frontend-vue`, `ui-ux-mobile`.

@@ -39,6 +39,8 @@ Punt de mapa. Llegeix [`SESSION.md`](../SESSION.md) abans de qualsevol capítol.
 - [adr/0007-calendari-polling.md](adr/0007-calendari-polling.md)
 - [adr/0008-responsable-no-crea-reserves.md](adr/0008-responsable-no-crea-reserves.md)
 - [adr/0009-purga-avisos-arxivats.md](adr/0009-purga-avisos-arxivats.md)
+- [adr/0010-aparença-paleta-mode.md](adr/0010-aparença-paleta-mode.md)
+- [adr/0011-paleta-entitat-mode-personal.md](adr/0011-paleta-entitat-mode-personal.md)
 
 ## Skills i rules
 

@@ -15,7 +15,7 @@ Només el **responsable**. Dades exclusives de la seva `entity_id`.
 2. Detall per espai.
 3. Llista de reserves del període (reutilitza el llistat de govern, amb filtres).
 
-Sense cub OLAP, CSV export opcional backlog. Gràfics simples (barres per espai) si el front ho permet sense llibreria pesada; taules primer.
+Sense cub OLAP, CSV export opcional backlog. A la UI el responsable veu **Estadístiques** (ruta `/analisi`). Gràfics simples (barres per espai) sense llibreria pesada; taules o targetes.
 
 ## Regles
 

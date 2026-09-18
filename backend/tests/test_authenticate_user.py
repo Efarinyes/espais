@@ -42,6 +42,7 @@ def test_authenticate_returns_entity_of_the_membership() -> None:
     assert view.entity_name == "AAVV Barri A"
     assert view.user_name == "Anna"
     assert view.typology == "associació de veïns"
+    assert view.palette == "mar-cel"
 
 
 def test_wrong_password_does_not_reveal_account() -> None:

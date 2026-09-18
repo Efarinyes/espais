@@ -12,7 +12,7 @@ El backend (FastAPI, identitat, espais) no canvia.
 
 ## Decisió
 
-- Estils a `frontend/`: **Tailwind CSS** + **DaisyUI**, tema custom **espais** amb paleta mediterrània única (mar `#1677A8`, crema `#FFF8E8`, carbó `#202A2E`). Una paleta per a totes les tipologies; no temes de catàleg Daisy ni per tipus d’entitat.
+- Estils a `frontend/`: **Tailwind CSS** + **DaisyUI**. La paleta única del tema `espais` (mar `#1677A8`) queda històrica: paletes i contrast a l’ADR [0010](0010-aparença-paleta-mode.md); paleta de l’entitat vs mode personal a l’ADR [0011](0011-paleta-entitat-mode-personal.md). No temes de catàleg Daisy ni per tipus d’entitat.
 - **PWA** via `vite-plugin-pwa`: `display: standalone`, nom «Espais», cache de l’esquelet. No és offline de reserves: l’API cal xarxa.
 - Vue 3 + Vite + Pinia + Router es mantenen. Dependències només a `frontend/`.
 

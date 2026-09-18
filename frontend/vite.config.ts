@@ -27,8 +27,8 @@ const pwa =
             description: "Gestió d’ús i reserva d’espais de l’entitat. Ús intern i gratuït.",
             display: "standalone",
             start_url: "/",
-            background_color: "#FFF8E8",
-            theme_color: "#1677A8",
+            background_color: "#F1F5F9",
+            theme_color: "#0B5ED7",
             icons: [
               { src: "icon.svg", sizes: "any", type: "image/svg+xml", purpose: "any" },
               { src: "icon.svg", sizes: "any", type: "image/svg+xml", purpose: "maskable" },
@@ -37,7 +37,7 @@ const pwa =
           workbox: {
             globPatterns: ["**/*.{js,css,html,svg,ico,webmanifest}"],
             navigateFallback: "index.html",
-            navigateFallbackDenylist: [/^\/salut/, /^\/registre/, /^\/sessio/, /^\/espais/, /^\/invitacions/, /^\/reserves/, /^\/avisos/, /^\/analisi/],
+            navigateFallbackDenylist: [/^\/salut/, /^\/registre/, /^\/sessio/, /^\/entitat/, /^\/espais/, /^\/invitacions/, /^\/reserves/, /^\/avisos/, /^\/analisi/],
           },
           devOptions: {
             enabled: true,
@@ -53,6 +53,7 @@ export default defineConfig({
       "/salut": api,
       "/registre": api,
       "/sessio": api,
+      "/entitat": api,
       "/espais": api,
       "/invitacions": api,
       "/reserves": api,

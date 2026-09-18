@@ -27,6 +27,7 @@ class SessionResponse(BaseModel):
     entity_name: str
     user_name: str
     typology: str | None
+    palette: str
     token: str | None = None
 
 
@@ -38,6 +39,7 @@ def session_response(view: SessionView, token: str | None = None) -> SessionResp
         entity_name=view.entity_name,
         user_name=view.user_name,
         typology=view.typology,
+        palette=view.palette,
         token=token,
     )
 

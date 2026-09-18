@@ -60,6 +60,7 @@ function muntar(api: EspaisApi, role: "responsible" | "coordinator" = "responsib
       { path: "/espais/nou", name: "espai-nou", component: { template: "<div />" } },
       { path: "/espais/:id", name: "espai-editar", component: { template: "<div />" } },
       { path: "/calendari", name: "calendari", component: { template: "<div />" } },
+      { path: "/analisi", name: "analisi", component: { template: "<div />" } },
     ],
   });
   return mount(EspaisView, {
@@ -77,6 +78,7 @@ describe("EspaisView", () => {
     expect(wrapper.text()).toContain("Encara no heu definit cap espai");
     expect(wrapper.text()).toContain("Espais de AAVV Barri A");
     expect(wrapper.get("a[href='/espais/nou']").text()).toContain("Defineix el primer espai");
+    expect(wrapper.text()).not.toContain("Convida coordinadors");
     expect(wrapper.find("#buit-espais").exists()).toBe(true);
   });
 

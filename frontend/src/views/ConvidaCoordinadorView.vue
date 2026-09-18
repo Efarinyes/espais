@@ -6,10 +6,10 @@ const { camps, errorsCamp, errorGlobal, enviant, enllacComplet, copiat, enviar, 
 </script>
 
 <template>
-  <main class="mx-auto w-full max-w-md px-4 py-6">
+  <main class="w-full max-w-md">
     <h1 class="text-3xl font-semibold">Convida un coordinador</h1>
     <p class="mt-2 text-base-content/80">
-      Encara no enviem correu. Copia l’enllaç i envia’l tu. Caduca al cap de 14 dies.
+      Crea un enllaç i envia’l tu. Encara no enviem correu. Caduca al cap de 14 dies.
     </p>
 
     <div v-if="errorGlobal" class="alert alert-error mt-6" role="alert">

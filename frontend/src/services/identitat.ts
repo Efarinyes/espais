@@ -11,6 +11,7 @@ export type SessioDto = {
   entity_name: string;
   user_name: string;
   typology: string | null;
+  palette?: string;
 };
 
 export type RegistreInput = {
@@ -46,6 +47,7 @@ export type IdentityApi = {
   registrar(input: RegistreInput): Promise<SessioDto>;
   iniciarSessio(email: string, password: string): Promise<SessioDto>;
   obtenirSessio(token: string): Promise<Omit<SessioDto, "token">>;
+  actualitzarPaleta(token: string, palette: string): Promise<{ palette: string }>;
   convidarCoordinador(token: string, email: string): Promise<InvitacioDto>;
   obtenirInvitacio(inviteToken: string): Promise<InvitacioPreviewDto>;
   acceptarInvitacio(inviteToken: string, name: string, password: string): Promise<SessioDto>;
@@ -119,6 +121,21 @@ export function createIdentityApi(baseUrl = ""): IdentityApi {
         throw new ApiError(await llegirError(res), res.status);
       }
       return (await res.json()) as Omit<SessioDto, "token">;
+    },
+
+    async actualitzarPaleta(token, palette) {
+      const res = await fetch(`${baseUrl}/entitat/paleta`, {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ palette }),
+      });
+      if (!res.ok) {
+        throw new ApiError(await llegirError(res), res.status);
+      }
+      return (await res.json()) as { palette: string };
     },
 
     async convidarCoordinador(token, email) {

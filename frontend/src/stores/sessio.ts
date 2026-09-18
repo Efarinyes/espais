@@ -1,6 +1,7 @@
 import { defineStore } from "pinia";
 import { computed, ref } from "vue";
 
+import { PALETA_PER_DEFECTE, paletaDe, type PaletaId } from "../aparenca";
 import type { SessioDto } from "../services/identitat";
 
 const STORAGE_KEY = "espais.sessio";
@@ -12,6 +13,7 @@ type SessioDesada = {
   userName: string;
   role: string;
   typology: string | null;
+  palette: PaletaId;
 };
 
 function llegirDesada(): SessioDesada | null {
@@ -20,7 +22,8 @@ function llegirDesada(): SessioDesada | null {
     return null;
   }
   try {
-    return JSON.parse(raw) as SessioDesada;
+    const parsed = JSON.parse(raw) as SessioDesada;
+    return { ...parsed, palette: paletaDe(parsed.palette) };
   } catch {
     return null;
   }
@@ -34,6 +37,7 @@ export const useSessioStore = defineStore("sessio", () => {
   const userName = ref(desada?.userName ?? "");
   const role = ref(desada?.role ?? "");
   const typology = ref<string | null>(desada?.typology ?? null);
+  const palette = ref<PaletaId>(desada?.palette ?? PALETA_PER_DEFECTE);
 
   const iniciada = computed(() => token.value.length > 0 && entityId.value.length > 0);
 
@@ -49,17 +53,28 @@ export const useSessioStore = defineStore("sessio", () => {
       userName: userName.value,
       role: role.value,
       typology: typology.value,
+      palette: palette.value,
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
   }
 
+  function aplicarVista(view: Omit<SessioDto, "token">) {
+    entityId.value = view.entity_id;
+    entityName.value = view.entity_name;
+    userName.value = view.user_name;
+    role.value = view.role;
+    typology.value = view.typology;
+    palette.value = paletaDe(view.palette);
+    persistir();
+  }
+
   function iniciar(dto: SessioDto) {
     token.value = dto.token;
-    entityId.value = dto.entity_id;
-    entityName.value = dto.entity_name;
-    userName.value = dto.user_name;
-    role.value = dto.role;
-    typology.value = dto.typology;
+    aplicarVista(dto);
+  }
+
+  function setPalette(valor: string) {
+    palette.value = paletaDe(valor);
     persistir();
   }
 
@@ -70,6 +85,7 @@ export const useSessioStore = defineStore("sessio", () => {
     userName.value = "";
     role.value = "";
     typology.value = null;
+    palette.value = PALETA_PER_DEFECTE;
     persistir();
   }
 
@@ -80,8 +96,11 @@ export const useSessioStore = defineStore("sessio", () => {
     userName,
     role,
     typology,
+    palette,
     iniciada,
     iniciar,
+    aplicarVista,
+    setPalette,
     sortir,
   };
 });

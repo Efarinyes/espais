@@ -40,6 +40,7 @@ function muntar(api: Partial<IdentityApi>) {
           registrar: async () => sessioOk,
           iniciarSessio: async () => sessioOk,
           obtenirSessio: async () => sessioOk,
+          actualitzarPaleta: async (_token, palette) => ({ palette }),
           convidarCoordinador: async () => ({
             email: "carla@example.com",
             accept_url: "/invitar/token-convidat",

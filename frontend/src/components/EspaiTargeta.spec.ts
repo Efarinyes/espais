@@ -27,6 +27,7 @@ function muntar(
     routes: [
       { path: "/espais/:id", name: "espai-editar", component: { template: "<div />" } },
       { path: "/calendari", name: "calendari", component: { template: "<div />" } },
+      { path: "/analisi", name: "analisi", component: { template: "<div />" } },
     ],
   });
   return mount(EspaiTargeta, {
@@ -76,9 +77,10 @@ describe("EspaiTargeta", () => {
     expect(wrapper.find('a[href="/calendari?espai=s1"]').exists()).toBe(false);
   });
 
-  it("mostra l’enllaç d’edició per al responsable", () => {
+  it("mostra l’enllaç d’edició i d’estadístiques per al responsable", () => {
     const wrapper = muntar(base, true);
     expect(wrapper.get('a[href="/espais/s1"]').text()).toBe("Editar");
+    expect(wrapper.get('a[href="/analisi#espai-s1"]').text()).toBe("Estadístiques");
   });
 
   it("no mostra Editar si no es pot editar", () => {

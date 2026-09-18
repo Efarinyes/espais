@@ -27,6 +27,7 @@ function muntar(api: Partial<IdentityApi>) {
     history: createMemoryHistory(),
     routes: [
       { path: "/", name: "inici", component: { template: "<div>inici</div>" } },
+      { path: "/espais", name: "espais", component: { template: "<div>espais</div>" } },
       { path: "/registre", name: "registre", component: { template: "<div />" } },
     ],
   });
@@ -42,6 +43,7 @@ function muntar(api: Partial<IdentityApi>) {
           registrar: async () => sessioOk,
           iniciarSessio: async () => sessioOk,
           obtenirSessio: async () => sessioOk,
+          actualitzarPaleta: async (_token, palette) => ({ palette }),
           convidarCoordinador: async () => ({
             email: "carla@example.com",
             accept_url: "/invitar/token-convidat",
@@ -61,7 +63,7 @@ function muntar(api: Partial<IdentityApi>) {
 }
 
 describe("useRegistre", () => {
-  it("inicia sessió i navega a l’inici després d’un registre correcte", async () => {
+  it("inicia sessió i navega als espais després d’un registre correcte", async () => {
     const { wrapper, router, sessio } = muntar({});
     await router.push("/registre");
     wrapper.vm.camps.entity_name = "AAVV Barri A";
@@ -72,7 +74,7 @@ describe("useRegistre", () => {
     await flushPromises();
     expect(sessio.iniciada).toBe(true);
     expect(sessio.entityName).toBe("AAVV Barri A");
-    expect(router.currentRoute.value.name).toBe("inici");
+    expect(router.currentRoute.value.name).toBe("espais");
   });
 
   it("mostra error clar si l’email ja existeix", async () => {

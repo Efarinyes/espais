@@ -15,6 +15,7 @@ from app.adapters.system import SystemClock
 from app.adapters.tokens import HmacTokenIssuer
 from app.api.analisi import router as analisi_router
 from app.api.avisos import router as avisos_router
+from app.api.entity import router as entity_router
 from app.api.health import router as health_router
 from app.api.invitations import router as invitations_router
 from app.api.register import router as register_router
@@ -70,6 +71,7 @@ def create_app(
     application.include_router(health_router)
     application.include_router(register_router)
     application.include_router(session_router)
+    application.include_router(entity_router)
     application.include_router(invitations_router)
     application.include_router(spaces_router)
     application.include_router(reserves_router)

@@ -8,14 +8,19 @@ Skill: `ui-ux-mobile`. Front: [11-stack.md](11-stack.md).
 - Fluxos curts: registre en una pantalla; reserva en pocs passos.
 - Empty states amb una sola CTA clara.
 - Confirmació explícita a anul·lacions (conseqüència: s’avisa el coordinador).
-- Una paleta mediterrània per a totes les tipologies. No tema “futbol” vs “teatre” a v1.
-- Glossari català a totes les cadenes.
+- Quatre paletes mediterrànies de l’entitat (les tria el responsable; no per tipologia). Mode clar/fosc personal al capçal. No tema “futbol” vs “teatre”.
+- Glossari català a totes les cadenes. A la UI, l’anàlisi d’ús es diu **Estadístiques**.
 
-## Design tokens (v1)
+## Design tokens
 
-Tema DaisyUI **espais** (ADR [0006](adr/0006-tailwind-daisy-pwa.md)): paleta mediterrània única. Fons crema `#FFF8E8`, superfície blanc cal `#FAFAF7` / sorra `#F2E5CC`, text carbó `#202A2E`, primary mar `#1677A8` (hover/títols blau profund `#075985`), accent blat `#E5B93F`, perill maduixa `#D83A4B`, radi 12px, toc ≥ 44px (`min-h-11`). Daurats (`#E5B93F`, `#C9922E`) amb text carbó, no blanc.
+DaisyUI, ADR [0011](adr/0011-paleta-entitat-mode-personal.md) (esmena de [0010](adr/0010-aparença-paleta-mode.md)). Defecte **Mar i cel** clar. Radi 12px, toc ≥ 44px (`min-h-11`). Perill maduixa `#D83A4B`. Daurats, grocs, cel clar i pedra amb text carbó, no blanc. El capçal només té Clar / Fosc; els colors de l’entitat es trien al tauler del responsable (columna lateral). La landing (sense sessió) usa Mar i cel.
 
-Contrast WCAG AA en text normal. Focus visible. Labels lligades als inputs. Errors al costat del camp, no només toast. Una paleta per a totes les tipologies.
+- Mar i cel: primari `#0B5ED7`, secundari `#14B8A6`, terciari `#BFDBFE`, fons `#F1F5F9`.
+- Camps i cereals: primari `#F7B955`, secundari `#6B8E5A`, terciari `#C96F4A`, fons `#EAD9C6`.
+- Cítrics i sol: primari `#F97316`, secundari `#FACC15`, terciari `#4CAF50`, fons `#FFF7E6`.
+- Vinyes i muntanya al mar: primari `#9B2C3D`, secundari `#8B5CF6`, terciari `#D6C8B6`; mar profund `#0F4C75` a títols i mode fosc.
+
+Contrast WCAG AA en text normal. Focus visible. Labels lligades als inputs. Errors al costat del camp, no només toast.
 
 ## Pantalles clau
 
@@ -23,15 +28,16 @@ Contrast WCAG AA en text normal. Focus visible. Labels lligades als inputs. Erro
 |---|---|---|
 | Landing (`/` sense sessió) | visitant | capçal amb registre i sessió; cos informatiu |
 | Registre | nou | validació inline |
-| Inici responsable | responsable | Defineix el primer espai |
+| Inici responsable | responsable | tauler amb lateral; empty d’espais amb una sola CTA |
+| Colors de l’entitat | responsable | paleta al centre del tauler |
 | Espais | responsable | CTA alta |
 | Nova reserva | coordinador | cap espai → copy de contactar responsable |
 | Les meves reserves | coordinador | encara no n’hi ha |
 | Govern de reserves | responsable | encara no n’hi ha |
 | Avís d’anul·lació | coordinador | detall + interval |
-| Anàlisi | responsable | període sense dades |
+| Estadístiques | responsable | període sense dades; mostra d’exemple opcional |
 
-El menú d’**Avisos** només el veu el coordinador. Sense sessió, `/` és una landing merament informativa: hero a ple ample (problema i solució, fons en carrusel de fotos de sales) i «Com funciona» amb captures de l’app. **Registra l’entitat** i **Inicia sessió** van al capçal, no al cos. Amb sessió, `/` és el tauler de l’entitat. El peu mostra any, autor i «codi obert».
+El menú d’**Avisos** només el veu el coordinador. Sense sessió, `/` és una landing merament informativa: hero a ple ample (problema i solució, fons en carrusel de fotos de sales) i «Com funciona» amb captures de l’app. **Registra l’entitat** i **Inicia sessió** van al capçal, no al cos. Amb sessió, el **responsable** entra al tauler (`/espais`): administració a l’esquerra (ordre alfabètic: Colors, Convida, Espais, Estadístiques; **Surt** al final) i el contingut al centre; el lateral mostra el nom de l’entitat i del responsable. El **calendari** és al capçal. El **coordinador** té l’inici a `/` amb la llista d’espais i **Surt** al capçal. El peu mostra any, autor, «codi obert» i «ús intern» (sense parlar de cobrament).
 
 ## Patrons Vue
 

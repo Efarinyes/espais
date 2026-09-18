@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Espais">
-  <rect width="512" height="512" rx="96" fill="#1677A8"/>
-  <rect x="96" y="160" width="200" height="220" rx="24" fill="#FAFAF7"/>
-  <rect x="216" y="112" width="200" height="220" rx="24" fill="#F2E5CC" stroke="#FFF8E8" stroke-width="12"/>
+  <rect width="512" height="512" rx="96" fill="#0B5ED7"/>
+  <rect x="96" y="160" width="200" height="220" rx="24" fill="#F1F5F9"/>
+  <rect x="216" y="112" width="200" height="220" rx="24" fill="#14B8A6" stroke="#BFDBFE" stroke-width="12"/>
 </svg>

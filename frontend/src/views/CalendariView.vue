@@ -8,6 +8,7 @@ import "@schedule-x/theme-default/dist/index.css";
 import "temporal-polyfill/global";
 
 import CalendariModal from "../components/CalendariModal.vue";
+import { useAparencaStore } from "../stores/aparenca";
 import { useCalendariReserves } from "../composables/useCalendariReserves";
 import { useRefrescCalendari } from "../composables/useRefrescCalendari";
 import {
@@ -75,6 +76,8 @@ const {
   okReprogramacio,
 } = useCalendariReserves();
 
+const aparenca = useAparencaStore();
+
 const eventsServiceHolder = { current: createEventsServicePlugin() };
 const calendarApp = shallowRef<ReturnType<typeof createCalendar> | null>(null);
 const diaActiu = ref(Temporal.Now.zonedDateTimeISO("Europe/Madrid").toPlainDate());
@@ -88,7 +91,7 @@ const graella = computed(() => configGraella(finestresDelsEspais(espaisActius.va
 const reservaArrossegada = computed(() => reservaCarregada(reservaArrossegadaId.value));
 const clauCalendari = computed(
   () =>
-    `tots-${graella.value.start}-${graella.value.end}-${espaisActius.value.map((e) => e.id).join(",")}`,
+    `tots-${graella.value.start}-${graella.value.end}-${espaisActius.value.map((e) => e.id).join(",")}-${aparenca.mode}-${aparenca.paleta}`,
 );
 
 function activarDia(data: Temporal.PlainDate) {
@@ -197,7 +200,7 @@ function muntarCalendari() {
       locale: "ca-ES",
       timezone: "Europe/Madrid",
       firstDayOfWeek: 1,
-      isDark: false,
+      isDark: aparenca.mode === "fosc",
       views: [vistaSetmana, vistaDia],
       defaultView: vistaSetmana.name,
       selectedDate: diaActiu.value,

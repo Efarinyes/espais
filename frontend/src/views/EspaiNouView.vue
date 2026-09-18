@@ -6,7 +6,7 @@ const { camps, dies, errorsCamp, errorGlobal, enviant, enviar } = useCreaEspai()
 </script>
 
 <template>
-  <main class="mx-auto w-full max-w-5xl px-4 py-6">
+  <main class="w-full max-w-5xl">
     <h1 class="text-3xl font-semibold">Defineix un espai</h1>
     <p class="mt-2 text-base-content/80">
       El nom el trieu vosaltres (Sala 1 o Sala Pau Casals). L’aforament és el màxim de persones.

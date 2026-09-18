@@ -27,6 +27,7 @@ def test_login_returns_same_entity_as_register(sqlite_session_factory) -> None:
     assert body["entity_id"] == created["entity_id"]
     assert body["token"]
     assert body["entity_name"] == "AAVV Barri A"
+    assert body["palette"] == "mar-cel"
 
 
 def test_login_wrong_password_returns_401(sqlite_session_factory) -> None:

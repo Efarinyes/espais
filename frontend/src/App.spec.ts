@@ -70,26 +70,32 @@ function muntar(dto?: SessioDto) {
 }
 
 describe("App", () => {
-  it("mostra el menú compacte i Anàlisi al responsable", () => {
+  it("mostra el menú compacte del responsable sense duplicar l’administració", () => {
     const wrapper = muntar(sessioResp);
     expect(wrapper.text()).toContain("Responsable");
     expect(wrapper.text()).not.toContain("Coordinador");
-    expect(wrapper.text()).toContain("Anàlisi");
-    expect(wrapper.get("nav[aria-label='Principal']").text()).toContain("Menú");
-    expect(wrapper.get("nav[aria-label='Principal']").text()).toContain("Els espais");
-    expect(wrapper.get("nav[aria-label='Principal']").text()).not.toContain("Avisos");
+    const principal = wrapper.get("nav[aria-label='Principal']");
+    expect(principal.text()).toContain("Menú");
+    expect(principal.text()).toContain("Calendari");
+    expect(principal.text()).not.toContain("Surt");
+    expect(principal.text()).not.toContain("Els espais");
+    expect(principal.text()).not.toContain("Estadístiques");
+    expect(principal.text()).not.toContain("Convida");
+    expect(principal.text()).not.toContain("Avisos");
     expect(wrapper.get("footer").text()).toContain("Eduard Farinyes");
     expect(wrapper.get("footer").text()).toContain("Codi obert");
-    expect(wrapper.get("footer").text()).toContain("ús intern i gratuït");
+    expect(wrapper.get("footer").text()).toContain("ús intern");
+    expect(wrapper.get("footer").text()).not.toContain("gratuït");
   });
 
   it("mostra l’insígnia de coordinador", () => {
     const wrapper = muntar({ ...sessioResp, role: "coordinator", user_name: "Carla" });
     expect(wrapper.text()).toContain("Coordinador");
     expect(wrapper.text()).not.toContain("Responsable");
-    expect(wrapper.text()).not.toContain("Anàlisi");
+    expect(wrapper.text()).not.toContain("Estadístiques");
     expect(wrapper.get("nav[aria-label='Principal']").text()).toContain("Avisos");
     expect(wrapper.get("nav[aria-label='Principal']").text()).toContain("Els espais");
+    expect(wrapper.get("nav[aria-label='Principal']").text()).toContain("Surt");
   });
 
   it("no mostra rol sense sessió i posa l’accés al capçal", () => {
@@ -101,5 +107,17 @@ describe("App", () => {
     expect(acces.get("a[href='/iniciar-sessio']").text()).toContain("Inicia sessió");
     expect(acces.get("a[href='/registre']").text()).toContain("Registra l’entitat");
     expect(wrapper.get("footer").text()).toMatch(/© \d{4} Eduard Farinyes · Codi obert/);
+  });
+
+  it("mostra Clar i Fosc al capçal, sense paleta", () => {
+    const wrapper = muntar();
+    expect(wrapper.get("[aria-label='Mode de pantalla']").text()).toContain("Clar");
+    expect(wrapper.get("[aria-label='Mode de pantalla']").text()).toContain("Fosc");
+    expect(wrapper.find("#mode-clar").exists()).toBe(true);
+    expect(wrapper.find("#mode-fosc").exists()).toBe(true);
+    expect(wrapper.find("#paleta-aparenca").exists()).toBe(false);
+    expect(wrapper.find("#paleta-entitat").exists()).toBe(false);
+    expect(wrapper.text()).not.toContain("Aparença");
+    expect(wrapper.get("header").text()).not.toContain("Mar i cel");
   });
 });

@@ -1,6 +1,7 @@
 import { reactive, ref } from "vue";
 import { useRouter } from "vue-router";
 
+import { destiDespresSessio } from "../navegacio";
 import { ApiError, requireIdentityApi } from "../services/identitat";
 import { useSessioStore } from "../stores/sessio";
 
@@ -51,7 +52,7 @@ export function useRegistre() {
         password: camps.password,
       });
       sessio.iniciar(dto);
-      await router.push({ name: "inici" });
+      await router.push(destiDespresSessio(dto.role));
     } catch (err) {
       if (err instanceof ApiError && err.status === 409) {
         errorGlobal.value = "Aquest email ja està registrat. Inicia sessió o recupera l’accés.";

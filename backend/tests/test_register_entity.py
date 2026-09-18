@@ -39,6 +39,7 @@ def test_register_entity_creates_entity_user_and_responsible_membership() -> Non
     assert entity.id == result.entity_id
     assert entity.name == "AAVV Barri A"
     assert entity.typology == "associació de veïns"
+    assert entity.palette == "mar-cel"
 
     user = uow.users.get_by_email("anna@example.com")
     assert user is not None

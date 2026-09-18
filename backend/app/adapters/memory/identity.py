@@ -40,6 +40,13 @@ class InMemoryEntityRepository:
                 return entity
         return None
 
+    def save(self, entity: Entity) -> None:
+        working = self._uow._working.entities
+        for index, existing in enumerate(working):
+            if existing.id == entity.id:
+                working[index] = entity
+                return
+
     def list_all(self) -> list[Entity]:
         return list(self._uow._working.entities)
 

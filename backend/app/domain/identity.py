@@ -7,6 +7,9 @@ from datetime import datetime
 from enum import StrEnum
 from uuid import UUID
 
+DEFAULT_ENTITY_PALETTE = "mar-cel"
+ENTITY_PALETTES = frozenset({"mar-cel", "camps", "citrics", "vinyes"})
+
 
 class MembershipRole(StrEnum):
     RESPONSIBLE = "responsible"
@@ -19,6 +22,7 @@ class Entity:
     name: str
     typology: str | None
     created_at: datetime
+    palette: str = DEFAULT_ENTITY_PALETTE
 
 
 @dataclass(frozen=True)

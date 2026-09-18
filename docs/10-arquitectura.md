@@ -26,7 +26,7 @@ FastAPI (routers prims)
 | Repositoris (port + adaptador) | Persistència | Regles d’anul·lació |
 | Infra | DB, correu, config | Lògica de reserva |
 
-Un cas d’ús = un mòdul/classe (`RegisterEntity`, `CreateSpace`, `CreateReservation`, `RecordAttendance`, `CancelReservationByResponsible`, `RescheduleReservation`, `GetUsageSummary`, `ArchiveNotification`, `PurgeArchivedNotifications`).
+Un cas d’ús = un mòdul/classe (`RegisterEntity`, `CreateSpace`, `CreateReservation`, `RecordAttendance`, `CancelReservationByResponsible`, `RescheduleReservation`, `GetUsageSummary`, `ArchiveNotification`, `PurgeArchivedNotifications`, `UpdateEntityPalette`).
 
 ## Multi-tenant
 

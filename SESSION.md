@@ -9,18 +9,16 @@ Actualitza aquest arxiu al final de cada sessió. És el punt d’arrencada del 
 
 ## Darrera feina
 
-A `fase/3-espais`:
+Paleta d’entitat (ADR 0011) i tauler del responsable:
 
-- Landing merament informativa: accés al capçal (Registra / Inicia sessió); hero a ple ample amb foto lliure, overlay i copy de problema/solució; «Com funciona» amb captures reals; peu `© any Eduard Farinyes · Codi obert`.
-- Fons del hero en carrusel (4 fotos, fos 7 s, «Atura el fons»; sense rotació si `prefers-reduced-motion`). Alternatives a `frontend/public/landing/opcions/`.
-- Cosmètica prèvia: marca `text-2xl`, «Els espais», títol `Espais de {{ entityName }}`, Avisos només coordinador, resum de finestres per dies, peu sticky, formulari de disponibilitat `max-w-5xl`.
-- Avisos: arxivar (només llegits; llista sense arxivats). Purga als 21 dies (`archived_at`); ADR [0009](docs/adr/0009-purga-avisos-arxivats.md). Lifespan arrencada + 24 h; tests amb `enable_maintenance=False`.
-
-Vitest 104+ verds (landing/carrusel); `vue-tsc --noEmit` verd.
+- Colors de l’entitat a BBDD; Clar/Fosc personal al capçal.
+- Tauler amb columna lateral: identitat (nom d’entitat i del responsable); menú alfabètic (Colors, Convida, Espais, Estadístiques); **Surt** al final, separat i en color d’error.
+- Capçal del responsable: Clar/Fosc i Calendari. El coordinador conserva Surt al capçal.
+- Empty d’espais amb una sola CTA.
 
 ## Següent tasca
 
-Continuar cosmètica (jornada nova): polir UI restant (contrastos, calendaris, empty states, mòbil) un cop validat el carrusel de la landing.
+Polir més el tauler del responsable (layout i identitat). Recórrer a Brave escriptori i vista estreta, i el contrast de paletes. Desplegament Alpha+ i botigues: aparcats.
 
 Remot GitHub: encara sota demanda. Sense `origin`.
 
@@ -39,14 +37,16 @@ Cap. API `http://127.0.0.1:8000`; front `http://127.0.0.1:5173`.
 - [0007](docs/adr/0007-calendari-polling.md) — acceptat (polling v1; sockets = adaptador futur)
 - [0008](docs/adr/0008-responsable-no-crea-reserves.md) — acceptat (el responsable reprograma i anul·la; no crea)
 - [0009](docs/adr/0009-purga-avisos-arxivats.md) — acceptat (purga 21 dies des de `archived_at`)
+- [0010](docs/adr/0010-aparença-paleta-mode.md) — esmenat per 0011 (tokens i contrast)
+- [0011](docs/adr/0011-paleta-entitat-mode-personal.md) — acceptat (paleta d’entitat a BBDD; mode clar/fosc al navegador)
 
 ## Notes
 
 - Glossari: entitat, responsable, coordinador, espai, reserva, assistència, aforament.
 - Ús intern i gratuït. Sense cobrament al model.
 - Micromamba: `micromamba run -n espais pytest`; no `env create` si `espais` existeix.
-- Front: `cd frontend && npm test` / `npm run dev`. Vue no global. Tema Daisy `espais`; toc ≥ 44px (`min-h-11`).
+- Front: `cd frontend && npm test` / `npm run dev`. Vue no global. Paleta d’entitat ADR 0011 (defecte Mar i cel; Clar/Fosc al capçal; colors al lateral del tauler); toc ≥ 44px (`min-h-11`).
 - PWA: instal·lable; no desregistrar el SW en DEV. `navigateFallbackDenylist` inclou `/avisos` i `/analisi`.
 - Deute conscient: split de `useCalendariReserves` / drag = si el composable torna a créixer. CSV d’anàlisi = backlog.
 - El coordinador reprograma la seva reserva sense avís; l’avís només el dispara el responsable.
-- Landing: sense CTAs al cos; fotos a `frontend/public/landing/` (hero + opcions + captures).
+- Landing: sense CTAs al cos; sense «gratuït» ni «cobrament»; fotos a `frontend/public/landing/` (hero + opcions + captures).

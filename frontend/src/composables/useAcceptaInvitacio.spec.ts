@@ -24,6 +24,7 @@ function identityBase(api: Partial<IdentityApi>): IdentityApi {
     registrar: async () => sessioCoord,
     iniciarSessio: async () => sessioCoord,
     obtenirSessio: async () => sessioCoord,
+    actualitzarPaleta: async (_token, palette) => ({ palette }),
     convidarCoordinador: async () => ({
       email: "carla@example.com",
       accept_url: "/invitar/token-convidat",

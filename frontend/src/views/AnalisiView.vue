@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { computed } from "vue";
-import { RouterLink } from "vue-router";
+import { computed, nextTick, onMounted, watch } from "vue";
+import { RouterLink, useRoute } from "vue-router";
 
 import {
   assistenciaEtiqueta,
@@ -10,13 +10,34 @@ import {
 import { dataHoraMadrid } from "../calendari";
 import { useAnalisi } from "../composables/useAnalisi";
 
-const { mes, resum, reserves, carregant, error } = useAnalisi();
+const { mes, resum, reserves, carregant, error, mostraExemple } = useAnalisi();
+const route = useRoute();
 
 const periodeBuit = computed(() => {
   if (!resum.value) {
     return false;
   }
   return resum.value.confirmed_count === 0 && resum.value.cancelled_count === 0;
+});
+
+const espaiDestacat = computed(() => {
+  const hash = route.hash;
+  if (!hash.startsWith("#espai-")) {
+    return "";
+  }
+  return hash.slice("#espai-".length);
+});
+
+const espaisLlista = computed(() => {
+  if (!resum.value) {
+    return [];
+  }
+  if (!espaiDestacat.value) {
+    return resum.value.spaces;
+  }
+  const primer = resum.value.spaces.filter((espai) => espai.space_id === espaiDestacat.value);
+  const resta = resum.value.spaces.filter((espai) => espai.space_id !== espaiDestacat.value);
+  return [...primer, ...resta];
 });
 
 function etiquetaEstat(status: string): string {
@@ -28,24 +49,56 @@ function etiquetaEstat(status: string): string {
   }
   return status;
 }
+
+function ampleOcupacio(ratio: number): string {
+  return `${Math.min(100, Math.max(0, ratio * 100))}%`;
+}
+
+async function desplaçaAEspai() {
+  if (!espaiDestacat.value) {
+    return;
+  }
+  await nextTick();
+  document.getElementById(`espai-${espaiDestacat.value}`)?.scrollIntoView({ block: "start" });
+}
+
+onMounted(() => {
+  void desplaçaAEspai();
+});
+
+watch(espaiDestacat, () => {
+  void desplaçaAEspai();
+});
 </script>
 
 <template>
-  <main class="mx-auto w-full max-w-3xl px-4 py-6">
-    <h1 class="text-3xl font-semibold">Anàlisi d’ús</h1>
-    <p class="mt-2 text-base-content/80">Ocupació, reserves i assistència de la vostra entitat.</p>
+  <main class="w-full max-w-3xl">
+    <h1 class="text-3xl font-semibold">Estadístiques</h1>
+    <p class="mt-2 text-base-content/80">
+      Com s’han fet servir els espais de l’entitat: ocupació, reserves i assistència.
+    </p>
 
-    <label class="form-control mt-6 max-w-xs" for="mes">
-      <span class="label">
-        <span class="label-text">Mes</span>
-      </span>
-      <input id="mes" v-model="mes" class="input input-bordered min-h-11" type="month" name="mes" />
-    </label>
+    <div class="mt-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <label class="form-control max-w-xs" for="mes">
+        <span class="label">
+          <span class="label-text">Mes</span>
+        </span>
+        <input id="mes" v-model="mes" class="input input-bordered min-h-11" type="month" name="mes" />
+      </label>
+      <label class="flex items-center gap-3 min-h-11 cursor-pointer">
+        <input v-model="mostraExemple" class="toggle toggle-primary" type="checkbox" />
+        <span>Mostra d’exemple</span>
+      </label>
+    </div>
 
-    <div v-if="error" class="alert alert-error mt-6" role="alert">
+    <div v-if="mostraExemple" class="alert mt-6" role="status">
+      <span>Això no són dades de la vostra entitat. Serveix per veure com queda la pàgina plena.</span>
+    </div>
+
+    <div v-if="error && !mostraExemple" class="alert alert-error mt-6" role="alert">
       <span>{{ error }}</span>
     </div>
-    <p v-else-if="carregant" class="mt-6">Carregant…</p>
+    <p v-else-if="carregant && !mostraExemple" class="mt-6">Carregant…</p>
 
     <template v-else-if="resum">
       <section
@@ -79,10 +132,7 @@ function etiquetaEstat(status: string): string {
                   :aria-valuenow="Math.round(resum.occupancy_ratio * 100)"
                   :aria-label="percentatgeOcupacio(resum.occupancy_ratio)"
                 >
-                  <div
-                    class="h-2 rounded bg-primary"
-                    :style="{ width: Math.min(100, resum.occupancy_ratio * 100) + '%' }"
-                  />
+                  <div class="h-2 rounded bg-primary" :style="{ width: ampleOcupacio(resum.occupancy_ratio) }" />
                 </div>
               </div>
             </li>
@@ -108,17 +158,34 @@ function etiquetaEstat(status: string): string {
         </section>
 
         <section class="mt-8" aria-labelledby="per-espai">
-          <h2 id="per-espai" class="text-xl font-semibold">Per espai</h2>
-          <ul class="mt-3 space-y-3 md:hidden">
-            <li v-for="espai in resum.spaces" :key="espai.space_id">
-              <article class="card bg-base-100 shadow-sm">
+          <h2 id="per-espai" class="text-xl font-semibold">Ús de cada espai</h2>
+          <p v-if="espaiDestacat && !mostraExemple" class="mt-2 text-sm text-base-content/70">
+            <a class="link" href="#per-espai">Veure tots els espais</a>
+          </p>
+          <ul class="mt-3 space-y-3">
+            <li v-for="espai in espaisLlista" :key="espai.space_id">
+              <article
+                :id="`espai-${espai.space_id}`"
+                class="card bg-base-100 shadow-sm scroll-mt-24"
+                :class="espai.space_id === espaiDestacat ? 'ring-2 ring-primary' : ''"
+              >
                 <div class="card-body">
                   <h3 class="card-title text-base">{{ espai.space_name }}</h3>
-                  <p>Reserves: {{ espai.confirmed_count }} · Anul·lades: {{ espai.cancelled_count }}</p>
                   <p>
                     Ocupació: {{ percentatgeOcupacio(espai.occupancy_ratio) }}
                     ({{ horesEtiqueta(espai.reserved_hours) }} / {{ horesEtiqueta(espai.available_hours) }})
                   </p>
+                  <div
+                    class="h-3 w-full rounded bg-base-200"
+                    role="meter"
+                    :aria-valuemin="0"
+                    :aria-valuemax="100"
+                    :aria-valuenow="Math.round(espai.occupancy_ratio * 100)"
+                    :aria-label="`${espai.space_name}: ${percentatgeOcupacio(espai.occupancy_ratio)}`"
+                  >
+                    <div class="h-3 rounded bg-secondary" :style="{ width: ampleOcupacio(espai.occupancy_ratio) }" />
+                  </div>
+                  <p>Reserves: {{ espai.confirmed_count }} · Anul·lades: {{ espai.cancelled_count }}</p>
                   <p>
                     Assistència:
                     {{ assistenciaEtiqueta(espai.average_attendance, espai.unregistered_count) }}
@@ -130,38 +197,6 @@ function etiquetaEstat(status: string): string {
               </article>
             </li>
           </ul>
-          <div class="mt-3 hidden overflow-x-auto md:block">
-            <table class="table">
-              <thead>
-                <tr>
-                  <th scope="col">Espai</th>
-                  <th scope="col">Reserves</th>
-                  <th scope="col">Ocupació</th>
-                  <th scope="col">Anul·lades</th>
-                  <th scope="col">Assistència</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="espai in resum.spaces" :key="espai.space_id">
-                  <th scope="row">{{ espai.space_name }}</th>
-                  <td>{{ espai.confirmed_count }}</td>
-                  <td>
-                    {{ percentatgeOcupacio(espai.occupancy_ratio) }}
-                    <span class="block text-sm text-base-content/70">
-                      {{ horesEtiqueta(espai.reserved_hours) }} / {{ horesEtiqueta(espai.available_hours) }}
-                    </span>
-                  </td>
-                  <td>{{ espai.cancelled_count }}</td>
-                  <td>
-                    {{ assistenciaEtiqueta(espai.average_attendance, espai.unregistered_count) }}
-                    <span v-if="espai.below_min_attendance" class="block text-sm text-error">
-                      Per sota de l’aforament mínim
-                    </span>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
         </section>
 
         <section
@@ -170,8 +205,8 @@ function etiquetaEstat(status: string): string {
           aria-labelledby="buit-periode"
         >
           <div class="card-body">
-            <h2 id="buit-periode" class="card-title">Període sense dades</h2>
-            <p>No hi ha reserves ni anul·lacions en aquest mes. Trieu un altre període o mireu el calendari.</p>
+            <h2 id="buit-periode" class="card-title">Aquest mes no hi ha reserves</h2>
+            <p>Trieu un altre mes, mireu el calendari, o activeu la mostra d’exemple per veure com queda la pàgina.</p>
             <RouterLink class="btn btn-outline min-h-11" to="/calendari">Calendari</RouterLink>
           </div>
         </section>

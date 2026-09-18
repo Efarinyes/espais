@@ -17,6 +17,10 @@ class SessionNotFoundError(Exception):
     """El token és vàlid però no hi ha membership (compte incoherent)."""
 
 
+class InvalidPaletteError(Exception):
+    """La paleta no és una de les quatre tancades de l’entitat."""
+
+
 class InvalidSpaceError(Exception):
     """Dades d’espai invàlides (nom, aforament o finestres)."""
 

@@ -14,7 +14,7 @@ const llistaAmpla = computed(() => !error.value && !carregant.value && espais.va
 </script>
 
 <template>
-  <main class="mx-auto w-full px-4 py-6" :class="llistaAmpla ? 'max-w-6xl' : 'max-w-md'">
+  <main class="w-full" :class="llistaAmpla ? '' : 'max-w-xl'">
     <h1 class="text-3xl font-semibold">Espais de {{ sessio.entityName }}</h1>
 
     <div v-if="error" class="alert alert-error mt-6" role="alert">

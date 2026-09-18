@@ -6,7 +6,13 @@ from dataclasses import dataclass
 from uuid import UUID
 
 from app.domain.errors import DuplicateEmailError, InvalidRegistrationError
-from app.domain.identity import Entity, Membership, MembershipRole, User
+from app.domain.identity import (
+    DEFAULT_ENTITY_PALETTE,
+    Entity,
+    Membership,
+    MembershipRole,
+    User,
+)
 from app.ports.identity import Clock, IdentityUnitOfWork, IdGenerator, PasswordHasher
 
 MIN_PASSWORD_LENGTH = 8
@@ -71,6 +77,7 @@ class RegisterEntity:
             name=entity_name,
             typology=typology,
             created_at=now,
+            palette=DEFAULT_ENTITY_PALETTE,
         )
         user = User(
             id=user_id,

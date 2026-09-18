@@ -6,7 +6,7 @@ v1 té dos rols dins d’una entitat. No hi ha rol de plataforma.
 
 Pot:
 
-- Completar i editar dades de l’entitat.
+- Completar i editar dades de l’entitat, inclosa la paleta de colors (ADR [0011](adr/0011-paleta-entitat-mode-personal.md)).
 - Crear, editar i desactivar espais.
 - Convidar coordinadors.
 - Veure **totes** les reserves de l’entitat i la seva assistència.

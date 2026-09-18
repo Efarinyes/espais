@@ -22,6 +22,12 @@ const passes = [
     imatge: "/landing/avisos.png",
     alt: "Safata d’avisos del coordinador a Espais",
   },
+  {
+    titol: "Mira l’ús de cada espai",
+    text: "El responsable veu ocupació, reserves i assistència per sala. Serveix per saber si un espai es fa servir o queda buit.",
+    imatge: "",
+    alt: "",
+  },
 ] as const;
 </script>
 
@@ -50,7 +56,7 @@ const passes = [
         </h1>
         <p class="mt-6 max-w-3xl text-xl leading-snug text-white md:text-2xl">
           Gestionar un col·lectiu és molt més que tenir un grup de xat. Amb Espais teniu una app
-          interna i gratuïta per organitzar els vostres espais, consultar horaris i controlar
+          interna per organitzar els vostres espais, consultar horaris i controlar
           l’aforament de manera fàcil i clara.
         </p>
       </div>
@@ -67,7 +73,7 @@ const passes = [
     <section class="mx-auto w-full max-w-5xl px-4 py-16" aria-labelledby="com-funciona">
       <h2 id="com-funciona" class="text-3xl font-semibold md:text-4xl">Com funciona</h2>
       <p class="mt-3 max-w-2xl text-lg text-base-content/80">
-        Tres gestos. Sense cobrament. El públic pot venir a l’acte; qui reserva és qui té rol a
+        Tres gestos, i un cop d’ull a l’ús. El públic pot venir a l’acte; qui reserva és qui té rol a
         l’entitat.
       </p>
       <ul class="mt-10 space-y-14">
@@ -82,12 +88,31 @@ const passes = [
           </div>
           <figure :class="i % 2 === 1 ? 'md:order-1' : ''">
             <img
+              v-if="pas.imatge"
               class="w-full rounded-box border border-base-300 bg-base-100 shadow-sm"
               :src="pas.imatge"
               :alt="pas.alt"
               width="960"
               height="640"
             />
+            <div
+              v-else
+              class="rounded-box border border-base-300 bg-base-100 p-6 shadow-sm"
+              aria-hidden="true"
+            >
+              <p class="text-sm font-semibold">Sala gran</p>
+              <div class="mt-2 h-3 w-full rounded bg-base-200">
+                <div class="h-3 w-3/4 rounded bg-primary"></div>
+              </div>
+              <p class="mt-4 text-sm font-semibold">Sala d’assaig</p>
+              <div class="mt-2 h-3 w-full rounded bg-base-200">
+                <div class="h-3 w-1/2 rounded bg-secondary"></div>
+              </div>
+              <p class="mt-4 text-sm font-semibold">Taller</p>
+              <div class="mt-2 h-3 w-full rounded bg-base-200">
+                <div class="h-3 w-1/5 rounded bg-accent"></div>
+              </div>
+            </div>
           </figure>
         </li>
       </ul>

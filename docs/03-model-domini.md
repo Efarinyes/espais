@@ -18,7 +18,7 @@ Tota agregació de tenant porta `entity_id`. Un espai no existeix fora d’una e
 
 ## Entitat
 
-- `id`, `name`, `typology` (string lliure), `created_at`.
+- `id`, `name`, `typology` (string lliure), `created_at`, `palette` (llista tancada; defecte `mar-cel`). La paleta la canvia el responsable; tothom de l’entitat la llegeix. ADR [0011](adr/0011-paleta-entitat-mode-personal.md).
 - El primer responsable es crea al mateix cas d’ús de registre ([05-registre-alta.md](05-registre-alta.md)).
 - No hi ha jerarquia d’entitats a v1.
 
@@ -71,6 +71,7 @@ Vegeu [07-reserves-assistencia.md](07-reserves-assistencia.md).
 | `RescheduleReservation` | 6 |
 | `CancelReservationByResponsible` | 6 |
 | `GetUsageSummary` | 7 |
+| `UpdateEntityPalette` | cosmètica |
 | `ListNotifications` / `MarkNotificationRead` | 6 |
 | `ArchiveNotification` | post-v1 |
 | `PurgeArchivedNotifications` | post-v1 |

@@ -1,12 +1,34 @@
 <!DOCTYPE html>
-<html lang="ca" data-theme="espais">
+<html lang="ca" data-theme="mar-cel">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#1677A8" />
+    <meta name="theme-color" content="#0B5ED7" />
     <meta name="description" content="Gestió d’ús i reserva d’espais de l’entitat. Ús intern i gratuït." />
     <link rel="icon" href="/icon.svg" type="image/svg+xml" />
     <title>Espais</title>
+    <script>
+      (function () {
+        try {
+          var mode = localStorage.getItem("espais.mode");
+          if (mode !== "fosc" && mode !== "clar") {
+            var legacy = localStorage.getItem("espais.aparenca");
+            var d = legacy ? JSON.parse(legacy) : {};
+            mode = d.mode === "fosc" ? "fosc" : "clar";
+          }
+          var paleta = "mar-cel";
+          var sessio = localStorage.getItem("espais.sessio");
+          if (sessio) {
+            var s = JSON.parse(sessio);
+            var permeses = { "mar-cel": 1, camps: 1, citrics: 1, vinyes: 1 };
+            if (permeses[s.palette]) paleta = s.palette;
+          }
+          document.documentElement.setAttribute("data-theme", mode === "fosc" ? paleta + "-dark" : paleta);
+        } catch (e) {
+          document.documentElement.setAttribute("data-theme", "mar-cel");
+        }
+      })();
+    </script>
   </head>
   <body class="min-h-screen bg-base-200 text-base-content">
     <div id="app"></div>

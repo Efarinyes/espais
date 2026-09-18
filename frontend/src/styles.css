@@ -4,26 +4,82 @@
 }
 
 @plugin "daisyui/theme" {
-  name: "espais";
+  name: "mar-cel";
   default: true;
   color-scheme: light;
-  --color-base-100: #fafaf7;
-  --color-base-200: #fff8e8;
-  --color-base-300: #f2e5cc;
-  --color-base-content: #202a2e;
-  --color-primary: #1677a8;
+  --color-base-100: #ffffff;
+  --color-base-200: #f1f5f9;
+  --color-base-300: #e2e8f0;
+  --color-base-content: #0f172a;
+  --color-primary: #0b5ed7;
   --color-primary-content: #ffffff;
-  --color-secondary: #c9922e;
-  --color-secondary-content: #202a2e;
-  --color-accent: #e5b93f;
-  --color-accent-content: #202a2e;
-  --color-neutral: #202a2e;
-  --color-neutral-content: #fafaf7;
-  --color-info: #dff3fa;
-  --color-info-content: #202a2e;
-  --color-success: #657a35;
+  --color-secondary: #14b8a6;
+  --color-secondary-content: #ffffff;
+  --color-accent: #bfdbfe;
+  --color-accent-content: #0f172a;
+  --color-neutral: #0f172a;
+  --color-neutral-content: #f1f5f9;
+  --color-info: #bfdbfe;
+  --color-info-content: #0f172a;
+  --color-success: #14b8a6;
   --color-success-content: #ffffff;
-  --color-warning: #e97825;
+  --color-warning: #f7b955;
+  --color-warning-content: #0f172a;
+  --color-error: #d83a4b;
+  --color-error-content: #ffffff;
+  --radius-box: 0.75rem;
+  --radius-field: 0.75rem;
+  --radius-selector: 0.75rem;
+}
+
+@plugin "daisyui/theme" {
+  name: "mar-cel-dark";
+  color-scheme: dark;
+  --color-base-100: #0b1f33;
+  --color-base-200: #0f2944;
+  --color-base-300: #163a5f;
+  --color-base-content: #f1f5f9;
+  --color-primary: #0b5ed7;
+  --color-primary-content: #ffffff;
+  --color-secondary: #14b8a6;
+  --color-secondary-content: #0b1f33;
+  --color-accent: #bfdbfe;
+  --color-accent-content: #0b1f33;
+  --color-neutral: #f1f5f9;
+  --color-neutral-content: #0b1f33;
+  --color-info: #bfdbfe;
+  --color-info-content: #0b1f33;
+  --color-success: #14b8a6;
+  --color-success-content: #0b1f33;
+  --color-warning: #f7b955;
+  --color-warning-content: #0b1f33;
+  --color-error: #d83a4b;
+  --color-error-content: #ffffff;
+  --radius-box: 0.75rem;
+  --radius-field: 0.75rem;
+  --radius-selector: 0.75rem;
+}
+
+@plugin "daisyui/theme" {
+  name: "camps";
+  color-scheme: light;
+  --color-base-100: #fbf6ee;
+  --color-base-200: #ead9c6;
+  --color-base-300: #dcc4a8;
+  --color-base-content: #202a2e;
+  --color-primary: #f7b955;
+  --color-primary-content: #202a2e;
+  --color-secondary: #6b8e5a;
+  --color-secondary-content: #ffffff;
+  --color-accent: #c96f4a;
+  --color-accent-content: #ffffff;
+  --color-neutral: #202a2e;
+  --color-neutral-content: #fbf6ee;
+  --color-info: #ead9c6;
+  --color-info-content: #202a2e;
+  --color-success: #6b8e5a;
+  --color-success-content: #ffffff;
+  --color-warning: #f7b955;
   --color-warning-content: #202a2e;
   --color-error: #d83a4b;
   --color-error-content: #ffffff;
@@ -32,32 +88,182 @@
   --radius-selector: 0.75rem;
 }
 
-[data-theme="espais"] {
-  --color-heading: #075985;
-  --color-warning-light: #f6c27a;
-  --color-error-dark: #a92336;
-  --color-success-dark: #3f5f2a;
-  --color-secondary-dark: #7a5528;
+@plugin "daisyui/theme" {
+  name: "camps-dark";
+  color-scheme: dark;
+  --color-base-100: #1c1610;
+  --color-base-200: #2a2118;
+  --color-base-300: #3d3226;
+  --color-base-content: #f5ede3;
+  --color-primary: #f7b955;
+  --color-primary-content: #1c1610;
+  --color-secondary: #6b8e5a;
+  --color-secondary-content: #ffffff;
+  --color-accent: #c96f4a;
+  --color-accent-content: #ffffff;
+  --color-neutral: #f5ede3;
+  --color-neutral-content: #1c1610;
+  --color-info: #ead9c6;
+  --color-info-content: #1c1610;
+  --color-success: #6b8e5a;
+  --color-success-content: #ffffff;
+  --color-warning: #f7b955;
+  --color-warning-content: #1c1610;
+  --color-error: #d83a4b;
+  --color-error-content: #ffffff;
+  --radius-box: 0.75rem;
+  --radius-field: 0.75rem;
+  --radius-selector: 0.75rem;
 }
 
-[data-theme="espais"] h1,
-[data-theme="espais"] h2,
-[data-theme="espais"] h3,
-[data-theme="espais"] .navbar .btn-ghost.text-xl {
+@plugin "daisyui/theme" {
+  name: "citrics";
+  color-scheme: light;
+  --color-base-100: #fffcf7;
+  --color-base-200: #fff7e6;
+  --color-base-300: #f5e6c8;
+  --color-base-content: #202a2e;
+  --color-primary: #f97316;
+  --color-primary-content: #ffffff;
+  --color-secondary: #facc15;
+  --color-secondary-content: #202a2e;
+  --color-accent: #4caf50;
+  --color-accent-content: #202a2e;
+  --color-neutral: #202a2e;
+  --color-neutral-content: #fffcf7;
+  --color-info: #fff7e6;
+  --color-info-content: #202a2e;
+  --color-success: #4caf50;
+  --color-success-content: #202a2e;
+  --color-warning: #facc15;
+  --color-warning-content: #202a2e;
+  --color-error: #d83a4b;
+  --color-error-content: #ffffff;
+  --radius-box: 0.75rem;
+  --radius-field: 0.75rem;
+  --radius-selector: 0.75rem;
+}
+
+@plugin "daisyui/theme" {
+  name: "citrics-dark";
+  color-scheme: dark;
+  --color-base-100: #1a1208;
+  --color-base-200: #261a0c;
+  --color-base-300: #3d2810;
+  --color-base-content: #fff7e6;
+  --color-primary: #f97316;
+  --color-primary-content: #ffffff;
+  --color-secondary: #facc15;
+  --color-secondary-content: #1a1208;
+  --color-accent: #4caf50;
+  --color-accent-content: #1a1208;
+  --color-neutral: #fff7e6;
+  --color-neutral-content: #1a1208;
+  --color-info: #fff7e6;
+  --color-info-content: #1a1208;
+  --color-success: #4caf50;
+  --color-success-content: #1a1208;
+  --color-warning: #facc15;
+  --color-warning-content: #1a1208;
+  --color-error: #d83a4b;
+  --color-error-content: #ffffff;
+  --radius-box: 0.75rem;
+  --radius-field: 0.75rem;
+  --radius-selector: 0.75rem;
+}
+
+@plugin "daisyui/theme" {
+  name: "vinyes";
+  color-scheme: light;
+  --color-base-100: #faf7f3;
+  --color-base-200: #efe6dc;
+  --color-base-300: #d6c8b6;
+  --color-base-content: #202a2e;
+  --color-primary: #9b2c3d;
+  --color-primary-content: #ffffff;
+  --color-secondary: #8b5cf6;
+  --color-secondary-content: #ffffff;
+  --color-accent: #d6c8b6;
+  --color-accent-content: #202a2e;
+  --color-neutral: #0f4c75;
+  --color-neutral-content: #faf7f3;
+  --color-info: #d6c8b6;
+  --color-info-content: #202a2e;
+  --color-success: #6b8e5a;
+  --color-success-content: #ffffff;
+  --color-warning: #f7b955;
+  --color-warning-content: #202a2e;
+  --color-error: #d83a4b;
+  --color-error-content: #ffffff;
+  --radius-box: 0.75rem;
+  --radius-field: 0.75rem;
+  --radius-selector: 0.75rem;
+}
+
+@plugin "daisyui/theme" {
+  name: "vinyes-dark";
+  color-scheme: dark;
+  --color-base-100: #0a2a42;
+  --color-base-200: #0f4c75;
+  --color-base-300: #1a5a86;
+  --color-base-content: #f5ede6;
+  --color-primary: #9b2c3d;
+  --color-primary-content: #ffffff;
+  --color-secondary: #8b5cf6;
+  --color-secondary-content: #ffffff;
+  --color-accent: #d6c8b6;
+  --color-accent-content: #0a2a42;
+  --color-neutral: #f5ede6;
+  --color-neutral-content: #0a2a42;
+  --color-info: #d6c8b6;
+  --color-info-content: #0a2a42;
+  --color-success: #6b8e5a;
+  --color-success-content: #ffffff;
+  --color-warning: #f7b955;
+  --color-warning-content: #0a2a42;
+  --color-error: #d83a4b;
+  --color-error-content: #ffffff;
+  --radius-box: 0.75rem;
+  --radius-field: 0.75rem;
+  --radius-selector: 0.75rem;
+}
+
+[data-theme="mar-cel"] {
+  --color-heading: #0747a6;
+}
+[data-theme="mar-cel-dark"] {
+  --color-heading: #bfdbfe;
+}
+[data-theme="camps"] {
+  --color-heading: #5c4a32;
+}
+[data-theme="camps-dark"] {
+  --color-heading: #f7b955;
+}
+[data-theme="citrics"] {
+  --color-heading: #c2410c;
+}
+[data-theme="citrics-dark"] {
+  --color-heading: #facc15;
+}
+[data-theme="vinyes"] {
+  --color-heading: #0f4c75;
+}
+[data-theme="vinyes-dark"] {
+  --color-heading: #d6c8b6;
+}
+
+h1,
+h2,
+h3,
+.navbar .btn-ghost.text-xl,
+.navbar .btn-ghost.text-2xl {
   color: var(--color-heading);
 }
 
-[data-theme="espais"] .landing-hero h1,
-[data-theme="espais"] .landing-hero p {
+.landing-hero h1,
+.landing-hero p {
   color: #ffffff;
-}
-
-[data-theme="espais"] .btn-primary:hover,
-[data-theme="espais"] .btn-primary:active,
-[data-theme="espais"] .btn-primary:focus-visible {
-  --btn-color: #075985;
-  background-color: #075985;
-  border-color: #075985;
 }
 
 .skip-link {
@@ -67,8 +273,8 @@
   z-index: 100;
   padding: 0.5rem 1rem;
   border-radius: 0.75rem;
-  background: #075985;
-  color: #fff;
+  background: var(--color-primary);
+  color: var(--color-primary-content);
   min-height: 2.75rem;
 }
 
@@ -116,8 +322,8 @@ dialog.modal.modal-open .modal-box {
 }
 
 .calendari-espais .sx__time-grid-day.is-selected {
-  background-color: rgba(22, 119, 168, 0.18);
-  box-shadow: inset 0 0 0 3px #1677a8;
+  background-color: color-mix(in oklab, var(--color-primary) 18%, transparent);
+  box-shadow: inset 0 0 0 3px var(--color-primary);
   z-index: 1;
 }
 
@@ -137,19 +343,19 @@ dialog.modal.modal-open .modal-box {
   z-index: 60;
   pointer-events: none;
   transform: translate(-50%, -120%);
-  background: #1677a8;
-  color: #fff;
+  background: var(--color-primary);
+  color: var(--color-primary-content);
   border-radius: 0.5rem;
   padding: 0.45rem 0.75rem;
   font-size: 0.85rem;
   font-weight: 600;
-  box-shadow: 0 8px 20px rgba(7, 89, 133, 0.28);
+  box-shadow: 0 8px 20px color-mix(in oklab, var(--color-neutral) 28%, transparent);
 }
 
 .calendari-espais .sx__week-grid__date.is-selected,
 .calendari-espais .sx__week-grid__date.sx__week-grid__date--is-selected {
   font-weight: 700;
-  color: #075985;
+  color: var(--color-heading);
 }
 
 .calendari-espais .sx__time-grid-event-inner {

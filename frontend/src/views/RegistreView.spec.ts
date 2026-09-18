@@ -20,6 +20,7 @@ const api: IdentityApi = {
   registrar: async () => sessioBuida,
   iniciarSessio: async () => sessioBuida,
   obtenirSessio: async () => sessioBuida,
+  actualitzarPaleta: async (_token, palette) => ({ palette }),
   convidarCoordinador: async () => ({
     email: "carla@example.com",
     accept_url: "/invitar/token-convidat",

@@ -42,6 +42,7 @@ from app.usecases.record_attendance import RecordAttendance
 from app.usecases.register_entity import RegisterEntity
 from app.usecases.reschedule_reservation import RescheduleReservation
 from app.usecases.resolve_session import ResolveSession, SessionView
+from app.usecases.update_entity_palette import UpdateEntityPalette
 from app.usecases.update_space import UpdateSpace
 
 bearer_scheme = HTTPBearer(auto_error=False)
@@ -56,6 +57,7 @@ class IdentityHttp:
     invite: InviteCoordinator
     preview: GetInvitation
     accept: AcceptInvitation
+    update_palette: UpdateEntityPalette
 
 
 def get_session_factory(request: Request) -> sessionmaker:
@@ -117,6 +119,7 @@ def get_identity_http(request: Request) -> Iterator[IdentityHttp]:
             invite=InviteCoordinator(uow, clock, ids, SecretsInvitationTokenGenerator()),
             preview=GetInvitation(uow, clock),
             accept=AcceptInvitation(uow, clock, ids, hasher),
+            update_palette=UpdateEntityPalette(uow),
         )
     finally:
         uow.close()

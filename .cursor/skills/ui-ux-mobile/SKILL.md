@@ -7,7 +7,7 @@ description: UI mobile-first, empty states, accessibilitat i verificació visual
 
 ## Principis
 
-360–430px primer. Paleta mediterrània única (tema Daisy `espais`). Glossari català. CTA clara als buits. Anul·lar = confirmació + text que s’avisa el coordinador. PWA instal·lable, no app nativa.
+360–430px primer. Paleta d’entitat ADR 0011 (clar/fosc al capçal; colors al tauler del responsable). Glossari català. CTA clara als buits. Anul·lar = confirmació + text que s’avisa el coordinador. PWA instal·lable, no app nativa.
 
 ## Checklist
 

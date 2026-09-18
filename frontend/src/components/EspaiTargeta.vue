@@ -47,7 +47,10 @@ const etiquetaCalendari = computed(() =>
         {{ accioCalendari ?? "Reservar" }}
       </span>
     </component>
-    <div v-if="props.potEditar" class="card-actions justify-end px-8 pb-6 pt-0">
+    <div v-if="props.potEditar" class="card-actions justify-end px-8 pb-6 pt-0 flex-wrap">
+      <RouterLink class="btn btn-ghost min-h-11" :to="{ name: 'analisi', hash: `#espai-${props.espai.id}` }">
+        Estadístiques
+      </RouterLink>
       <RouterLink class="btn btn-ghost min-h-11" :to="{ name: 'espai-editar', params: { id: props.espai.id } }">
         Editar
       </RouterLink>
