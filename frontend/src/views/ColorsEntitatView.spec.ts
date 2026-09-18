@@ -62,14 +62,36 @@ describe("ColorsEntitatView", () => {
     await wrapper.get("#paleta-entitat").trigger("click");
     expect(wrapper.find("#paleta-entitat-opcions").exists()).toBe(true);
     expect(wrapper.get("#paleta-entitat-opcions").text()).toContain("Cítrics i sol");
+    expect(wrapper.findAll("#paleta-entitat-opcions [role='option']")).toHaveLength(4);
+    expect(wrapper.findAll("#paleta-entitat-opcions button")).toHaveLength(0);
     expect(wrapper.findAll("#paleta-entitat-opcions .rounded-full")).toHaveLength(12);
     expect(wrapper.get("#paleta-entitat-opcions").html()).toContain("rgb(249, 115, 22)");
     const citrics = wrapper
-      .findAll("#paleta-entitat-opcions button")
-      .find((boto) => boto.text().includes("Cítrics"));
+      .findAll("#paleta-entitat-opcions [role='option']")
+      .find((opcio) => opcio.text().includes("Cítrics"));
     await citrics!.trigger("click");
     await flushPromises();
     expect(wrapper.find("#paleta-entitat-opcions").exists()).toBe(false);
     expect(wrapper.get("#paleta-entitat").text()).toContain("Cítrics i sol");
+  });
+
+  it("navega les paletes amb fletxes i Enter, i tanca amb Escape", async () => {
+    const wrapper = muntar();
+    await flushPromises();
+    await wrapper.get("#paleta-entitat").trigger("click");
+    await flushPromises();
+    const llista = wrapper.get("#paleta-entitat-opcions");
+    expect(llista.attributes("aria-activedescendant")).toBe("paleta-opcio-mar-cel");
+    await llista.trigger("keydown", { key: "ArrowDown" });
+    expect(llista.attributes("aria-activedescendant")).toBe("paleta-opcio-camps");
+    await llista.trigger("keydown", { key: "Enter" });
+    await flushPromises();
+    expect(wrapper.find("#paleta-entitat-opcions").exists()).toBe(false);
+    expect(wrapper.get("#paleta-entitat").text()).toContain("Camps i cereals");
+
+    await wrapper.get("#paleta-entitat").trigger("click");
+    await flushPromises();
+    await wrapper.get("#paleta-entitat-opcions").trigger("keydown", { key: "Escape" });
+    expect(wrapper.find("#paleta-entitat-opcions").exists()).toBe(false);
   });
 });

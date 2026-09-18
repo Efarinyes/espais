@@ -117,6 +117,14 @@ describe("TaulerLayout", () => {
     expect(wrapper.text()).toContain("centre-analisi");
   });
 
+  it("plega l’administració dins d’un details tancat a mòbil", async () => {
+    const { wrapper } = await muntar("/espais");
+    const plegat = wrapper.get("aside details");
+    expect(plegat.attributes("open")).toBeUndefined();
+    expect(plegat.get("summary").text()).toContain("AAVV Barri A");
+    expect(wrapper.find("aside .hidden.lg\\:block").exists()).toBe(true);
+  });
+
   it("no mostra el lateral al coordinador", async () => {
     const { wrapper } = await muntar("/espais", { ...sessioAnna, role: "coordinator", user_name: "Carla" });
     expect(wrapper.find("nav[aria-label='Administració']").exists()).toBe(false);

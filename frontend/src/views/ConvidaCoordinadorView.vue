@@ -27,8 +27,10 @@ const { camps, errorsCamp, errorGlobal, enviant, enllacComplet, copiat, enviar, 
           type="email"
           autocomplete="email"
           required
+          :aria-invalid="Boolean(errorsCamp.email) || undefined"
+          :aria-describedby="errorsCamp.email ? 'email-error' : undefined"
         />
-        <p v-if="errorsCamp.email" class="text-error">{{ errorsCamp.email }}</p>
+        <p v-if="errorsCamp.email" id="email-error" class="text-error" role="alert">{{ errorsCamp.email }}</p>
       </fieldset>
       <button class="btn btn-primary min-h-11 w-full" type="submit" :disabled="enviant">
         {{ enviant ? "Creant invitació…" : "Crear invitació" }}

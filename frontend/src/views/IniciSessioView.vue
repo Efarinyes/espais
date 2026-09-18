@@ -26,8 +26,10 @@ const { camps, errorsCamp, errorGlobal, enviant, enviar } = useIniciSessio();
           type="email"
           autocomplete="username"
           required
+          :aria-invalid="Boolean(errorsCamp.email) || undefined"
+          :aria-describedby="errorsCamp.email ? 'email-error' : undefined"
         />
-        <p v-if="errorsCamp.email" class="text-error">{{ errorsCamp.email }}</p>
+        <p v-if="errorsCamp.email" id="email-error" class="text-error" role="alert">{{ errorsCamp.email }}</p>
       </fieldset>
 
       <fieldset class="fieldset">
@@ -40,8 +42,10 @@ const { camps, errorsCamp, errorGlobal, enviant, enviar } = useIniciSessio();
           type="password"
           autocomplete="current-password"
           required
+          :aria-invalid="Boolean(errorsCamp.password) || undefined"
+          :aria-describedby="errorsCamp.password ? 'password-error' : undefined"
         />
-        <p v-if="errorsCamp.password" class="text-error">{{ errorsCamp.password }}</p>
+        <p v-if="errorsCamp.password" id="password-error" class="text-error" role="alert">{{ errorsCamp.password }}</p>
       </fieldset>
 
       <button class="btn btn-primary min-h-11 w-full" type="submit" :disabled="enviant">

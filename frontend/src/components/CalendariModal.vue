@@ -92,9 +92,11 @@ function actualitzarAssistencia(event: Event) {
         name="assistencia"
         autocomplete="off"
         :value="campAssistencia"
+        :aria-invalid="Boolean(errorDetall) || undefined"
+        :aria-describedby="errorDetall ? 'assistencia-error' : undefined"
         @input="actualitzarAssistencia"
       />
-      <p v-if="errorDetall" class="mt-2 text-error">{{ errorDetall }}</p>
+      <p v-if="errorDetall" id="assistencia-error" class="mt-2 text-error" role="alert">{{ errorDetall }}</p>
       <p v-else-if="okDetall" class="mt-2 text-success">{{ okDetall }}</p>
       <p v-if="avisAforament" class="mt-2 text-sm">{{ avisAforament }}</p>
       <div class="modal-action flex-wrap gap-2">

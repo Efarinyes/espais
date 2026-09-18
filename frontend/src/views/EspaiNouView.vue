@@ -20,8 +20,8 @@ const { camps, dies, errorsCamp, errorGlobal, enviant, enviar } = useCreaEspai()
     <form class="mt-6 space-y-4" @submit.prevent="enviar">
       <fieldset class="fieldset">
         <label class="label" for="name">Nom de l’espai</label>
-        <input id="name" v-model="camps.name" class="input w-full min-h-11" name="name" autocomplete="off" required />
-        <p v-if="errorsCamp.name" class="text-error">{{ errorsCamp.name }}</p>
+        <input id="name" v-model="camps.name" class="input w-full min-h-11" name="name" autocomplete="off" required :aria-invalid="Boolean(errorsCamp.name) || undefined" :aria-describedby="errorsCamp.name ? 'name-error' : undefined" />
+        <p v-if="errorsCamp.name" id="name-error" class="text-error" role="alert">{{ errorsCamp.name }}</p>
       </fieldset>
 
       <fieldset class="fieldset">
@@ -35,8 +35,10 @@ const { camps, dies, errorsCamp, errorGlobal, enviant, enviar } = useCreaEspai()
           min="1"
           step="1"
           required
+          :aria-invalid="Boolean(errorsCamp.capacity) || undefined"
+          :aria-describedby="errorsCamp.capacity ? 'capacity-error' : undefined"
         />
-        <p v-if="errorsCamp.capacity" class="text-error">{{ errorsCamp.capacity }}</p>
+        <p v-if="errorsCamp.capacity" id="capacity-error" class="text-error" role="alert">{{ errorsCamp.capacity }}</p>
       </fieldset>
 
       <fieldset class="fieldset">
@@ -44,8 +46,14 @@ const { camps, dies, errorsCamp, errorGlobal, enviant, enviar } = useCreaEspai()
         <input id="equipment" v-model="camps.equipment" class="input w-full min-h-11" name="equipment" autocomplete="off" />
       </fieldset>
 
-      <FinestresDisponibilitat v-model="dies" />
-      <p v-if="errorsCamp.windows" class="text-error">{{ errorsCamp.windows }}</p>
+      <fieldset
+        class="fieldset"
+        :aria-invalid="Boolean(errorsCamp.windows) || undefined"
+        :aria-describedby="errorsCamp.windows ? 'windows-error' : undefined"
+      >
+        <FinestresDisponibilitat v-model="dies" />
+        <p v-if="errorsCamp.windows" id="windows-error" class="text-error" role="alert">{{ errorsCamp.windows }}</p>
+      </fieldset>
 
       <button class="btn btn-primary min-h-11 w-full" type="submit" :disabled="enviant">
         {{ enviant ? "Desant…" : "Desar l’espai" }}

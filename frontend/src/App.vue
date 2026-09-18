@@ -88,7 +88,7 @@ function sortir() {
               {{ noLlegits }}
             </span>
           </summary>
-          <ul class="menu dropdown-content bg-base-100 rounded-box z-50 mt-2 w-56 p-2 shadow-sm">
+          <ul class="menu dropdown-content bg-base-100 rounded-box z-50 mt-2 w-56 p-2 shadow-md border border-base-300">
             <li v-if="esCoordinador">
               <RouterLink class="min-h-11" to="/espais">Els espais</RouterLink>
             </li>

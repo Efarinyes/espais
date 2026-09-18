@@ -33,8 +33,10 @@ const { preview, carregant, errorCarrega, camps, errorsCamp, errorGlobal, envian
             name="name"
             autocomplete="name"
             required
+            :aria-invalid="Boolean(errorsCamp.name) || undefined"
+            :aria-describedby="errorsCamp.name ? 'name-error' : undefined"
           />
-          <p v-if="errorsCamp.name" class="text-error">{{ errorsCamp.name }}</p>
+          <p v-if="errorsCamp.name" id="name-error" class="text-error" role="alert">{{ errorsCamp.name }}</p>
         </fieldset>
         <fieldset class="fieldset">
           <label class="label" for="password">Contrasenya</label>
@@ -47,8 +49,10 @@ const { preview, carregant, errorCarrega, camps, errorsCamp, errorGlobal, envian
             autocomplete="new-password"
             minlength="8"
             required
+            :aria-invalid="Boolean(errorsCamp.password) || undefined"
+            :aria-describedby="errorsCamp.password ? 'password-error' : undefined"
           />
-          <p v-if="errorsCamp.password" class="text-error">{{ errorsCamp.password }}</p>
+          <p v-if="errorsCamp.password" id="password-error" class="text-error" role="alert">{{ errorsCamp.password }}</p>
         </fieldset>
         <button class="btn btn-primary min-h-11 w-full" type="submit" :disabled="enviant">
           {{ enviant ? "Acceptant…" : "Acceptar i entrar" }}

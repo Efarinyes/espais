@@ -9,16 +9,18 @@ Actualitza aquest arxiu al final de cada sessió. És el punt d’arrencada del 
 
 ## Darrera feina
 
-Paleta d’entitat (ADR 0011) i tauler del responsable:
+Auditoria visual controlada (sense redesign):
 
-- Colors de l’entitat a BBDD; Clar/Fosc personal al capçal.
-- Tauler amb columna lateral: identitat (nom d’entitat i del responsable); menú alfabètic (Colors, Convida, Espais, Estadístiques); **Surt** al final, separat i en color d’error.
-- Capçal del responsable: Clar/Fosc i Calendari. El coordinador conserva Surt al capçal.
-- Empty d’espais amb una sola CTA.
+- UI-001: menú d’admin del responsable plegat en `details` tancat sota `lg`; aside d’escriptori intacte.
+- UI-002: errors de camp amb `aria-describedby` / `aria-invalid`.
+- UI-003: teclat al selector de paleta (fletxes, Enter, Escape, un tab-stop).
+- UI-004: Estadístiques al patró `fieldset` + `input`.
+- UI-005: `shadow-md` + vora només al dropdown del capçal i al panell de paleta.
+- UI-006: no centralitzar `min-h-11` (contracte de toc ≥ 44px).
 
 ## Següent tasca
 
-Polir més el tauler del responsable (layout i identitat). Recórrer a Brave escriptori i vista estreta, i el contrast de paletes. Desplegament Alpha+ i botigues: aparcats.
+Recórrer a Brave (escriptori i vista estreta) el tauler plegable i el contrast de paletes. `CalendariModal` encara usa `input-bordered` (fora de l’auditoria). Desplegament Alpha+ i botigues: aparcats.
 
 Remot GitHub: encara sota demanda. Sense `origin`.
 
@@ -45,7 +47,7 @@ Cap. API `http://127.0.0.1:8000`; front `http://127.0.0.1:5173`.
 - Glossari: entitat, responsable, coordinador, espai, reserva, assistència, aforament.
 - Ús intern i gratuït. Sense cobrament al model.
 - Micromamba: `micromamba run -n espais pytest`; no `env create` si `espais` existeix.
-- Front: `cd frontend && npm test` / `npm run dev`. Vue no global. Paleta d’entitat ADR 0011 (defecte Mar i cel; Clar/Fosc al capçal; colors al lateral del tauler); toc ≥ 44px (`min-h-11`).
+- Front: `cd frontend && npm test` / `npm run dev`. Vue no global. Paleta d’entitat ADR 0011 (defecte Mar i cel; Clar/Fosc al capçal; colors al lateral del tauler); toc ≥ 44px (`min-h-11`). A mòbil el menú d’admin del responsable és un `details` tancat.
 - PWA: instal·lable; no desregistrar el SW en DEV. `navigateFallbackDenylist` inclou `/avisos` i `/analisi`.
 - Deute conscient: split de `useCalendariReserves` / drag = si el composable torna a créixer. CSV d’anàlisi = backlog.
 - El coordinador reprograma la seva reserva sense avís; l’avís només el dispara el responsable.

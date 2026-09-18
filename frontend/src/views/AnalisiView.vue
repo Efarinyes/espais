@@ -79,12 +79,10 @@ watch(espaiDestacat, () => {
     </p>
 
     <div class="mt-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-      <label class="form-control max-w-xs" for="mes">
-        <span class="label">
-          <span class="label-text">Mes</span>
-        </span>
-        <input id="mes" v-model="mes" class="input input-bordered min-h-11" type="month" name="mes" />
-      </label>
+      <fieldset class="fieldset max-w-xs">
+        <label class="label" for="mes">Mes</label>
+        <input id="mes" v-model="mes" class="input w-full min-h-11" type="month" name="mes" />
+      </fieldset>
       <label class="flex items-center gap-3 min-h-11 cursor-pointer">
         <input v-model="mostraExemple" class="toggle toggle-primary" type="checkbox" />
         <span>Mostra d’exemple</span>

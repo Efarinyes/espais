@@ -25,8 +25,10 @@ const { camps, errorsCamp, errorGlobal, enviant, enviar } = useRegistre();
           name="entity_name"
           autocomplete="organization"
           required
+          :aria-invalid="Boolean(errorsCamp.entity_name) || undefined"
+          :aria-describedby="errorsCamp.entity_name ? 'entity_name-error' : undefined"
         />
-        <p v-if="errorsCamp.entity_name" class="text-error">{{ errorsCamp.entity_name }}</p>
+        <p v-if="errorsCamp.entity_name" id="entity_name-error" class="text-error" role="alert">{{ errorsCamp.entity_name }}</p>
       </fieldset>
 
       <fieldset class="fieldset">
@@ -49,8 +51,10 @@ const { camps, errorsCamp, errorGlobal, enviant, enviar } = useRegistre();
           name="responsible_name"
           autocomplete="name"
           required
+          :aria-invalid="Boolean(errorsCamp.responsible_name) || undefined"
+          :aria-describedby="errorsCamp.responsible_name ? 'responsible_name-error' : undefined"
         />
-        <p v-if="errorsCamp.responsible_name" class="text-error">{{ errorsCamp.responsible_name }}</p>
+        <p v-if="errorsCamp.responsible_name" id="responsible_name-error" class="text-error" role="alert">{{ errorsCamp.responsible_name }}</p>
       </fieldset>
 
       <fieldset class="fieldset">
@@ -63,8 +67,10 @@ const { camps, errorsCamp, errorGlobal, enviant, enviar } = useRegistre();
           type="email"
           autocomplete="email"
           required
+          :aria-invalid="Boolean(errorsCamp.email) || undefined"
+          :aria-describedby="errorsCamp.email ? 'email-error' : undefined"
         />
-        <p v-if="errorsCamp.email" class="text-error">{{ errorsCamp.email }}</p>
+        <p v-if="errorsCamp.email" id="email-error" class="text-error" role="alert">{{ errorsCamp.email }}</p>
       </fieldset>
 
       <fieldset class="fieldset">
@@ -78,8 +84,10 @@ const { camps, errorsCamp, errorGlobal, enviant, enviar } = useRegistre();
           autocomplete="new-password"
           minlength="8"
           required
+          :aria-invalid="Boolean(errorsCamp.password) || undefined"
+          :aria-describedby="errorsCamp.password ? 'password-error' : undefined"
         />
-        <p v-if="errorsCamp.password" class="text-error">{{ errorsCamp.password }}</p>
+        <p v-if="errorsCamp.password" id="password-error" class="text-error" role="alert">{{ errorsCamp.password }}</p>
       </fieldset>
 
       <button class="btn btn-primary min-h-11 w-full" type="submit" :disabled="enviant">
