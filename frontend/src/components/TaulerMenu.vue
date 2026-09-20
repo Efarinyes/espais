@@ -25,30 +25,22 @@ function sortir() {
 
 <template>
   <div>
-    <div v-if="!compacte" class="px-4 pt-4 pb-3">
+    <div v-if="!compacte" class="px-4 pt-4">
       <p class="text-xs font-medium uppercase tracking-wide text-base-content/55">Entitat</p>
       <p class="mt-1 text-lg font-semibold leading-snug">{{ sessio.entityName }}</p>
-      <p v-if="sessio.typology" class="mt-1 text-sm text-base-content/70">{{ sessio.typology }}</p>
-      <div class="mt-3 border-t border-base-content/10 pt-3">
-        <p class="font-medium leading-snug">{{ sessio.userName }}</p>
-        <p class="text-sm text-base-content/70">Responsable</p>
-      </div>
+      <p class="mt-5 leading-snug">
+        <span class="text-sm text-base-content/70">Hola, </span>
+        <span class="mt-0.5 block font-medium">{{ sessio.userName }}</span>
+      </p>
     </div>
-    <div v-else class="px-4 pb-1 pt-1">
-      <p class="font-medium leading-snug">{{ sessio.userName }}</p>
-      <p class="text-sm text-base-content/70">Responsable</p>
+    <div v-else class="px-4 pt-2">
+      <p class="leading-snug">
+        <span class="text-sm text-base-content/70">Hola, </span>
+        <span class="mt-0.5 block font-medium">{{ sessio.userName }}</span>
+      </p>
     </div>
-    <nav aria-label="Administració">
-      <ul class="menu w-full p-2" :class="compacte ? '' : 'pt-0'">
-        <li>
-          <RouterLink
-            class="min-h-11"
-            to="/entitat/colors"
-            :aria-current="esColors ? 'page' : undefined"
-          >
-            Colors de l’entitat
-          </RouterLink>
-        </li>
+    <nav class="mt-4 border-t border-base-content/10" aria-label="Administració">
+      <ul class="menu w-full p-2">
         <li>
           <RouterLink
             class="min-h-11"
@@ -77,6 +69,15 @@ function sortir() {
           </RouterLink>
         </li>
         <li class="border-t border-base-content/20">
+          <RouterLink
+            class="min-h-11"
+            to="/entitat/colors"
+            :aria-current="esColors ? 'page' : undefined"
+          >
+            Tria els colors
+          </RouterLink>
+        </li>
+        <li>
           <button class="min-h-11 text-error" type="button" @click="sortir">Surt</button>
         </li>
       </ul>

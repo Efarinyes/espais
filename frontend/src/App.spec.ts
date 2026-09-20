@@ -72,7 +72,8 @@ function muntar(dto?: SessioDto) {
 describe("App", () => {
   it("mostra el menú compacte del responsable sense duplicar l’administració", () => {
     const wrapper = muntar(sessioResp);
-    expect(wrapper.text()).toContain("Responsable");
+    expect(wrapper.text()).toContain("Administració de AAVV Barri A");
+    expect(wrapper.text()).not.toContain("Responsable");
     expect(wrapper.text()).not.toContain("Coordinador");
     const principal = wrapper.get("nav[aria-label='Principal']");
     expect(principal.text()).toContain("Menú");

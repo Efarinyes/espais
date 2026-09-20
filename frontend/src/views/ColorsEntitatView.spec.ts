@@ -56,7 +56,7 @@ describe("ColorsEntitatView", () => {
   it("mostra els swatches i tanca el desplegable en triar", async () => {
     const wrapper = muntar();
     await flushPromises();
-    expect(wrapper.get("h1").text()).toContain("Colors de l’entitat");
+    expect(wrapper.get("h1").text()).toContain("Tria els colors");
     expect(wrapper.get("#paleta-entitat").text()).toContain("Mar i cel");
     expect(wrapper.find("#paleta-entitat-opcions").exists()).toBe(false);
     await wrapper.get("#paleta-entitat").trigger("click");

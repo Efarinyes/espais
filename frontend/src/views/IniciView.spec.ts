@@ -108,7 +108,7 @@ describe("IniciView", () => {
     const { wrapper, router } = muntar(sessioAnna);
     await flushPromises();
     expect(router.currentRoute.value.name).toBe("espais");
-    expect(wrapper.text()).not.toContain("Colors de l’entitat");
+    expect(wrapper.text()).not.toContain("Tria els colors");
     expect(wrapper.text()).not.toContain("Convida coordinadors");
   });
 
@@ -118,7 +118,7 @@ describe("IniciView", () => {
     expect(wrapper.text()).toContain("Encara no hi ha espais");
     expect(wrapper.text()).not.toContain("Defineix el primer espai");
     expect(wrapper.text()).not.toContain("Convida coordinadors");
-    expect(wrapper.text()).not.toContain("Colors de l’entitat");
+    expect(wrapper.text()).not.toContain("Tria els colors");
   });
 
   it("llista els espais del coordinador quan n’hi ha", async () => {

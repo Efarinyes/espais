@@ -13,17 +13,11 @@ const router = useRouter();
 const { noLlegits } = useComptadorAvisos();
 useSincronitzaSessio();
 
-const etiquetaRol = computed(() => {
-  if (sessio.role === "responsible") {
-    return "Responsable";
-  }
-  if (sessio.role === "coordinator") {
-    return "Coordinador";
-  }
-  return "";
-});
-
+const esResponsable = computed(() => sessio.role === "responsible");
 const esCoordinador = computed(() => sessio.role === "coordinator");
+const titolAdministracio = computed(() =>
+  sessio.entityName ? `Administració de ${sessio.entityName}` : "",
+);
 const anyPeu = computed(() => new Date().getFullYear());
 const iniciLogo = computed(() => destiDespresSessio(sessio.role));
 
@@ -37,9 +31,16 @@ function sortir() {
   <div class="min-h-screen flex flex-col">
     <a class="skip-link" href="#contingut">Ves al contingut</a>
     <header class="navbar bg-base-100 shadow-sm">
-      <div class="navbar-start min-w-0 gap-2">
+      <div class="navbar-start min-w-0 flex-1 gap-2">
         <RouterLink class="btn btn-ghost text-2xl font-semibold min-h-11 shrink-0" :to="iniciLogo">Espais</RouterLink>
-        <span v-if="etiquetaRol" class="badge badge-outline shrink-0 hidden sm:inline-flex">{{ etiquetaRol }}</span>
+        <span
+          v-if="esResponsable && titolAdministracio"
+          class="hidden min-w-0 truncate text-sm text-base-content/70 sm:inline"
+          :title="titolAdministracio"
+        >
+          {{ titolAdministracio }}
+        </span>
+        <span v-else-if="esCoordinador" class="badge badge-outline shrink-0 hidden sm:inline-flex">Coordinador</span>
       </div>
       <div class="navbar-end gap-1">
         <SelectorAparenca />

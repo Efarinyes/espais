@@ -72,34 +72,36 @@ describe("TaulerLayout", () => {
     const { wrapper } = await muntar("/espais");
     const nav = wrapper.get("nav[aria-label='Administració']");
     expect(nav.findAll("a").map((enllac) => enllac.text())).toEqual([
-      "Colors de l’entitat",
       "Convida coordinadors",
       "Espais",
       "Estadístiques",
+      "Tria els colors",
     ]);
     expect(nav.get("a[href='/espais']").attributes("aria-current")).toBe("page");
     expect(wrapper.text()).toContain("centre-espais");
   });
 
-  it("mostra el nom de l’entitat i del responsable", async () => {
+  it("mostra el nom de l’entitat i de la persona, sense tipologia ni rol", async () => {
     const { wrapper } = await muntar("/espais");
     const lateral = wrapper.get("aside");
     expect(lateral.text()).toContain("Entitat");
     expect(lateral.text()).toContain("AAVV Barri A");
-    expect(lateral.text()).toContain("associació de veïns");
+    expect(lateral.text()).toContain("Hola,");
     expect(lateral.text()).toContain("Anna");
-    expect(lateral.text()).toContain("Responsable");
+    expect(lateral.text()).not.toContain("associació de veïns");
+    expect(lateral.text()).not.toContain("Responsable");
   });
 
-  it("posa Surt al final del lateral, separat", async () => {
+  it("posa Tria els colors i Surt al final, separats de les accions", async () => {
     const { wrapper } = await muntar("/espais");
     const nav = wrapper.get("nav[aria-label='Administració']");
     const items = nav.findAll("li");
     expect(items).toHaveLength(5);
+    expect(items[3].get("a").text()).toBe("Tria els colors");
+    expect(items[3].classes()).toContain("border-t");
     const surt = items[4].get("button");
     expect(surt.text()).toBe("Surt");
     expect(surt.classes()).toContain("text-error");
-    expect(items[4].classes()).toContain("border-t");
   });
 
   it("surt de la sessió des del lateral", async () => {
