@@ -4,20 +4,20 @@ Actualitza aquest arxiu al final de cada sessió. És el punt d’arrencada del 
 
 ## Fase
 
-- **Fase actual:** v1 tancada al pla (fases 0–8). Cosmètica / landing (fora del pla de fases).
+- **Fase actual:** v1 tancada al pla (fases 0–8). Refactorització frontend (fora del pla de fases); cosmètica / landing aparcades.
 - **Fase anterior:** 8 — Poliment (feta: navbar mòbil, skip-link, empty/error, modal suau)
 
 ## Darrera feina
 
-Tauler del responsable i identitat visual:
+Revisió de `PLA_REFACTORITZACIO_FRONTEND.md` (document local, **no va al git**) contrastada amb `frontend/src/`. Auditoria vàlida: injecció `provide`/`inject` es manté; deute real = duplicació HTTP i fuites de responsabilitat. Cap canvi de codi.
 
-- Lateral: sense tipologia ni etiqueta de rol; salutació «Hola,» + nom; **Tria els colors** separat, just a sobre de Surt.
-- Capçal: **Espais** + «Administració de {nom de l’entitat}» (sense article; el coordinador conserva l’insígnia).
-- Lletra **Montserrat** restaurada (local, `@fontsource/montserrat`, pesos 400–700). ADR 0006 i docs d’UI actualitzats.
+Forat detectat: `identitat.ts` també fa `fetch` i és el propietari d’`ApiError`; REF-01 l’ha d’incloure (els 5 serveis).
 
 ## Següent tasca
 
-Alinear el camp Assistència de `CalendariModal` (`input-bordered` → `input w-full min-h-11`, com la resta de formularis). Desplegament Alpha+ i botigues: aparcats.
+**Sessió 1 del pla de refactorització:** `REF-01-HTTP` (crear `frontend/src/services/http.ts` amb `ApiError` + `fetchApi<T>`; migrar identitat, reserves, espais, avisos i analisi) i `REF-08-DEPS` (treure `@preact/signals`, `preact`, `@schedule-x/date-picker`, `@schedule-x/shared` si no s’importen). Tests: `http.spec.ts` + `npm test` / `npm run build`.
+
+Després, sessions 2–5 (vegeu Notes). Aparcats: camp Assistència de `CalendariModal` (`input-bordered`); desplegament Alpha+ i botigues.
 
 Remot GitHub: encara sota demanda. Sense `origin`.
 
@@ -46,6 +46,16 @@ Cap. API `http://127.0.0.1:8000`; front `http://127.0.0.1:5173`.
 - Micromamba: `micromamba run -n espais pytest`; no `env create` si `espais` existeix.
 - Front: `cd frontend && npm test` / `npm run dev`. Vue no global. Paleta d’entitat ADR 0011 (defecte Mar i cel; Clar/Fosc al capçal; Tria els colors al lateral, a sobre de Surt); toc ≥ 44px (`min-h-11`). A mòbil el menú d’admin del responsable és un `details` tancat. Lletra Montserrat local.
 - PWA: instal·lable; no desregistrar el SW en DEV. `navigateFallbackDenylist` inclou `/avisos` i `/analisi`.
-- Deute conscient: split de `useCalendariReserves` / drag = si el composable torna a créixer. CSV d’anàlisi = backlog. `CalendariModal` encara `input-bordered`.
+- Pla de refactorització frontend (local, no git; esborrar el fitxer quan s’acabi):
+
+  | Sessió | Objectiu | Tasques | Què fa |
+  |---|---|---|---|
+  | 1 | Fonaments | REF-01-HTTP, REF-08-DEPS | Client HTTP únic (`http.ts`, 5 serveis); neteja `package.json` |
+  | 2 | Cohesió | REF-04-CALENDARI-DOMAIN, REF-02-ESPAIS-FORM | Colors/formatatge fora de `calendari.ts`; `useFormulariEspai` |
+  | 3 | Calendari A | REF-03 fase A | Extraure creació (`useCreacioReserva`) |
+  | 4 | Calendari B | REF-03 fase B | Extraure assistència, anul·lació, reprogramació |
+  | 5 | Poliment | REF-05, REF-06, REF-07 (opcional) | Demo anàlisi a la vista; `AppHeader`/`AppFooter`; paleta SSOT |
+
+- Deute conscient: el split de `useCalendariReserves` és les sessions 3–4. CSV d’anàlisi = backlog. `CalendariModal` encara `input-bordered`.
 - El coordinador reprograma la seva reserva sense avís; l’avís només el dispara el responsable.
 - Landing: sense CTAs al cos; sense «gratuït» ni «cobrament»; fotos a `frontend/public/landing/` (hero + opcions + captures).
