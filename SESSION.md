@@ -9,9 +9,11 @@ Actualitza aquest arxiu al final de cada sessió. És el punt d’arrencada del 
 
 ## Darrera feina
 
-Revisió de `PLA_REFACTORITZACIO_FRONTEND.md` (document local, **no va al git**) contrastada amb `frontend/src/`. Auditoria vàlida: injecció `provide`/`inject` es manté; deute real = duplicació HTTP i fuites de responsabilitat. Cap canvi de codi.
+Governança de `docs/`, `.cursor/rules/`, `.cursor/skills/`, `AGENTS.md` i `README.md`. Cap canvi de producte. Commit local `4296128` a `fase/3-espais` (sense push).
 
-Forat detectat: `identitat.ts` també fa `fetch` i és el propietari d’`ApiError`; REF-01 l’ha d’incloure (els 5 serveis).
+Queda una sola regla: els skills aplicables són obligatoris; `session-close` actualitza `SESSION.md` i no commiteja; `repo-github` gestiona el repositori i una sessió pot acabar sense commit. El deute arquitectònic conscient va a un ADR; el d’implementació, no. SOLID no autoritza partir un fitxer pel nombre de línies.
+
+Pendent de decisió, sense classificar ni tocar: les notes de deute de les fases 5, 6 i 8 del pla, i l’estat `rescheduled` (el codi el declara; la reprogramació v1 deixa la reserva en `confirmed`).
 
 ## Següent tasca
 
