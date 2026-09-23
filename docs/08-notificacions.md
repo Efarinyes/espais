@@ -15,6 +15,7 @@ Canals v1: **in-app + correu**. No push, no WhatsApp. Una notificació clara al 
 | Anul·lació pel responsable | Coordinador de la reserva | sí |
 | Reprogramació pel responsable | Coordinador | sí |
 | Anul·lació pel mateix coordinador | — | no |
+| Reprogramació pel mateix coordinador | — | no |
 | Invitació de coordinador | Email convidat | sí (el token va per correu) |
 | Alta / benvinguda | Responsable | opcional al dev |
 

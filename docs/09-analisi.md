@@ -7,7 +7,7 @@ Només el **responsable**. Dades exclusives de la seva `entity_id`.
 - Quantes reserves hi ha hagut per espai en un període.
 - Quina ocupació horària (hores reservades / hores disponibles).
 - Assistència mitjana i comparació amb aforament i aforament mínim.
-- Quantes s’han anul·lat (i per qui: responsable vs coordinador, si el event log ho distingeix).
+- Quantes s’han anul·lat. Distingir responsable vs coordinador queda fora de v1 (no hi ha event log ni `cancelled_by`).
 
 ## Vistes
 

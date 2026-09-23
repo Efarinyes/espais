@@ -13,7 +13,7 @@ El projecte és a la **Fase 1 (esquelet)**. Punt de partida de cada sessió: [`S
 1. Llegeix [`SESSION.md`](SESSION.md).
 2. Consulta [`docs/INDEX.md`](docs/INDEX.md).
 3. Obre la fase activa a [`docs/PLA-TREBALL.md`](docs/PLA-TREBALL.md).
-4. El model ha de cridar el skill de la feina ([`AGENTS.md`](AGENTS.md)).
+4. El model ha d’utilitzar els skills que apliquen a la feina ([`AGENTS.md`](AGENTS.md)). El protocol és a [`docs/15-protocol-sessio.md`](docs/15-protocol-sessio.md).
 
 ## Arrencada local
 
@@ -44,3 +44,11 @@ Salut de l’API: `GET /salut`.
 ## Idioma
 
 Documentació, glossari de domini i UI: **català**.
+
+## Governança
+
+Els skills de [`.cursor/skills/`](.cursor/skills/) són instruccions operatives. Si la feina hi cau, el model els ha d’utilitzar tots; el coneixement general no en substitueix cap. Un skill que no correspon a la tasca no s’usa. En conflicte, la jerarquia és: ADR vigent, capítol de `docs/`, skill. Si no es resol, s’atura la part conflictiva i s’informa.
+
+`session-close` actualitza [`SESSION.md`](SESSION.md) i comprova si hi ha res a preservar. No fa commit. El repositori el gestiona `repo-github`, i una sessió pot acabar sense commit. Si la tasca prohibeix modificar `SESSION.md`, no es crida `session-close`.
+
+El deute arquitectònic conscient va a un ADR. El d’implementació, no: es registra al seguiment del projecte. SOLID és un criteri de revisió; el nombre de línies no basta per partir un mòdul. Una decisió de producte no presa no es resol canviant el model.

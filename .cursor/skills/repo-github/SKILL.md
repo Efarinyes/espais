@@ -1,6 +1,6 @@
 ---
 name: repo-github
-description: Gestiona git local (init, branques fase/feat, commit) i, només quan es demani, GitHub. Use at any time to preserve work, and always at session-close (mode tancament) after SESSION.md is updated. Do not create a remote or push until the user asks. Never use Cursor Origin.
+description: Gestiona el repositori Espais (què es commiteja, commit, push, merge, tags). Use when work must be preserved, including after session-close if there are changes to keep. A session may end with no commit. Do not create a remote or push until the user asks. Never use Cursor Origin.
 ---
 
 # Repo GitHub — Espais
@@ -13,25 +13,25 @@ Remot: **ajornat**. GitHub + `gh` només quan l’usuari ho demani. Sense `origi
 
 | Intenció | Acció |
 |---|---|
-| Preservar | Commit a la branca de treball, **durant** la sessió. Push només si hi ha `origin` **i** s’ha demanat |
-| Tancament | El crida `session-close` **sempre** després d’escriure `SESSION.md`. Commit que inclou `SESSION.md`. Sense push tret de demanda |
+| Preservar | Commit del que és legítim, a mig de sessió o després de `session-close` si hi ha canvis a guardar. Push només si hi ha `origin` **i** s’ha demanat |
 | Publicar | PR `gh pr create` cap a `main` (només amb remot i sota demanda) |
 | Bootstrap local | Init + `.gitignore` + primer commit a `main`. **Sense** remote ni push |
 | Bootstrap remot | Només si es demana: `gh repo create` privat + `git push -u origin main` |
 
 No facis merge a `main` ni PR tret que sigui **publicar**.
 
-## Mode tancament
+## Després de `session-close`
 
-L’invoca `session-close`. Independent dels commits fets durant la sessió: `SESSION.md` acaba de canviar.
+Només si `session-close` ha detectat canvis a preservar. Si no n’hi ha, no facis commit.
 
-1. Segueix el **Procediment preservar** (sota).
-2. El commit **ha d’incloure** `SESSION.md`. Si hi ha més arxius sense commit, inclou’ls (arbre net). Millor que la feina grossa ja estigui commitejada abans.
-3. Missatge centrat en el tancament (p. ex. actualitzar l’estat viu de sessió).
-4. **No push** tret que s’hagi demanat.
-5. Torna el hash. Això **compleix** el tancament; no tornis a `session-close` en bucle.
+1. No reescriguis [`SESSION.md`](../../../SESSION.md): ja l’ha tancat `session-close`.
+2. Segueix el **Procediment preservar**. El pas 4 mana què es pot posar a l’stage.
+3. Inclou `SESSION.md` si ha canviat, i la resta de feina legítima encara no commitejada.
+4. No facis `git add -A` ni `git add .`. Fora del commit: secrets, generats (`node_modules/`, `__pycache__/`, `.mamba/`, `.venv/`, `dist/`, `coverage/`, `*.db`) i fitxers que la sessió deixa fora a propòsit.
+5. **No push** tret que s’hagi demanat.
+6. Torna el hash i, si queda res fora, digues què i per què. No tornis a `session-close`.
 
-Un commit de tancament només amb `SESSION.md` (i docs de protocol) a `main` és acceptable si la fase 0 ja és a `main` i no s’ha obert `fase/…`.
+Un commit només amb `SESSION.md` (i docs de protocol) a `main` és acceptable si la fase 0 ja és a `main` i no s’ha obert `fase/…`.
 
 ## Procediment preservar
 
@@ -92,7 +92,7 @@ Només sota demanda, amb remot existent:
 - [ ] No Cursor Origin
 - [ ] No secrets al commit
 - [ ] No remote ni push sense demanda explícita
-- [ ] No tancar una sessió sense que `session-close` hagi passat pel mode tancament
+- [ ] No tancar tu la sessió (això és `session-close`) ni fer un commit si no hi ha res a preservar
 
 ## Recursos
 

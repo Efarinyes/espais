@@ -15,6 +15,7 @@ Només `frontend/`. Mai `npm install -g vue` ni Vue CLI global.
 - Lògica a composables.
 - Serveis HTTP via `provide`/`inject`.
 - Pinia: sessió i estat transversal, no un store per cada llista.
+- No parteixis una vista o un composable només perquè és llarg. Cal una raó de canvi independent ([docs/12-solid-estandards.md](../../../docs/12-solid-estandards.md)).
 
 ## Checklist
 

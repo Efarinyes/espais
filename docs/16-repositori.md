@@ -2,19 +2,21 @@
 
 Skill: `repo-github`. Aquest capítol és la política; el skill és el procediment.
 
-`session-close` **sempre** acaba aplicant `repo-github` (mode tancament): acaba d’escriure [`SESSION.md`](../SESSION.md), que ha d’entrar al git. Durant la sessió, `repo-github` (preservar) és independent i es crida tantes vegades com calgui.
+`session-close` tanca la sessió de treball i actualitza [`SESSION.md`](../SESSION.md). No commiteja.
+
+`repo-github` decideix i executa la gestió del repositori: què es commiteja, què no, `git add`, commit, push, merge i tags quan correspongui.
+
+No tota sessió necessita un commit. Si hi ha canvis que s’han de preservar, només ho fa `repo-github`, i després de `session-close` quan la sessió es tanca: si el commit va primer, el `HEAD` es queda amb un `SESSION.md` vell.
 
 ## Quan cridar `repo-github`
 
-En **qualsevol moment**, no només al tancar la sessió:
-
-- Preservar feina a mitja sessió (commit local).
-- Tancament de sessió (el crida `session-close`; sempre hi ha `SESSION.md` a commitejar).
+- Preservar feina a mitja sessió.
+- Després de `session-close`, només si hi ha canvis a preservar.
 - Primer `git init` (només local, fins que es decideixi el remot).
 - Obrir branca de fase o de funcionalitat.
 - Més endavant: crear remot GitHub, push i PR a `main`.
 
-`session-close` actualitza [`SESSION.md`](../SESSION.md) i **tot seguit** aplica `repo-github` (tancament). No són passos opcionals ni en ordre invers: si primer commiteges i després tanques, el `HEAD` queda amb un `SESSION.md` vell.
+No el cridis només perquè la sessió s’ha tancat.
 
 ## Remot (ajornat)
 
@@ -36,8 +38,8 @@ main                    estable: només feina tancada
 
 Noms: kebab-case anglès, prefix clar. No gitflow (`develop` / `release`).
 
-**Preservar** (mig de sessió) = commit a la branca de treball.  
-**Tancament** = `session-close` escriu `SESSION.md` + `repo-github` commiteja (sempre).  
+**Preservar** = `repo-github`: commit del que és legítim. Inclou `SESSION.md` si ha canviat. No inclou secrets, generats, ni fitxers deixats fora a propòsit. No és un `git add` de tot l’arbre.  
+**Tancament de sessió** = `session-close`, sense commit.  
 Push només quan existeixi remot i es demani explícitament.  
 **Publicar** = PR (`gh pr create`) de `fase/…` cap a `main`, només sota demanda o en tancar fase, i només amb remot.
 

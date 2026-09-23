@@ -18,10 +18,10 @@ Pot correspondre a una activitat interna (entrenament, junta) o oberta a la ciut
 
 ### Reprogramació
 
-- Coordinador: la seva reserva, si el nou interval és lliure.
+- Coordinador: la seva reserva, si el nou interval és lliure. Sense avís.
 - Responsable: qualsevol reserva; genera **avís** al coordinador (mateix canal que l’anul·lació).
 
-Preferir mutar l’interval de la mateixa fila + event log (`rescheduled`, interval antic/nou).
+v1: mutar l’interval de la mateixa fila i deixar l’estat en `confirmed`. L’interval antic i el nou van al payload de l’avís. L’event log és backlog del pla; no l’afegeixis si la tasca no ho demana.
 
 ### Anul·lació
 

@@ -25,8 +25,8 @@ Punt de mapa. Llegeix [`SESSION.md`](../SESSION.md) abans de qualsevol capítol.
 - [12-solid-estandards.md](12-solid-estandards.md) — SOLID i deute tècnic
 - [13-testing.md](13-testing.md) — contracte de tests
 - [14-ui-ux.md](14-ui-ux.md) — mobile-first, empty states, a11y
-- [15-protocol-sessio.md](15-protocol-sessio.md) — arrencada i tancament de sessió
-- [16-repositori.md](16-repositori.md) — git local primer; GitHub sota demanda; skill `repo-github`
+- [15-protocol-sessio.md](15-protocol-sessio.md) — arrencada, skills, deute i tancament (el tancament no és un commit)
+- [16-repositori.md](16-repositori.md) — git quan hi ha feina a preservar; GitHub sota demanda; skill `repo-github`
 
 ## Decisions
 
@@ -44,4 +44,4 @@ Punt de mapa. Llegeix [`SESSION.md`](../SESSION.md) abans de qualsevol capítol.
 
 ## Skills i rules
 
-Els skills del model són a [`.cursor/skills/`](../.cursor/skills/). Les rules persistents a [`.cursor/rules/`](../.cursor/rules/). El protocol d’ús és a [`AGENTS.md`](../AGENTS.md).
+Els skills del model són a [`.cursor/skills/`](../.cursor/skills/). Les rules persistents a [`.cursor/rules/`](../.cursor/rules/) no els substitueixen. Quin skill toca a cada feina: [`AGENTS.md`](../AGENTS.md). Precedència i ús obligatori: [15-protocol-sessio.md](15-protocol-sessio.md).

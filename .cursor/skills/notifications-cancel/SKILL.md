@@ -19,6 +19,7 @@ Anul·lació o reprogramació **pel responsable** → persisteix `Notification` 
 - [ ] Confirmació al responsable: “s’avisarà el coordinador”
 - [ ] Test: cas d’ús crida notifier; test: SMTP down no desfa cancel
 - [ ] Auto-cancel del coordinador: sense aquest correu a v1
+- [ ] Reprogramació pel coordinador: sense aquest avís
 
 ## Recursos
 

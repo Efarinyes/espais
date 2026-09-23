@@ -66,22 +66,6 @@ frontend/
 environment.yml
 ```
 
-```
-backend/
-  app/api/
-  app/usecases/
-  app/domain/
-  app/ports/
-  app/adapters/
-  tests/
-frontend/
-  src/views/
-  src/composables/
-  src/services/
-  src/components/
-environment.yml
-```
-
 ## Transaccions i efectes
 
 `CancelReservationByResponsible`: transacció (estat + Notification persistida); després `Notifier.send`. Fallada de correu no desfa l’anul·lació.

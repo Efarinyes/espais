@@ -15,7 +15,7 @@ Si `espais` ja existeix: usar-lo (`micromamba run -n espais`). No `env create` a
 
 `api` → `usecases` → `domain` + `ports` ← `adapters`
 
-Routers prims. Un cas d’ús per acció. `entity_id` a totes les queries de negoci.
+Routers prims. Un cas d’ús per acció. `entity_id` a totes les queries de negoci. No afegeixis capes ni un `*Service` calaix per encaixar SOLID; el nombre de línies no és el criteri.
 
 ## Checklist
 

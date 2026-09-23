@@ -7,7 +7,7 @@ description: Reserves d’espais, conflictes d’horari, reprogramació i assist
 
 ## Reserva
 
-`CreateReservation` valida disponibilitat i solapament al backend sempre. v1 estat inicial `confirmed`. Reprogramació: mateixa fila + event log.
+`CreateReservation` valida disponibilitat i solapament al backend sempre. v1 estat inicial `confirmed`. Reprogramació v1: mateixa fila, estat `confirmed`; l’interval antic/nou va al payload de l’avís. El coordinador reprograma la seva sense avís. No afegeixis event log ni estat viu `rescheduled` si la tasca no ho demana (backlog del pla).
 
 ## Assistència v1
 

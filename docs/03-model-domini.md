@@ -40,9 +40,9 @@ Vegeu [06-espais.md](06-espais.md).
 Vegeu [07-reserves-assistencia.md](07-reserves-assistencia.md).
 
 - `entity_id`, `space_id`, `coordinator_id`, `starts_at`, `ends_at`, `status`, motiu/notes opcionals.
-- Estats: `pending`, `confirmed`, `cancelled`, `rescheduled`.
-- v1 recomanada: crear com a `confirmed` si passa disponibilitat i conflictes. `pending` queda al model per si s’afegeix aprovació.
-- `rescheduled`: o bé estat + punter a la reserva nova, o bé la mateixa reserva amb interval actualitzat i historial d’esdeveniments. Preferir **la mateixa reserva + event log** (menys duplicats). Decisió tancada a implementació amb test d’historial.
+- Estats al model: `pending`, `confirmed`, `cancelled`, `rescheduled`.
+- v1: es crea com a `confirmed` si passa disponibilitat i conflictes. `pending` queda al model per si s’afegeix aprovació; no és un flux.
+- Reprogramació v1 (Fase 6, tancada): la mateixa fila, interval actualitzat, estat `confirmed`. L’interval antic i el nou van al payload de l’avís. No implementis event log ni passis la reserva a `rescheduled`: el pla ho deixa al backlog.
 
 ## Assistència
 

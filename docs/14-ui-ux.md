@@ -42,7 +42,7 @@ El menú d’**Avisos** només el veu el coordinador. Sense sessió, `/` és una
 ## Patrons Vue
 
 - Vistes primes; lògica a composables.
-- Un formulari = un composable de validació + servei injectat.
+- Un formulari = un composable de validació + servei injectat. Això no obliga a partir un composable només perquè és llarg.
 - Estats de càrrega i error primers, no pantalles mudes.
 - No amagar accions destructives en icona sense text a mòbil.
 

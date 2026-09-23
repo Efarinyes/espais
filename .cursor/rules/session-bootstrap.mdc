@@ -5,7 +5,13 @@ alwaysApply: true
 
 # Bootstrap de sessió
 
-Abans de canviar res: llegeix `SESSION.md`, `docs/INDEX.md` i la fase activa de `docs/PLA-TREBALL.md`. Crida `session-start` i el skill de la feina (`AGENTS.md`). Al tancar: `session-close` (escriu `SESSION.md`) i tot seguit `repo-github` mode tancament. Preservar a mitja sessió: `repo-github`. Sense push ni remote fins que es demani.
+Abans de canviar res: llegeix `SESSION.md`, `docs/INDEX.md` i la fase activa de `docs/PLA-TREBALL.md`. Crida `session-start` i els skills de la feina (`AGENTS.md`).
+
+Skills aplicables: obligatoris. Identifica’ls, llegeix-los i aplica’ls tots. El coneixement general no substitueix ni contradiu un skill aplicable. No usis un skill que no toqui. Si dos skills aplicables es contradiuen, jerarquia de `docs/15-protocol-sessio.md`; si no el resol, atura la part conflictiva i informa. No improvisis una regla. Un ADR esmenat, substituït o obsolet no és la decisió vigent. Cap skill el canvia pel seu compte.
+
+Al tancar, si la tasca permet `SESSION.md`: `session-close` (no és un commit). Si hi ha canvis a preservar, després `repo-github`. Si no n’hi ha, la sessió acaba sense commit. Si la tasca prohibeix `SESSION.md`, no cridis `session-close`. Sense push ni remote fins que es demani.
+
+Deute arquitectònic conscient: ADR. Deute d’implementació: seguiment del projecte, sense ADR. No refactoritzis per nombre de línies. Un deute documentat no és una violació a corregir sola. Una decisió de producte no presa: informa, no canviïs el model.
 
 Termes: entitat, responsable, coordinador, espai, reserva, assistència, aforament. UI i docs en català. Ús intern i gratuït: sense cobrament al producte ni al backlog. Actes oberts al públic via coordinador a v1; autoservei ciutadà = backlog.
 
