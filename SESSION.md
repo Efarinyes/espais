@@ -9,19 +9,23 @@ Actualitza aquest arxiu al final de cada sessió. És el punt d’arrencada del 
 
 ## Darrera feina
 
-Governança de `docs/`, `.cursor/rules/`, `.cursor/skills/`, `AGENTS.md` i `README.md`. Cap canvi de producte. Commit local `4296128` a `fase/3-espais` (sense push).
+Refactorització frontend, sessió 1 sencera i el primer pas de la sessió 2. Cap canvi de comportament. Cada pas és un commit local a la seva branca, apilat, sense push ni fusió a `main`.
 
-Queda una sola regla: els skills aplicables són obligatoris; `session-close` actualitza `SESSION.md` i no commiteja; `repo-github` gestiona el repositori i una sessió pot acabar sense commit. El deute arquitectònic conscient va a un ADR; el d’implementació, no. SOLID no autoritza partir un fitxer pel nombre de línies.
+- `feat/ref-01-http` `bbd6d2f`: `frontend/src/services/http.ts` (`ApiError`, `fetchApi`). Identitat, reserves, espais, avisos i anàlisi l’usen. `ApiError` només s’importa des d’`http.ts`.
+- `feat/ref-08-deps` `d9bd690`: fora de `package.json` `@preact/signals`, `preact`, `@schedule-x/date-picker` i `@schedule-x/shared`. `npm test` i `npm run build` verds.
+- `feat/ref-04-calendari-domain` `2690192` (branca actual): colors a `frontend/src/aparenca/colorsCalendari.ts`; `horaMadrid` i `dataHoraMadrid` a `frontend/src/utils/formatData.ts`. `calendari.ts` es queda amb franges i regles.
+
+`main` segueix a `cc34def`, igual que `origin/main` (`https://github.com/Efarinyes/espais`). La fusió a `main` i el push esperen que tot el pla estigui verificat.
 
 Pendent de decisió, sense classificar ni tocar: les notes de deute de les fases 5, 6 i 8 del pla, i l’estat `rescheduled` (el codi el declara; la reprogramació v1 deixa la reserva en `confirmed`).
 
 ## Següent tasca
 
-**Sessió 1 del pla de refactorització:** `REF-01-HTTP` (crear `frontend/src/services/http.ts` amb `ApiError` + `fetchApi<T>`; migrar identitat, reserves, espais, avisos i analisi) i `REF-08-DEPS` (treure `@preact/signals`, `preact`, `@schedule-x/date-picker`, `@schedule-x/shared` si no s’importen). Tests: `http.spec.ts` + `npm test` / `npm run build`.
+**`REF-02-ESPAIS-FORM`**, branca nova des de `feat/ref-04-calendari-domain`: crear `frontend/src/composables/useFormulariEspai.ts` amb `camps`, `dies`, `errorsCamp` i `valida()`; usar-lo des de `useCreaEspai` i `useEditaEspai`. Criteri: `valida()` i `errorsCamp` només en un fitxer. Test nou: `useFormulariEspai.spec.ts`.
 
-Després, sessions 2–5 (vegeu Notes). Aparcats: camp Assistència de `CalendariModal` (`input-bordered`); desplegament Alpha+ i botigues.
+Després, sessions 3–5 (vegeu Notes). Aparcats: camp Assistència de `CalendariModal` (`input-bordered`); desplegament Alpha+ i botigues.
 
-Remot GitHub: encara sota demanda. Sense `origin`.
+Cada pas del pla: commit local a la seva branca. `main` i el remot, només quan el pla sencer estigui verificat.
 
 ## Blockers
 
@@ -52,8 +56,8 @@ Cap. API `http://127.0.0.1:8000`; front `http://127.0.0.1:5173`.
 
   | Sessió | Objectiu | Tasques | Què fa |
   |---|---|---|---|
-  | 1 | Fonaments | REF-01-HTTP, REF-08-DEPS | Client HTTP únic (`http.ts`, 5 serveis); neteja `package.json` |
-  | 2 | Cohesió | REF-04-CALENDARI-DOMAIN, REF-02-ESPAIS-FORM | Colors/formatatge fora de `calendari.ts`; `useFormulariEspai` |
+  | 1 | Fonaments | REF-01-HTTP, REF-08-DEPS | Feta. Branques `feat/ref-01-http`, `feat/ref-08-deps` |
+  | 2 | Cohesió | REF-04-CALENDARI-DOMAIN feta; REF-02-ESPAIS-FORM pendent | Colors i format fora de `calendari.ts` (`feat/ref-04-calendari-domain`). Següent: `useFormulariEspai` |
   | 3 | Calendari A | REF-03 fase A | Extraure creació (`useCreacioReserva`) |
   | 4 | Calendari B | REF-03 fase B | Extraure assistència, anul·lació, reprogramació |
   | 5 | Poliment | REF-05, REF-06, REF-07 (opcional) | Demo anàlisi a la vista; `AppHeader`/`AppFooter`; paleta SSOT |
