@@ -5,7 +5,8 @@ import { defineComponent } from "vue";
 import { flushPromises, mount } from "@vue/test-utils";
 
 import { useConvidaCoordinador } from "./useConvidaCoordinador";
-import { ApiError, identityApiKey, type IdentityApi, type SessioDto } from "../services/identitat";
+import { ApiError } from "../services/http";
+import { identityApiKey, type IdentityApi, type SessioDto } from "../services/identitat";
 import { useSessioStore } from "../stores/sessio";
 
 const sessioOk: SessioDto = {

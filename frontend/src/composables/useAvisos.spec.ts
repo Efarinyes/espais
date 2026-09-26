@@ -5,7 +5,8 @@ import { createMemoryHistory, createRouter } from "vue-router";
 import { mount } from "@vue/test-utils";
 
 import { useAvisos } from "./useAvisos";
-import { ApiError, type SessioDto } from "../services/identitat";
+import { ApiError } from "../services/http";
+import { type SessioDto } from "../services/identitat";
 import { avisosApiKey, titolAvis, type AvisDto, type AvisosApi } from "../services/avisos";
 import { useSessioStore } from "../stores/sessio";
 

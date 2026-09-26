@@ -3,7 +3,7 @@ import { createPinia, setActivePinia } from "pinia";
 import { createMemoryHistory, createRouter } from "vue-router";
 import { flushPromises, mount } from "@vue/test-utils";
 
-import { ApiError } from "../services/identitat";
+import { ApiError } from "../services/http";
 import type { SessioDto } from "../services/identitat";
 import { espaisApiKey, type EspaisApi } from "../services/espais";
 import { finestresPerDefecte } from "../disponibilitat";

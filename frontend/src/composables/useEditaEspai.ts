@@ -2,7 +2,7 @@ import { reactive, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 import { diesAFinestres, diesPerDefecte, finestresADies, validaDies } from "../disponibilitat";
-import { ApiError } from "../services/identitat";
+import { ApiError } from "../services/http";
 import { requireEspaisApi } from "../services/espais";
 import { useSessioStore } from "../stores/sessio";
 

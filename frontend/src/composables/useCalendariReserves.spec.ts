@@ -6,7 +6,7 @@ import { createMemoryHistory, createRouter } from "vue-router";
 import { flushPromises, mount } from "@vue/test-utils";
 
 import { useCalendariReserves } from "./useCalendariReserves";
-import { ApiError } from "../services/identitat";
+import { ApiError } from "../services/http";
 import { espaisApiKey, type EspaiDto, type EspaisApi } from "../services/espais";
 import { finestresPerDefecte } from "../disponibilitat";
 import { reservesApiKey, type ReservesApi } from "../services/reserves";

@@ -2,7 +2,8 @@ import { reactive, ref } from "vue";
 import { useRouter } from "vue-router";
 
 import { destiDespresSessio } from "../navegacio";
-import { ApiError, requireIdentityApi } from "../services/identitat";
+import { ApiError } from "../services/http";
+import { requireIdentityApi } from "../services/identitat";
 import { useSessioStore } from "../stores/sessio";
 
 export function useIniciSessio() {

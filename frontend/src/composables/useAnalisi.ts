@@ -2,7 +2,7 @@ import { computed, onMounted, ref, watch } from "vue";
 
 import { FUS_HORARI_PER_DEFECTE, periodeDelMes, mesEnCursTimeZone } from "../analisi";
 import { reservesExemple, resumExemple } from "../exempleAnalisi";
-import { ApiError } from "../services/identitat";
+import { ApiError } from "../services/http";
 import { requireAnalisiApi, type ResumUsDto } from "../services/analisi";
 import { requireReservesApi, type ReservaDto } from "../services/reserves";
 import { useSessioStore } from "../stores/sessio";

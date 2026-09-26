@@ -1,6 +1,6 @@
 import { onMounted, ref } from "vue";
 
-import { ApiError } from "../services/identitat";
+import { ApiError } from "../services/http";
 import { requireEspaisApi } from "../services/espais";
 import type { EspaiDto } from "../services/espais";
 import { useSessioStore } from "../stores/sessio";

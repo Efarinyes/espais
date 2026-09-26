@@ -1,7 +1,7 @@
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 
-import { ApiError } from "../services/identitat";
+import { ApiError } from "../services/http";
 import { requireAvisosApi, type AvisDto } from "../services/avisos";
 import { useSessioStore } from "../stores/sessio";
 import { requireDisparadorCalendari } from "../calendariLive";

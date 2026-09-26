@@ -21,7 +21,7 @@ import {
   weekdayDelModel,
   type FinestraDto,
 } from "../disponibilitat";
-import { ApiError } from "../services/identitat";
+import { ApiError } from "../services/http";
 import { requireEspaisApi, type EspaiDto } from "../services/espais";
 import { requireReservesApi, type ReservaDto } from "../services/reserves";
 import { useSessioStore } from "../stores/sessio";

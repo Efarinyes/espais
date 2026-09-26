@@ -1,7 +1,7 @@
 import { inject, type InjectionKey } from "vue";
 
 import type { FinestraDto } from "../disponibilitat";
-import { ApiError } from "./identitat";
+import { fetchApi } from "./http";
 
 export type EspaiDto = {
   id: string;
@@ -41,53 +41,20 @@ export function requireEspaisApi(): EspaisApi {
   return api;
 }
 
-async function detallError(res: Response): Promise<string> {
-  try {
-    const body: unknown = await res.json();
-    if (
-      typeof body === "object" &&
-      body !== null &&
-      "detail" in body &&
-      typeof (body as { detail: unknown }).detail === "string"
-    ) {
-      return (body as { detail: string }).detail;
-    }
-  } catch {
-    /* ignore */
-  }
-  return "S’ha produït un error.";
-}
-
 export function createEspaisApi(baseUrl = ""): EspaisApi {
-  function headers(token: string, json = false): HeadersInit {
-    const h: Record<string, string> = { Authorization: `Bearer ${token}` };
-    if (json) {
-      h["Content-Type"] = "application/json";
-    }
-    return h;
-  }
-
   return {
     async llistar(token) {
-      const res = await fetch(`${baseUrl}/espais`, { headers: headers(token) });
-      if (!res.ok) {
-        throw new ApiError(await detallError(res), res.status);
-      }
-      return (await res.json()) as EspaiDto[];
+      return fetchApi<EspaiDto[]>(`${baseUrl}/espais`, { token });
     },
 
     async obtenir(token, id) {
-      const res = await fetch(`${baseUrl}/espais/${id}`, { headers: headers(token) });
-      if (!res.ok) {
-        throw new ApiError(await detallError(res), res.status);
-      }
-      return (await res.json()) as EspaiDto;
+      return fetchApi<EspaiDto>(`${baseUrl}/espais/${id}`, { token });
     },
 
     async crear(token, input) {
-      const res = await fetch(`${baseUrl}/espais`, {
+      return fetchApi<EspaiDto>(`${baseUrl}/espais`, {
         method: "POST",
-        headers: headers(token, true),
+        token,
         body: JSON.stringify({
           name: input.name,
           capacity: input.capacity,
@@ -95,16 +62,12 @@ export function createEspaisApi(baseUrl = ""): EspaisApi {
           windows: input.windows,
         }),
       });
-      if (!res.ok) {
-        throw new ApiError(await detallError(res), res.status);
-      }
-      return (await res.json()) as EspaiDto;
     },
 
     async actualitzar(token, id, input) {
-      const res = await fetch(`${baseUrl}/espais/${id}`, {
+      return fetchApi<EspaiDto>(`${baseUrl}/espais/${id}`, {
         method: "PATCH",
-        headers: headers(token, true),
+        token,
         body: JSON.stringify({
           name: input.name,
           capacity: input.capacity,
@@ -113,10 +76,6 @@ export function createEspaisApi(baseUrl = ""): EspaisApi {
           windows: input.windows,
         }),
       });
-      if (!res.ok) {
-        throw new ApiError(await detallError(res), res.status);
-      }
-      return (await res.json()) as EspaiDto;
     },
   };
 }

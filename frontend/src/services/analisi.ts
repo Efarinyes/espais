@@ -1,6 +1,6 @@
 import { inject, type InjectionKey } from "vue";
 
-import { ApiError } from "./identitat";
+import { fetchApi } from "./http";
 
 export type EspaiUsDto = {
   space_id: string;
@@ -45,23 +45,6 @@ export function requireAnalisiApi(): AnalisiApi {
   return api;
 }
 
-async function detallError(res: Response): Promise<string> {
-  try {
-    const body: unknown = await res.json();
-    if (
-      typeof body === "object" &&
-      body !== null &&
-      "detail" in body &&
-      typeof (body as { detail: unknown }).detail === "string"
-    ) {
-      return (body as { detail: string }).detail;
-    }
-  } catch {
-    /* ignore */
-  }
-  return "S’ha produït un error.";
-}
-
 export function createAnalisiApi(baseUrl = ""): AnalisiApi {
   return {
     async resum(token, des, fins, espaiId) {
@@ -69,13 +52,7 @@ export function createAnalisiApi(baseUrl = ""): AnalisiApi {
       if (espaiId) {
         params.set("espai_id", espaiId);
       }
-      const res = await fetch(`${baseUrl}/analisi?${params.toString()}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) {
-        throw new ApiError(await detallError(res), res.status);
-      }
-      return (await res.json()) as ResumUsDto;
+      return fetchApi<ResumUsDto>(`${baseUrl}/analisi?${params.toString()}`, { token });
     },
   };
 }

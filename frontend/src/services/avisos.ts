@@ -1,6 +1,6 @@
 import { inject, type InjectionKey } from "vue";
 
-import { ApiError } from "./identitat";
+import { fetchApi } from "./http";
 
 export type AvisDto = {
   id: string;
@@ -41,60 +41,24 @@ export function requireAvisosApi(): AvisosApi {
   return api;
 }
 
-async function detallError(res: Response): Promise<string> {
-  try {
-    const body: unknown = await res.json();
-    if (
-      typeof body === "object" &&
-      body !== null &&
-      "detail" in body &&
-      typeof (body as { detail: unknown }).detail === "string"
-    ) {
-      return (body as { detail: string }).detail;
-    }
-  } catch {
-    /* ignore */
-  }
-  return "S’ha produït un error.";
-}
-
 export function createAvisosApi(baseUrl = ""): AvisosApi {
-  function headers(token: string, json = false): HeadersInit {
-    const h: Record<string, string> = { Authorization: `Bearer ${token}` };
-    if (json) {
-      h["Content-Type"] = "application/json";
-    }
-    return h;
-  }
-
   return {
     async llistar(token) {
-      const res = await fetch(`${baseUrl}/avisos`, { headers: headers(token) });
-      if (!res.ok) {
-        throw new ApiError(await detallError(res), res.status);
-      }
-      return (await res.json()) as AvisDto[];
+      return fetchApi<AvisDto[]>(`${baseUrl}/avisos`, { token });
     },
 
     async marcarLlegit(token, avisId) {
-      const res = await fetch(`${baseUrl}/avisos/${avisId}/llegit`, {
+      return fetchApi<AvisDto>(`${baseUrl}/avisos/${avisId}/llegit`, {
         method: "POST",
-        headers: headers(token),
+        token,
       });
-      if (!res.ok) {
-        throw new ApiError(await detallError(res), res.status);
-      }
-      return (await res.json()) as AvisDto;
     },
 
     async arxivar(token, avisId) {
-      const res = await fetch(`${baseUrl}/avisos/${avisId}/arxivat`, {
+      await fetchApi<void>(`${baseUrl}/avisos/${avisId}/arxivat`, {
         method: "POST",
-        headers: headers(token),
+        token,
       });
-      if (!res.ok) {
-        throw new ApiError(await detallError(res), res.status);
-      }
     },
   };
 }

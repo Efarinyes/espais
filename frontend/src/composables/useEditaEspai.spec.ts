@@ -5,7 +5,7 @@ import { defineComponent } from "vue";
 import { flushPromises, mount } from "@vue/test-utils";
 
 import { useEditaEspai } from "./useEditaEspai";
-import { ApiError } from "../services/identitat";
+import { ApiError } from "../services/http";
 import { espaisApiKey, type EspaisApi } from "../services/espais";
 import { finestresPerDefecte } from "../disponibilitat";
 import { useSessioStore } from "../stores/sessio";

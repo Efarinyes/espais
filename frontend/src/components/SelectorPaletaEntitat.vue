@@ -2,7 +2,8 @@
 import { computed, nextTick, onMounted, onUnmounted, ref } from "vue";
 
 import { PALETES, paletaDe } from "../aparenca";
-import { ApiError, requireIdentityApi } from "../services/identitat";
+import { ApiError } from "../services/http";
+import { requireIdentityApi } from "../services/identitat";
 import { useAparencaStore } from "../stores/aparenca";
 import { useSessioStore } from "../stores/sessio";
 

@@ -1,6 +1,7 @@
 import { computed, reactive, ref } from "vue";
 
-import { ApiError, requireIdentityApi } from "../services/identitat";
+import { ApiError } from "../services/http";
+import { requireIdentityApi } from "../services/identitat";
 import { useSessioStore } from "../stores/sessio";
 
 export function useConvidaCoordinador() {

@@ -1,7 +1,8 @@
 import { onMounted, reactive, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
-import { ApiError, requireIdentityApi, type InvitacioPreviewDto } from "../services/identitat";
+import { ApiError } from "../services/http";
+import { requireIdentityApi, type InvitacioPreviewDto } from "../services/identitat";
 import { useSessioStore } from "../stores/sessio";
 
 export function useAcceptaInvitacio() {

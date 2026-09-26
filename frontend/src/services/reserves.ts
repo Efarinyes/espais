@@ -1,6 +1,6 @@
 import { inject, type InjectionKey } from "vue";
 
-import { ApiError } from "./identitat";
+import { fetchApi } from "./http";
 
 export type ReservaDto = {
   id: string;
@@ -52,32 +52,7 @@ export function requireReservesApi(): ReservesApi {
   return api;
 }
 
-async function detallError(res: Response): Promise<string> {
-  try {
-    const body: unknown = await res.json();
-    if (
-      typeof body === "object" &&
-      body !== null &&
-      "detail" in body &&
-      typeof (body as { detail: unknown }).detail === "string"
-    ) {
-      return (body as { detail: string }).detail;
-    }
-  } catch {
-    /* ignore */
-  }
-  return "S’ha produït un error.";
-}
-
 export function createReservesApi(baseUrl = ""): ReservesApi {
-  function headers(token: string, json = false): HeadersInit {
-    const h: Record<string, string> = { Authorization: `Bearer ${token}` };
-    if (json) {
-      h["Content-Type"] = "application/json";
-    }
-    return h;
-  }
-
   return {
     async llistar(token, des, fins, espaiId, inclouAnulades) {
       const params = new URLSearchParams({ des, fins });
@@ -87,63 +62,43 @@ export function createReservesApi(baseUrl = ""): ReservesApi {
       if (inclouAnulades) {
         params.set("inclou_anulades", "true");
       }
-      const res = await fetch(`${baseUrl}/reserves?${params.toString()}`, { headers: headers(token) });
-      if (!res.ok) {
-        throw new ApiError(await detallError(res), res.status);
-      }
-      return (await res.json()) as ReservaDto[];
+      return fetchApi<ReservaDto[]>(`${baseUrl}/reserves?${params.toString()}`, { token });
     },
 
     async crear(token, input) {
-      const res = await fetch(`${baseUrl}/reserves`, {
+      return fetchApi<ReservaDto>(`${baseUrl}/reserves`, {
         method: "POST",
-        headers: headers(token, true),
+        token,
         body: JSON.stringify(input),
       });
-      if (!res.ok) {
-        throw new ApiError(await detallError(res), res.status);
-      }
-      return (await res.json()) as ReservaDto;
     },
 
     async registrarAssistencia(token, reservaId, count) {
-      const res = await fetch(`${baseUrl}/reserves/${reservaId}/assistencia`, {
+      return fetchApi<ReservaDto>(`${baseUrl}/reserves/${reservaId}/assistencia`, {
         method: "PUT",
-        headers: headers(token, true),
+        token,
         body: JSON.stringify({ count }),
       });
-      if (!res.ok) {
-        throw new ApiError(await detallError(res), res.status);
-      }
-      return (await res.json()) as ReservaDto;
     },
 
     async anular(token, reservaId, reason) {
-      const res = await fetch(`${baseUrl}/reserves/${reservaId}/anulacio`, {
+      return fetchApi<ReservaDto>(`${baseUrl}/reserves/${reservaId}/anulacio`, {
         method: "POST",
-        headers: headers(token, true),
+        token,
         body: JSON.stringify({ reason: reason ?? null }),
       });
-      if (!res.ok) {
-        throw new ApiError(await detallError(res), res.status);
-      }
-      return (await res.json()) as ReservaDto;
     },
 
     async reprogramar(token, reservaId, input) {
-      const res = await fetch(`${baseUrl}/reserves/${reservaId}/reprogramacio`, {
+      return fetchApi<ReservaDto>(`${baseUrl}/reserves/${reservaId}/reprogramacio`, {
         method: "POST",
-        headers: headers(token, true),
+        token,
         body: JSON.stringify({
           starts_at: input.starts_at,
           ends_at: input.ends_at,
           reason: input.reason ?? null,
         }),
       });
-      if (!res.ok) {
-        throw new ApiError(await detallError(res), res.status);
-      }
-      return (await res.json()) as ReservaDto;
     },
   };
 }
