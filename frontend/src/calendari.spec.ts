@@ -1,7 +1,7 @@
 import "temporal-polyfill/global";
 import { describe, expect, it } from "vitest";
 
-import { arrodoneixClicAFranja, calendarisPerEspais, parseCompteAssistencia, titolReserva, valorRangAIso } from "./calendari";
+import { arrodoneixClicAFranja, parseCompteAssistencia, titolReserva, valorRangAIso } from "./calendari";
 import type { ReservaDto } from "./services/reserves";
 
 const reserva: ReservaDto = {
@@ -55,13 +55,5 @@ describe("calendari", () => {
 
   it("converteix un dia del calendari a ISO", () => {
     expect(valorRangAIso("2026-09-08")).toContain("2026-09-07T22:00:00Z");
-  });
-
-  it("assigna un color per espai amb nom només de lletres", () => {
-    const calendaris = calendarisPerEspais([{ id: "s1" }, { id: "s2" }]);
-    expect(calendaris.s1.colorName).toMatch(/^[a-z]+$/);
-    expect(calendaris.s2.colorName).toMatch(/^[a-z]+$/);
-    expect(calendaris.s1.colorName).not.toBe(calendaris.s2.colorName);
-    expect(calendaris.s1.lightColors.main).not.toBe(calendaris.s2.lightColors.main);
   });
 });

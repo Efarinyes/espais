@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted } from "vue";
 
-import { dataHoraMadrid } from "../calendari";
+import { dataHoraMadrid } from "../utils/formatData";
 import { useAvisos } from "../composables/useAvisos";
 import { titolAvis } from "../services/avisos";
 import { useSessioStore } from "../stores/sessio";

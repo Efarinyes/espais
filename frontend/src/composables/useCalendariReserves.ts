@@ -2,18 +2,18 @@ import { computed, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 import "temporal-polyfill/global";
 
+import { calendarisPerEspais } from "../aparenca/colorsCalendari";
 import {
   DURADA_PER_DEFECTE_MINUTS,
   DURADES_RESERVA_MINUTS,
   arrodoneixInici,
-  calendarisPerEspais,
   franjaDesDeInici,
-  horaMadrid,
   parseCompteAssistencia,
   titolReserva,
   valorRangAIso,
   type FranjaReserva,
 } from "../calendari";
+import { horaMadrid } from "../utils/formatData";
 import {
   clicDinsFinestra,
   diaObert,

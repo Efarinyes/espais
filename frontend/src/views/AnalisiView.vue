@@ -7,7 +7,7 @@ import {
   horesEtiqueta,
   percentatgeOcupacio,
 } from "../analisi";
-import { dataHoraMadrid } from "../calendari";
+import { dataHoraMadrid } from "../utils/formatData";
 import { useAnalisi } from "../composables/useAnalisi";
 
 const { mes, resum, reserves, carregant, error, mostraExemple } = useAnalisi();
