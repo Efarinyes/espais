@@ -6,7 +6,6 @@ import { calendarisPerEspais } from "../aparenca/colorsCalendari";
 import {
   DURADA_PER_DEFECTE_MINUTS,
   DURADES_RESERVA_MINUTS,
-  arrodoneixInici,
   franjaDesDeInici,
   parseCompteAssistencia,
   titolReserva,
@@ -14,13 +13,8 @@ import {
   type FranjaReserva,
 } from "../calendari";
 import { horaMadrid } from "../utils/formatData";
-import {
-  clicDinsFinestra,
-  diaObert,
-  encaixaClicAFinestra,
-  weekdayDelModel,
-  type FinestraDto,
-} from "../disponibilitat";
+import { clicDinsFinestra, diaObert, weekdayDelModel, type FinestraDto } from "../disponibilitat";
+import { useCreacioReserva } from "./useCreacioReserva";
 import { ApiError } from "../services/http";
 import { requireEspaisApi, type EspaiDto } from "../services/espais";
 import { requireReservesApi, type ReservaDto } from "../services/reserves";
@@ -229,27 +223,15 @@ export function useCalendariReserves() {
     return espaisActius.value.find((espai) => espai.id === id)?.windows;
   }
 
-  function franjaDesDeClic(
-    dateTime: Temporal.ZonedDateTime,
-    windows: FinestraDto[] | undefined,
-    durada: number,
-  ): FranjaReserva | null {
-    if (!diaObert(windows, weekdayDelModel(dateTime))) {
-      mostrarError("Aquest dia no és accessible.");
-      return null;
-    }
-    const iniciArrodonit = arrodoneixInici(dateTime);
-    let inici = iniciArrodonit;
-    if (!clicDinsFinestra(windows, inici, durada)) {
-      const encaixat = encaixaClicAFinestra(windows, inici, durada);
-      if (!encaixat) {
-        mostrarError("Aquesta hora queda fora de l’horari de l’espai.");
-        return null;
-      }
-      inici = encaixat;
-    }
-    return franjaDesDeInici(inici, durada);
-  }
+  const { franjaDesDeClic, confirmarPendent } = useCreacioReserva({
+    espaiId,
+    franjaOberta: () => (modal.value?.tipus === "crear" ? modal.value.franja : null),
+    enviant,
+    error,
+    reservesCarregades,
+    mostrarError,
+    tancarModal,
+  });
 
   function clicarFranja(dateTime: Temporal.ZonedDateTime) {
     if (clicSobreReserva) {
@@ -284,35 +266,6 @@ export function useCalendariReserves() {
 
   function cancelarPendent() {
     tancarModal();
-  }
-
-  async function confirmarPendent(): Promise<ReservaDto | null> {
-    if (!sessio.token || !espaiId.value || modal.value?.tipus !== "crear") {
-      return null;
-    }
-    enviant.value = true;
-    error.value = "";
-    try {
-      const creada = await reservesApi.crear(sessio.token, {
-        space_id: espaiId.value,
-        starts_at: modal.value.franja.starts_at,
-        ends_at: modal.value.franja.ends_at,
-      });
-      tancarModal();
-      reservesCarregades.value = [...reservesCarregades.value, creada];
-      return creada;
-    } catch (err) {
-      if (err instanceof ApiError && err.status === 409) {
-        error.value = "Aquest interval ja està ocupat.";
-      } else if (err instanceof ApiError) {
-        error.value = err.message;
-      } else {
-        error.value = "No s’ha pogut crear la reserva.";
-      }
-      return null;
-    } finally {
-      enviant.value = false;
-    }
   }
 
   async function refrescarReserves(): Promise<ReservaDto[]> {
