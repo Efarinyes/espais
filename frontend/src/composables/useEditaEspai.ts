@@ -1,42 +1,23 @@
-import { reactive, ref, watch } from "vue";
+import { ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
-import { diesAFinestres, diesPerDefecte, finestresADies, validaDies } from "../disponibilitat";
+import { diesAFinestres, finestresADies } from "../disponibilitat";
 import { ApiError } from "../services/http";
 import { requireEspaisApi } from "../services/espais";
 import { useSessioStore } from "../stores/sessio";
+import { useFormulariEspai } from "./useFormulariEspai";
 
 export function useEditaEspai() {
   const api = requireEspaisApi();
   const sessio = useSessioStore();
   const route = useRoute();
   const router = useRouter();
+  const { camps, dies, errorsCamp, valida } = useFormulariEspai(true);
 
-  const camps = reactive({
-    name: "",
-    capacity: "20",
-    equipment: "",
-    active: true,
-  });
-  const dies = ref(diesPerDefecte());
-  const errorsCamp = reactive({
-    name: "",
-    capacity: "",
-    windows: "",
-  });
   const errorGlobal = ref("");
   const carregant = ref(false);
   const enviant = ref(false);
   const trobat = ref(false);
-
-  function valida(): boolean {
-    errorsCamp.name = camps.name.trim() ? "" : "El nom de l’espai és obligatori.";
-    const n = Number(camps.capacity);
-    errorsCamp.capacity =
-      Number.isInteger(n) && n >= 1 ? "" : "L’aforament ha de ser un enter positiu.";
-    errorsCamp.windows = validaDies(dies.value);
-    return !errorsCamp.name && !errorsCamp.capacity && !errorsCamp.windows;
-  }
 
   function aplicarDies(windows: { weekday: number; start: string; end: string }[]) {
     dies.value = finestresADies(windows);
