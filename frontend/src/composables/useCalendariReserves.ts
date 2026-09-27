@@ -7,14 +7,16 @@ import {
   DURADA_PER_DEFECTE_MINUTS,
   DURADES_RESERVA_MINUTS,
   franjaDesDeInici,
-  parseCompteAssistencia,
   titolReserva,
   valorRangAIso,
   type FranjaReserva,
 } from "../calendari";
 import { horaMadrid } from "../utils/formatData";
-import { clicDinsFinestra, diaObert, weekdayDelModel, type FinestraDto } from "../disponibilitat";
+import { type FinestraDto } from "../disponibilitat";
+import { useAnulacioReserva } from "./useAnulacioReserva";
+import { useAssistenciaReserva } from "./useAssistenciaReserva";
 import { useCreacioReserva } from "./useCreacioReserva";
+import { useReprogramacioReserva } from "./useReprogramacioReserva";
 import { ApiError } from "../services/http";
 import { requireEspaisApi, type EspaiDto } from "../services/espais";
 import { requireReservesApi, type ReservaDto } from "../services/reserves";
@@ -40,12 +42,8 @@ export function useCalendariReserves() {
   const enviant = ref(false);
   const darrerRang = ref<{ des: unknown; fins: unknown } | null>(null);
   const reservesCarregades = ref<ReservaDto[]>([]);
-  const campAssistencia = ref("");
   const errorDetall = ref("");
   const okDetall = ref("");
-  const enviantAssistencia = ref(false);
-  const enviantAnulacio = ref(false);
-  const enviantReprogramacio = ref(false);
   const okReprogramacio = ref("");
   let clicSobreReserva = false;
   let temporitzadorAvis: ReturnType<typeof setTimeout> | null = null;
@@ -90,17 +88,6 @@ export function useCalendariReserves() {
       ? modal.value.reserva
       : null,
   );
-  const potRegistrarAssistencia = computed(() => modal.value?.tipus === "detall" && Boolean(detall.value?.mine));
-  const potAnular = computed(
-    () => esResponsable.value && modal.value?.tipus === "detall" && detall.value != null && !detall.value.mine,
-  );
-  const potReprogramar = computed(() => {
-    if (modal.value?.tipus !== "detall" || detall.value == null) {
-      return false;
-    }
-    return esResponsable.value || Boolean(detall.value.mine);
-  });
-  const reprogramacioAmbAvis = computed(() => esResponsable.value);
   const modalObert = computed(() => modal.value !== null);
 
   const resumPendent = computed(() => {
@@ -115,23 +102,6 @@ export function useCalendariReserves() {
       return "";
     }
     return `${detall.value.space_name}: ${horaMadrid(detall.value.starts_at)}–${horaMadrid(detall.value.ends_at)}`;
-  });
-
-  const avisAforament = computed(() => {
-    if (!detall.value) {
-      return "";
-    }
-    const count = parseCompteAssistencia(campAssistencia.value) ?? detall.value.attendance_count;
-    if (count == null) {
-      return "";
-    }
-    if (count > detall.value.capacity) {
-      return "El nombre supera l’aforament de l’espai. Es desarà igualment.";
-    }
-    if (detall.value.min_attendance != null && count < detall.value.min_attendance) {
-      return "El nombre no assoleix l’aforament mínim. Es desarà igualment.";
-    }
-    return "";
   });
 
   function aplicarEspaiDeRuta() {
@@ -233,6 +203,55 @@ export function useCalendariReserves() {
     tancarModal,
   });
 
+  const {
+    campAssistencia,
+    enviantAssistencia,
+    potRegistrarAssistencia,
+    avisAforament,
+    actualitzarCampAssistencia,
+    desarAssistencia,
+  } = useAssistenciaReserva({
+    reservaDetall: () => detall.value,
+    esDetall: () => modal.value?.tipus === "detall",
+    errorDetall,
+    okDetall,
+    reservesCarregades,
+    tancarModal,
+  });
+
+  const { enviantAnulacio, potAnular, demanarAnulacio, tornarDetall, confirmarAnulacio } = useAnulacioReserva({
+    reservaEnDetall: () => (modal.value?.tipus === "detall" ? modal.value.reserva : null),
+    reservaEnConfirmacio: () => (modal.value?.tipus === "confirmar-anulacio" ? modal.value.reserva : null),
+    errorDetall,
+    reservesCarregades,
+    obrirConfirmacio: (reserva) => {
+      modal.value = { tipus: "confirmar-anulacio", reserva };
+    },
+    tornarAlDetall: (reserva) => {
+      modal.value = { tipus: "detall", reserva };
+    },
+    tancarModal,
+  });
+
+  const {
+    enviantReprogramacio,
+    potReprogramar,
+    reprogramacioAmbAvis,
+    esReservaMovible,
+    duradaDeReserva,
+    moureReserva,
+  } = useReprogramacioReserva({
+    reservaEnDetall: () => (modal.value?.tipus === "detall" ? modal.value.reserva : null),
+    reservesCarregades,
+    error,
+    errorDetall,
+    okReprogramacio,
+    mostrarError,
+    mostrarOkReprogramacio,
+    tancarModal,
+    finestresDe: (spaceId) => finestresPerClic(spaceId),
+  });
+
   function clicarFranja(dateTime: Temporal.ZonedDateTime) {
     if (clicSobreReserva) {
       clicSobreReserva = false;
@@ -295,161 +314,8 @@ export function useCalendariReserves() {
     tancarModal();
   }
 
-  function actualitzarCampAssistencia(valor: string) {
-    campAssistencia.value = String(valor ?? "");
-    okDetall.value = "";
-  }
-
-  async function desarAssistencia(): Promise<ReservaDto | null> {
-    if (!sessio.token || !detall.value?.mine) {
-      return null;
-    }
-    const n = parseCompteAssistencia(campAssistencia.value);
-    if (n == null) {
-      errorDetall.value = "L’assistència ha de ser un enter ≥ 0.";
-      okDetall.value = "";
-      return null;
-    }
-    enviantAssistencia.value = true;
-    errorDetall.value = "";
-    okDetall.value = "";
-    try {
-      const actualitzada = await reservesApi.registrarAssistencia(sessio.token, detall.value.id, n);
-      reservesCarregades.value = reservesCarregades.value.map((reserva) =>
-        reserva.id === actualitzada.id ? actualitzada : reserva,
-      );
-      tancarModal();
-      return actualitzada;
-    } catch (err) {
-      if (err instanceof ApiError && err.status === 403) {
-        errorDetall.value = "Només qui ha fet la reserva pot registrar-ne l’assistència.";
-      } else if (err instanceof ApiError) {
-        errorDetall.value = err.message;
-      } else {
-        errorDetall.value = "No s’ha pogut desar l’assistència.";
-      }
-      return null;
-    } finally {
-      enviantAssistencia.value = false;
-    }
-  }
-
-  function demanarAnulacio() {
-    if (modal.value?.tipus !== "detall" || !potAnular.value) {
-      return;
-    }
-    errorDetall.value = "";
-    modal.value = { tipus: "confirmar-anulacio", reserva: modal.value.reserva };
-  }
-
-  function tornarDetall() {
-    if (modal.value?.tipus !== "confirmar-anulacio") {
-      return;
-    }
-    errorDetall.value = "";
-    modal.value = { tipus: "detall", reserva: modal.value.reserva };
-  }
-
-  function duradaDeReserva(reserva: ReservaDto): number {
-    const minuts = Math.round(
-      (Date.parse(reserva.ends_at) - Date.parse(reserva.starts_at)) / 60_000,
-    );
-    return minuts > 0 ? minuts : DURADA_PER_DEFECTE_MINUTS;
-  }
-
-  function potMoureReserva(reserva: ReservaDto): boolean {
-    return esResponsable.value || reserva.mine;
-  }
-
-  function esReservaMovible(reservaId: string): boolean {
-    const reserva = reservesCarregades.value.find((item) => item.id === reservaId);
-    return reserva != null && potMoureReserva(reserva);
-  }
-
   function reservaCarregada(reservaId: string) {
     return reservesCarregades.value.find((item) => item.id === reservaId) ?? null;
-  }
-
-  async function moureReserva(reservaId: string, inici: unknown, fi: unknown): Promise<ReservaDto | null> {
-    if (!sessio.token) {
-      return null;
-    }
-    const reserva = reservesCarregades.value.find((item) => item.id === reservaId);
-    if (!reserva || !potMoureReserva(reserva)) {
-      mostrarError("No pots reprogramar aquesta reserva.");
-      return null;
-    }
-    const start = Temporal.Instant.from(valorRangAIso(inici)).toZonedDateTimeISO("Europe/Madrid");
-    const end = Temporal.Instant.from(valorRangAIso(fi)).toZonedDateTimeISO("Europe/Madrid");
-    const durada = Math.round(Number(end.epochMilliseconds - start.epochMilliseconds) / 60_000);
-    const windows = finestresPerClic(reserva.space_id);
-    if (!diaObert(windows, weekdayDelModel(start))) {
-      mostrarError("Aquest dia no és accessible.");
-      return null;
-    }
-    if (!clicDinsFinestra(windows, start, durada)) {
-      mostrarError("Aquesta hora queda fora de l’horari de l’espai.");
-      return null;
-    }
-    const startsAt = start.toInstant().toString();
-    const endsAt = end.toInstant().toString();
-    if (startsAt === reserva.starts_at && endsAt === reserva.ends_at) {
-      return reserva;
-    }
-    enviantReprogramacio.value = true;
-    error.value = "";
-    errorDetall.value = "";
-    okReprogramacio.value = "";
-    try {
-      const moguda = await reservesApi.reprogramar(sessio.token, reserva.id, {
-        starts_at: startsAt,
-        ends_at: endsAt,
-      });
-      reservesCarregades.value = reservesCarregades.value.map((item) =>
-        item.id === moguda.id ? moguda : item,
-      );
-      tancarModal();
-      if (esResponsable.value) {
-        mostrarOkReprogramacio("S’ha canviat l’horari. S’ha avisat el coordinador.");
-      }
-      return moguda;
-    } catch (err) {
-      if (err instanceof ApiError && err.status === 409) {
-        mostrarError("Aquest interval ja està ocupat.");
-      } else if (err instanceof ApiError) {
-        mostrarError(err.message || "No pots reprogramar aquesta reserva.");
-      } else {
-        mostrarError("No s’ha pogut reprogramar la reserva.");
-      }
-      return null;
-    } finally {
-      enviantReprogramacio.value = false;
-    }
-  }
-
-  async function confirmarAnulacio(): Promise<ReservaDto | null> {
-    if (!sessio.token || modal.value?.tipus !== "confirmar-anulacio") {
-      return null;
-    }
-    enviantAnulacio.value = true;
-    errorDetall.value = "";
-    try {
-      const anulada = await reservesApi.anular(sessio.token, modal.value.reserva.id);
-      reservesCarregades.value = reservesCarregades.value.filter((reserva) => reserva.id !== anulada.id);
-      tancarModal();
-      return anulada;
-    } catch (err) {
-      if (err instanceof ApiError && err.status === 403) {
-        errorDetall.value = "Només el responsable pot anul·lar una reserva amb avís al coordinador.";
-      } else if (err instanceof ApiError) {
-        errorDetall.value = err.message;
-      } else {
-        errorDetall.value = "No s’ha pogut anul·lar la reserva.";
-      }
-      return null;
-    } finally {
-      enviantAnulacio.value = false;
-    }
   }
 
   watch(
