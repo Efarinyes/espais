@@ -9,11 +9,12 @@ Actualitza aquest arxiu al final de cada sessió. És el punt d’arrencada del 
 
 ## Darrera feina
 
-Refactorització frontend, sessió 1 sencera i el primer pas de la sessió 2. Cap canvi de comportament. Cada pas és un commit local a la seva branca, apilat, sense push ni fusió a `main`.
+Refactorització frontend, sessió 2 sencera. Cap canvi de comportament. Cada pas és un commit local a la seva branca, apilat, sense push ni fusió a `main`.
 
 - `feat/ref-01-http` `bbd6d2f`: `frontend/src/services/http.ts` (`ApiError`, `fetchApi`). Identitat, reserves, espais, avisos i anàlisi l’usen. `ApiError` només s’importa des d’`http.ts`.
 - `feat/ref-08-deps` `d9bd690`: fora de `package.json` `@preact/signals`, `preact`, `@schedule-x/date-picker` i `@schedule-x/shared`. `npm test` i `npm run build` verds.
-- `feat/ref-04-calendari-domain` `2690192` (branca actual): colors a `frontend/src/aparenca/colorsCalendari.ts`; `horaMadrid` i `dataHoraMadrid` a `frontend/src/utils/formatData.ts`. `calendari.ts` es queda amb franges i regles.
+- `feat/ref-04-calendari-domain` `2690192`: colors a `frontend/src/aparenca/colorsCalendari.ts`; `horaMadrid` i `dataHoraMadrid` a `frontend/src/utils/formatData.ts`. `calendari.ts` es queda amb franges i regles.
+- `feat/ref-02-espais-form` `021f7e2` (branca actual): `frontend/src/composables/useFormulariEspai.ts` amb `camps`, `dies`, `errorsCamp` i `valida()`. `useCreaEspai` i `useEditaEspai` l’usen; l’estat actiu només a l’edició. `valida()` i `errorsCamp` del formulari d’espai només viuen en aquest fitxer. Test `useFormulariEspai.spec.ts`. `npm test` (137) i `vue-tsc -b` verds.
 
 `main` segueix a `cc34def`, igual que `origin/main` (`https://github.com/Efarinyes/espais`). La fusió a `main` i el push esperen que tot el pla estigui verificat.
 
@@ -21,9 +22,9 @@ Pendent de decisió, sense classificar ni tocar: les notes de deute de les fases
 
 ## Següent tasca
 
-**`REF-02-ESPAIS-FORM`**, branca nova des de `feat/ref-04-calendari-domain`: crear `frontend/src/composables/useFormulariEspai.ts` amb `camps`, `dies`, `errorsCamp` i `valida()`; usar-lo des de `useCreaEspai` i `useEditaEspai`. Criteri: `valida()` i `errorsCamp` només en un fitxer. Test nou: `useFormulariEspai.spec.ts`.
+**`REF-03` fase A**, branca nova des de `feat/ref-02-espais-form`: extreure `frontend/src/composables/useCreacioReserva.ts` amb la lògica de `confirmarPendent` i `franjaDesDeClic`. `useCalendariReserves` es queda amb la càrrega i l’estat de lectura. Test nou: `useCreacioReserva.spec.ts`. Els tests de `useCalendariReserves.spec.ts` han de seguir verds.
 
-Després, sessions 3–5 (vegeu Notes). Aparcats: camp Assistència de `CalendariModal` (`input-bordered`); desplegament Alpha+ i botigues.
+Després, sessió 4 (assistència, anul·lació, reprogramació) i sessió 5 (vegeu Notes). Aparcats: camp Assistència de `CalendariModal` (`input-bordered`); desplegament Alpha+ i botigues.
 
 Cada pas del pla: commit local a la seva branca. `main` i el remot, només quan el pla sencer estigui verificat.
 
@@ -57,8 +58,8 @@ Cap. API `http://127.0.0.1:8000`; front `http://127.0.0.1:5173`.
   | Sessió | Objectiu | Tasques | Què fa |
   |---|---|---|---|
   | 1 | Fonaments | REF-01-HTTP, REF-08-DEPS | Feta. Branques `feat/ref-01-http`, `feat/ref-08-deps` |
-  | 2 | Cohesió | REF-04-CALENDARI-DOMAIN feta; REF-02-ESPAIS-FORM pendent | Colors i format fora de `calendari.ts` (`feat/ref-04-calendari-domain`). Següent: `useFormulariEspai` |
-  | 3 | Calendari A | REF-03 fase A | Extraure creació (`useCreacioReserva`) |
+  | 2 | Cohesió | REF-04-CALENDARI-DOMAIN, REF-02-ESPAIS-FORM | Feta. Branques `feat/ref-04-calendari-domain`, `feat/ref-02-espais-form` |
+  | 3 | Calendari A | REF-03 fase A | Següent: extreure creació (`useCreacioReserva`) |
   | 4 | Calendari B | REF-03 fase B | Extraure assistència, anul·lació, reprogramació |
   | 5 | Poliment | REF-05, REF-06, REF-07 (opcional) | Demo anàlisi a la vista; `AppHeader`/`AppFooter`; paleta SSOT |
 
