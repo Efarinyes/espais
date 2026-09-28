@@ -1,7 +1,6 @@
-import { computed, onMounted, ref, watch } from "vue";
+import { onMounted, ref, watch } from "vue";
 
 import { FUS_HORARI_PER_DEFECTE, periodeDelMes, mesEnCursTimeZone } from "../analisi";
-import { reservesExemple, resumExemple } from "../exempleAnalisi";
 import { ApiError } from "../services/http";
 import { requireAnalisiApi, type ResumUsDto } from "../services/analisi";
 import { requireReservesApi, type ReservaDto } from "../services/reserves";
@@ -17,9 +16,6 @@ export function useAnalisi() {
   const reserves = ref<ReservaDto[]>([]);
   const carregant = ref(false);
   const error = ref("");
-  const mostraExemple = ref(false);
-  const resumVista = computed<ResumUsDto | null>(() => (mostraExemple.value ? resumExemple() : resum.value));
-  const reservesVista = computed<ReservaDto[]>(() => (mostraExemple.value ? reservesExemple() : reserves.value));
 
   async function carregar() {
     if (!sessio.token) {
@@ -56,11 +52,10 @@ export function useAnalisi() {
 
   return {
     mes,
-    resum: resumVista,
-    reserves: reservesVista,
+    resum,
+    reserves,
     carregant,
     error,
     carregar,
-    mostraExemple,
   };
 }

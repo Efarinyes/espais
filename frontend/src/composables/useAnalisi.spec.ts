@@ -132,14 +132,4 @@ describe("useAnalisi", () => {
     await flushPromises();
     expect(periodes).toContain("2026-07-31T22:00:00Z");
   });
-
-  it("substitueix el resum per dades d’exemple sense trucar l’API de nou", async () => {
-    const wrapper = await muntar();
-    await flushPromises();
-    expect(wrapper.vm.resum?.spaces[0]?.space_name).toBe("Sala 1");
-    wrapper.vm.mostraExemple = true;
-    await flushPromises();
-    expect(wrapper.vm.resum?.spaces).toHaveLength(4);
-    expect(wrapper.vm.resum?.spaces[0]?.space_name).toBe("Sala gran");
-  });
 });

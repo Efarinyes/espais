@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, watch } from "vue";
+import { computed, nextTick, onMounted, ref, watch } from "vue";
 import { RouterLink, useRoute } from "vue-router";
 
 import {
@@ -7,11 +7,15 @@ import {
   horesEtiqueta,
   percentatgeOcupacio,
 } from "../analisi";
-import { dataHoraMadrid } from "../utils/formatData";
 import { useAnalisi } from "../composables/useAnalisi";
+import { reservesExemple, resumExemple } from "../exempleAnalisi";
+import { dataHoraMadrid } from "../utils/formatData";
 
-const { mes, resum, reserves, carregant, error, mostraExemple } = useAnalisi();
+const { mes, resum: resumReal, reserves: reservesReals, carregant, error } = useAnalisi();
 const route = useRoute();
+const mostraExemple = ref(false);
+const resum = computed(() => (mostraExemple.value ? resumExemple() : resumReal.value));
+const reserves = computed(() => (mostraExemple.value ? reservesExemple() : reservesReals.value));
 
 const periodeBuit = computed(() => {
   if (!resum.value) {
