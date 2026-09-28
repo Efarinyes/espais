@@ -110,7 +110,7 @@ Una fase només es tanca si:
 
 **Criteri fet:** el coordinador desa un enter ≥ 0; el responsable el veu a la reserva.
 
-Revisió `architecture-solid` (2026-09-10): neta. Capes i `entity_id` correctes; router i modal prims. Deute conscient (sense ADR): port `AttendanceStrategy` centrat en compte (ADR 0003); avisos suaus d’aforament també al composable.
+Revisió `architecture-solid` (2026-09-10): neta. Capes i `entity_id` correctes; router i modal prims. Classificat en tancar la refactorització del frontend (2026-09-28): l’assistència per nombre és la decisió de l’ADR 0003. L’avís de la pantalla («per sota de l’aforament mínim, es desarà igualment») és el comportament volgut. No és feina oberta.
 
 ## Fase 6 — Govern del responsable (feta)
 
@@ -129,7 +129,7 @@ Revisió `architecture-solid` (2026-09-10): neta. Capes i `entity_id` correctes;
 
 **Criteri fet:** anul·lar dispara notificació; el coordinador la pot llegir; tests del cas d’ús d’anul·lació.
 
-Revisió `architecture-solid` (2026-09-10): neta a capes de negoci. Deute conscient (sense ADR): no partir `useCalendariReserves` ni extraure el drag de `CalendariView` ara; split = Fase 8 si el composable torna a créixer.
+Revisió `architecture-solid` (2026-09-10): neta a capes de negoci. La nota de no partir el calendari queda tancada: la refactorització del frontend (2026-09-28) va separar crear una reserva, l’assistència, l’anul·lació i el canvi d’horari. No es torna a obrir.
 
 ## Fase 7 — Anàlisi (feta)
 
@@ -158,13 +158,13 @@ Revisió `architecture-solid` (2026-09-12): neta a capes de negoci. `GetUsageSum
 - Accessibilitat bàsica (contrast, focus, etiquetes).
 - Missatges d’error i empty states.
 - PWA: instal·lable des de l’esquelet (ADR 0006); aquí es verifica en mòbil real.
-- Split de `useCalendariReserves` / drag de `CalendariView` només si el composable torna a créixer (deute conscient; no ADR).
+- El calendari es va partir a la refactorització del frontend (crear, assistència, anul·lar, canviar l’horari). Tancat.
 
 **Skills:** `ui-ux-mobile`, `architecture-solid`, `testing-quality`.
 
 **Criteri fet:** verificació visual dels fluxos crítics; cap regressió de tests.
 
-Revisió `architecture-solid` (2026-09-12): neta. Navbar compacta (`<details>` a mòbil, enllaços a `lg`); skip-link; empty del calendari amb CTA al responsable. No s’ha partit `useCalendariReserves` (no ha crescut). PWA: instal·lable (ADR 0006); verificació en mòbil físic = l’usuari.
+Revisió `architecture-solid` (2026-09-12): neta. Navbar compacta (`<details>` a mòbil, enllaços a `lg`); skip-link; empty del calendari amb CTA al responsable. El calendari es va partir després, a la refactorització del frontend (2026-09-28); aquella nota queda tancada. La PWA és instal·lable (ADR 0006). Provar-la en un mòbil físic és una comprovació de qui fa servir l’app, no una feina de codi.
 
 ## Backlog explícit (fora de v1)
 
