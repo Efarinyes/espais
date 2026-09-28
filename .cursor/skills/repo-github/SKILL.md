@@ -7,7 +7,7 @@ description: Gestiona el repositori Espais (què es commiteja, commit, push, mer
 
 Política: [docs/16-repositori.md](../../../docs/16-repositori.md).
 
-Remot: **ajornat**. GitHub + `gh` només quan l’usuari ho demani. Sense `origin`, no facis push.
+Remot: `origin` (`git@github.com:Efarinyes/espais.git`). Push només quan es demani. Sense `origin`, no facis push. No Cursor Origin.
 
 ## Modes
 
@@ -46,12 +46,13 @@ git remote -v
 ```
 
 1. Si no és un repo → **Bootstrap local**.
-2. Si ets a `main` amb canvis de **producte/app** (no snapshot de sessió, no el primer commit): crea/canvia a `fase/N-slug` (N de [`SESSION.md`](../../../SESSION.md)).
-3. Si cal aïllar una funcionalitat dins la fase: `feat/slug` des de la `fase/…`.
-4. Stage només el que toca. **Mai** `.env*`, credencials, `node_modules/`, `__pycache__/`, `.mamba/`, `*.db`.
-5. Commit amb HEREDOC, 1–2 frases del *per què*. Sense `--no-verify`.
-6. **No push** si no hi ha `origin` o no s’ha demanat pujar a remot.
-7. Resumeix branca i hash. Si **no** vens de `session-close`, no tanquis tu la sessió.
+2. Si ets a `main` amb canvis de **producte/app** (no snapshot de sessió, no el primer commit): obre una branca de la peça abans de commitejar. La refactorització del backend és una branca per pas del pla. No obris una fase nova: les fases 0–8 ja són a `main`.
+3. Stage només el que toca. **Mai** `.env*`, credencials, `node_modules/`, `__pycache__/`, `.mamba/`, `*.db`.
+4. Commit amb HEREDOC, 1–2 frases del *per què*. Sense `--no-verify`.
+5. **No push** si no hi ha `origin` o no s’ha demanat pujar a remot.
+6. Resumeix branca i hash. Si **no** vens de `session-close`, no tanquis tu la sessió.
+
+Quan la peça està comprovada, fusiona-la a `main` i esborra la branca. Entre feines només queda `main`. Un commit només de `SESSION.md` i de la política del repo pot anar directe a `main`.
 
 ```bash
 git commit -m "$(cat <<'EOF'

@@ -18,9 +18,9 @@ No tota sessió necessita un commit. Si hi ha canvis que s’han de preservar, n
 
 No el cridis només perquè la sessió s’ha tancat.
 
-## Remot (ajornat)
+## Remot
 
-De moment el repositori és **només local**. No hi ha `origin` ni push. Quan calgui pujar-lo, es farà amb GitHub i `gh` (privat per defecte, confirmar visibilitat). No Cursor Origin (`origin.cursor.com`). Fins aleshores, **preservar = només commit**.
+`origin` és `git@github.com:Efarinyes/espais.git`. Push només quan es demani. Sense `--force` a `main`. No Cursor Origin (`origin.cursor.com`).
 
 ## Branques
 
@@ -37,6 +37,10 @@ main                    estable: només feina tancada
 | `feat/slug` | Aïllar una peça (`feat/register-entity`). Merge a la `fase/…` abans del PR a `main`. |
 
 Noms: kebab-case anglès, prefix clar. No gitflow (`develop` / `release`).
+
+**Neteja.** Una branca de feina viu mentre la peça no està comprovada. Un cop fusionada a `main`, s’esborra. Entre feines només queda `main`.
+
+La refactorització del backend fa el mateix: una branca per pas del pla temporal, fusió a `main` quan la suite passa, i esborrat de la branca. El pla no entra a Git. Les fases 0–8 ja són a `main`; no se’n reobren branques.
 
 **Preservar** = `repo-github`: commit del que és legítim. Inclou `SESSION.md` si ha canviat. No inclou secrets, generats, ni fitxers deixats fora a propòsit. No és un `git add` de tot l’arbre.  
 **Tancament de sessió** = `session-close`, sense commit.  

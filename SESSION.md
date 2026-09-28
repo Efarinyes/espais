@@ -15,6 +15,8 @@ El pla d’execució és [pla-implementacio-auditoria-backend.md](pla-implementa
 
 Deute d’aquesta sessió: d’implementació, al pla i a les notes d’aquí. Cap ADR nou.
 
+Les vuit branques `feat/ref-*` ja eren dins de `main` i s’han esborrat. Entre feines només queda `main`. La refactorització del backend obre una branca per pas, es fusiona a `main` quan la suite passa, i la branca s’esborra.
+
 ## Següent tasca
 
 Pas 1 de [pla-implementacio-auditoria-backend.md](pla-implementacio-auditoria-backend.md): moure `normalize_space_name` a `domain/space.py`. Mateix cos (`name.strip().casefold()`). Mateix comportament. Sense port, classe ni ADR nous.
@@ -49,6 +51,7 @@ Cap. API `http://127.0.0.1:8000`; front `http://127.0.0.1:5173`.
 - Front: `cd frontend && npm test` / `npm run dev`. Vue no global. Paleta d’entitat ADR 0011 (defecte Mar i cel; Clar/Fosc al capçal; Tria els colors al lateral, a sobre de Surt); toc ≥ 44px (`min-h-11`). A mòbil el menú d’admin del responsable és un `details` tancat. Lletra Montserrat local.
 - PWA: instal·lable; no desregistrar el SW en DEV. `navigateFallbackDenylist` inclou `/avisos` i `/analisi`.
 - Refactorització del frontend tancada (2026-09-28). El pla temporal del frontend s’esborra i no es rellegeix. La còpia doble dels colors no es fa. El calendari ja està partit. CSV d’anàlisi = backlog. La vora del camp d’assistència no és aquesta feina.
+- Branques: entre feines només `main`. Una branca per pas del backend; fusió a `main` quan la suite passa; després s’esborra. Política a `docs/16-repositori.md`.
 - Pla temporal del backend: `pla-implementacio-auditoria-backend.md`. Es llegeix mentre «Següent tasca» l’apunti. No commitejar-lo. En acabar l’últim pas, esborrar-lo i deixar escrit aquí que no es rellegeix. Ordre, un pas per sessió:
   1. D-1: `normalize_space_name` a `domain/space.py`. És la següent tasca.
   2. DT-2: una validació de nom, aforament i equipament a `domain/space.py`.
