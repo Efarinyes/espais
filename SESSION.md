@@ -9,19 +9,19 @@ Actualitza aquest arxiu al final de cada sessió. És el punt d’arrencada del 
 
 ## Darrera feina
 
-Corregit el pas 3. Si l’hora d’inici no és anterior a la de fi, el missatge de l’hora surt abans de buscar l’espai o la reserva. En crear, el responsable continua sense poder crear reserves, i aquesta prohibició es comprova abans. L’espai inactiu i l’horari de l’espai es comproven quan l’espai ja s’ha trobat. El text dels missatges no canvia. Tests: 178 verds. Sense ADR nou.
+Pas 6 del pla temporal del backend, fet. Un test d’API comprova que, al mateix espai, una reserva que comença just quan acaba l’anterior es desa (resposta 201). El programa no canvia. El solapament real ja el cobria el test del 409. Tests: 179 verds. Sense ADR nou.
 
 El pla d’execució continua sent [pla-implementacio-auditoria-backend.md](pla-implementacio-auditoria-backend.md), a l’arrel. No és de la bíblia, no obre fase i no entra a Git. S’esborra en acabar l’últim pas, i llavors aquesta nota ha de dir que no es rellegeix.
 
-Deute d’aquesta sessió: d’implementació, al pla i a les notes d’aquí. Cap ADR nou. Revisió `architecture-solid`: el missatge de l’hora viu en un sol lloc; cap capa nova.
+Deute d’aquesta sessió: d’implementació, al pla i a les notes d’aquí. Cap ADR nou. Revisió `architecture-solid`: només un test; cap capa nova.
 
 Entre feines només queda `main`. La refactorització del backend obre una branca per pas, es fusiona a `main` quan la suite passa, i la branca s’esborra.
 
 ## Següent tasca
 
-Pas 6 de [pla-implementacio-auditoria-backend.md](pla-implementacio-auditoria-backend.md): el test d’API en què la segona reserva comença quan acaba la primera, mateix espai, i la resposta és 201. No canvia producció.
+Pas 7 de [pla-implementacio-auditoria-backend.md](pla-implementacio-auditoria-backend.md): una sola classe de repositori d’espais en memòria, compartida pels tests d’espais i pels de reserves. Només tests. Producció no canvia. No s’ajunten els dos magatzems.
 
-En acabar aquest pas, `session-close`: escriure aquí que el pas 6 està fet i deixar com a següent el pas 7. L’ordre sencer és a Notes. No executar-lo tot en una sola sessió.
+En acabar aquest pas, `session-close`: escriure aquí que el pas 7 està fet i deixar com a següent el pas 8. L’ordre sencer és a Notes. No executar-lo tot en una sola sessió.
 
 No la reobren: la vora del camp d’assistència del calendari, publicar l’app, ni el backlog de producte. No és una fase nova.
 
@@ -58,8 +58,8 @@ Cap. API `http://127.0.0.1:8000`; front `http://127.0.0.1:5173`.
   3. DT-1: una comprovació d’interval reservable a `domain/reservation.py`. Fet (pas 3). Corregit: el missatge de l’hora surt abans de la cerca.
   4. L-1: el `save` in-memory de reserva i d’avís insereix si no hi ha fila, com SQLAlchemy. Fet (pas 4).
   5. D-2: l’email de `lookup_email` surt de `UserRepository.get_by_id`. Fet (pas 5).
-  6. Pas 8 del pla: test API d’intervals adjacents (201). És la següent tasca.
-  7. DT-3: una sola classe de repositori d’espais in-memory. Només tests.
+  6. Pas 8 del pla: test API d’intervals adjacents (201). Fet (pas 6).
+  7. DT-3: una sola classe de repositori d’espais in-memory. Només tests. És la següent tasca.
   8. DT-4: escriure `min_attendance` opcional. Únic pas que canvia el JSON. El defecte es queda `None`.
   Fora del pla: frontend, anul·lació pel coordinador, `pending` / `rescheduled`, ports nous, un servei que agrupi casos d’ús.
 - L’estat `rescheduled` no és una decisió oberta: en canviar l’horari, la reserva continua `confirmed` i l’avís porta l’interval antic i el nou. Un historial de canvis és backlog. L’assistència per nombre i l’avís suau d’aforament són el comportament volgut.

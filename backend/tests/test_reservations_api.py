@@ -104,6 +104,32 @@ def test_overlap_returns_409(sqlite_session_factory) -> None:
     assert response.status_code == 409
 
 
+def test_adjacent_intervals_return_201(sqlite_session_factory) -> None:
+    client = TestClient(create_app(session_factory=sqlite_session_factory))
+    created = _register(client, email="anna-adjacent@example.com")
+    headers_resp = {"Authorization": f"Bearer {created['token']}"}
+    coord = _invite_coordinator(client, headers_resp, "carla-adjacent@example.com")
+    headers_coord = {"Authorization": f"Bearer {coord['token']}"}
+    space = client.post("/espais", headers=headers_resp, json={"name": "Sala 1", "capacity": 10})
+    assert space.status_code == 201
+    space_id = space.json()["id"]
+    first_start, first_end = _slot_iso(10)
+    second_start, second_end = _slot_iso(11)
+    assert first_end == second_start
+    first = client.post(
+        "/reserves",
+        headers=headers_coord,
+        json={"space_id": space_id, "starts_at": first_start, "ends_at": first_end},
+    )
+    assert first.status_code == 201
+    second = client.post(
+        "/reserves",
+        headers=headers_coord,
+        json={"space_id": space_id, "starts_at": second_start, "ends_at": second_end},
+    )
+    assert second.status_code == 201
+
+
 def test_list_requires_session(sqlite_session_factory) -> None:
     client = TestClient(create_app(session_factory=sqlite_session_factory))
     start, end = _slot_iso(10)
