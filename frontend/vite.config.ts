@@ -1,17 +1,7 @@
 import tailwindcss from "@tailwindcss/vite";
 import vue from "@vitejs/plugin-vue";
-import type { ProxyOptions } from "vite";
 import { VitePWA } from "vite-plugin-pwa";
 import { defineConfig } from "vitest/config";
-
-const api: ProxyOptions = {
-  target: "http://127.0.0.1:8000",
-  bypass(req) {
-    if (req.headers.accept?.includes("text/html")) {
-      return "/index.html";
-    }
-  },
-};
 
 const pwa =
   process.env.VITEST === "true"
@@ -37,7 +27,7 @@ const pwa =
           workbox: {
             globPatterns: ["**/*.{js,css,html,svg,ico,webmanifest}"],
             navigateFallback: "index.html",
-            navigateFallbackDenylist: [/^\/salut/, /^\/registre/, /^\/sessio/, /^\/entitat/, /^\/espais/, /^\/invitacions/, /^\/reserves/, /^\/avisos/, /^\/analisi/],
+            navigateFallbackDenylist: [/^\/api/],
           },
           devOptions: {
             enabled: true,
@@ -50,15 +40,10 @@ export default defineConfig({
   plugins: [vue(), tailwindcss(), ...pwa],
   server: {
     proxy: {
-      "/salut": api,
-      "/registre": api,
-      "/sessio": api,
-      "/entitat": api,
-      "/espais": api,
-      "/invitacions": api,
-      "/reserves": api,
-      "/avisos": api,
-      "/analisi": api,
+      "/api": {
+        target: "http://127.0.0.1:8000",
+        rewrite: (path) => path.replace(/^\/api/, ""),
+      },
     },
   },
   test: {

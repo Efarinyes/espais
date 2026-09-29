@@ -5,12 +5,25 @@ from __future__ import annotations
 import hashlib
 import hmac
 import json
+import os
 from base64 import urlsafe_b64decode, urlsafe_b64encode
 from uuid import UUID
 
 from app.ports.identity import Clock
 
 DEFAULT_TTL_SECONDS = 60 * 60 * 24 * 7
+DEV_SESSION_SECRET = "espais-dev-insegur"
+_REFUSED_IN_PRODUCTION = frozenset({"", "CHANGE_ME", DEV_SESSION_SECRET})
+
+
+def session_secret() -> str:
+    """Secret HMAC. En producció és obligatori; en dev i tests hi ha fallback."""
+    secret = os.environ.get("ESPAIS_SECRET", "").strip()
+    if os.environ.get("ESPAIS_ENV") == "production":
+        if secret in _REFUSED_IN_PRODUCTION:
+            raise RuntimeError("ESPAIS_SECRET és obligatori en producció")
+        return secret
+    return secret or DEV_SESSION_SECRET
 
 
 def _b64url_encode(raw: bytes) -> str:

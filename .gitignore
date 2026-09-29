@@ -1,7 +1,8 @@
 # Git ignore — Espais
 
 .env*
-.env
+!.env.example
+backups/
 node_modules/
 __pycache__/
 .mamba/

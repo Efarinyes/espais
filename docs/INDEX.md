@@ -27,6 +27,7 @@ Punt de mapa. Llegeix [`SESSION.md`](../SESSION.md) abans de qualsevol capítol.
 - [14-ui-ux.md](14-ui-ux.md) — mobile-first, empty states, a11y
 - [15-protocol-sessio.md](15-protocol-sessio.md) — arrencada, skills, deute i tancament (el tancament no és un commit)
 - [16-repositori.md](16-repositori.md) — git quan hi ha feina a preservar; GitHub sota demanda; skill `repo-github`
+- [17-desplegament-docker.md](17-desplegament-docker.md) — Docker Compose, Caddy, SQLite persistent (ADR 0012)
 
 ## Decisions
 
@@ -41,6 +42,7 @@ Punt de mapa. Llegeix [`SESSION.md`](../SESSION.md) abans de qualsevol capítol.
 - [adr/0009-purga-avisos-arxivats.md](adr/0009-purga-avisos-arxivats.md)
 - [adr/0010-aparença-paleta-mode.md](adr/0010-aparença-paleta-mode.md)
 - [adr/0011-paleta-entitat-mode-personal.md](adr/0011-paleta-entitat-mode-personal.md)
+- [adr/0012-docker-caddy-sqlite-alpha.md](adr/0012-docker-caddy-sqlite-alpha.md)
 
 ## Skills i rules
 

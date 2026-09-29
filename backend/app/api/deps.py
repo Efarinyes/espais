@@ -19,7 +19,7 @@ from app.adapters.sqlalchemy.reservations import SqlAlchemyReservationUnitOfWork
 from app.adapters.sqlalchemy.schema import bootstrap_session_factory
 from app.adapters.sqlalchemy.spaces import SqlAlchemySpaceUnitOfWork
 from app.adapters.system import SecretsInvitationTokenGenerator, SystemClock, UuidIdGenerator
-from app.adapters.tokens import HmacTokenIssuer
+from app.adapters.tokens import HmacTokenIssuer, session_secret
 from app.domain.errors import SessionNotFoundError
 from app.ports.identity import TokenIssuer
 from app.ports.notifications import Notifier
@@ -70,7 +70,7 @@ def get_session_factory(request: Request) -> sessionmaker:
 def get_token_issuer(request: Request) -> TokenIssuer:
     issuer = getattr(request.app.state, "token_issuer", None)
     if issuer is None:
-        issuer = HmacTokenIssuer("espais-dev-insegur", SystemClock())
+        issuer = HmacTokenIssuer(session_secret(), SystemClock())
         request.app.state.token_issuer = issuer
     return issuer
 

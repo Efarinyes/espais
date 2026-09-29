@@ -1,0 +1,58 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: docker/backend.Dockerfile
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      ESPAIS_ENV: production
+      DATABASE_URL: sqlite:////data/espais.sqlite3
+    volumes:
+      - espais_data:/data
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/salut')",
+        ]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 25s
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - interna
+
+  web:
+    build:
+      context: .
+      dockerfile: docker/frontend.Dockerfile
+    restart: unless-stopped
+    environment:
+      ESPAIS_DOMAIN: ${ESPAIS_DOMAIN}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      backend:
+        condition: service_healthy
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - interna
+
+volumes:
+  espais_data:
+  caddy_data:
+  caddy_config:
+
+networks:
+  interna:

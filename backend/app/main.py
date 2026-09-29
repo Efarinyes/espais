@@ -1,7 +1,6 @@
 """Fàbrica de l’app FastAPI. Els routers no calculen negoci."""
 
 import asyncio
-import os
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager, suppress
 
@@ -12,7 +11,7 @@ from sqlalchemy.orm import sessionmaker
 from app.adapters.maintenance import run_archived_notification_purge_loop
 from app.adapters.sqlalchemy.schema import bootstrap_session_factory
 from app.adapters.system import SystemClock
-from app.adapters.tokens import HmacTokenIssuer
+from app.adapters.tokens import HmacTokenIssuer, session_secret
 from app.api.analisi import router as analisi_router
 from app.api.avisos import router as avisos_router
 from app.api.entity import router as entity_router
@@ -55,7 +54,7 @@ def create_app(
     application.state.session_factory = session_factory
     application.state.enable_maintenance = enable_maintenance
     application.state.token_issuer = token_issuer or HmacTokenIssuer(
-        os.environ.get("ESPAIS_SECRET", "espais-dev-insegur"),
+        session_secret(),
         SystemClock(),
     )
     application.add_middleware(
