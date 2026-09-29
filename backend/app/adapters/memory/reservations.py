@@ -53,6 +53,7 @@ class InMemoryReservationRepository:
             if existing.entity_id == reservation.entity_id and existing.id == reservation.id:
                 self._uow._working_reservations[index] = reservation
                 return
+        self._uow._working_reservations.append(reservation)
 
     def get_by_id(self, entity_id: UUID, reservation_id: UUID) -> Reservation | None:
         for reservation in self._uow._working_reservations:
@@ -140,6 +141,7 @@ class InMemoryNotificationRepository:
             if existing.entity_id == notification.entity_id and existing.id == notification.id:
                 self._uow._working_notifications[index] = notification
                 return
+        self._uow._working_notifications.append(notification)
 
     def get_by_id(self, entity_id: UUID, notification_id: UUID) -> Notification | None:
         for notification in self._uow._working_notifications:

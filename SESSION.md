@@ -9,19 +9,19 @@ Actualitza aquest arxiu al final de cada sessió. És el punt d’arrencada del 
 
 ## Darrera feina
 
-Pas 3 del pla temporal del backend, fet. `validate_reservable_interval` a `backend/app/domain/reservation.py` comprova l’ordre de l’interval, l’espai actiu i les finestres, amb els mateixos missatges. `CreateReservation` i `RescheduleReservation` la criden quan ja tenen l’espai. El permís, la reserva anul·lada, l’espai inexistent i el solapament es queden a cada cas d’ús. El filtre `other.id != reservation.id` continua només a la reprogramació. Tests: 169 verds. Sense `*Service`, port, classe ni ADR nous. DT-1 queda tancat.
+Pas 4 del pla temporal del backend, fet. `InMemoryReservationRepository.save` i `InMemoryNotificationRepository.save` insereixen si no hi ha fila amb el mateix `entity_id` i `id`, com SQLAlchemy. El `save` de producció no canvia. El d’espai, el d’invitació i el d’assistència tampoc. Tests: 171 verds. Sense ADR nou. L-1 queda tancat.
 
 El pla d’execució continua sent [pla-implementacio-auditoria-backend.md](pla-implementacio-auditoria-backend.md), a l’arrel. No és de la bíblia, no obre fase i no entra a Git. S’esborra en acabar l’últim pas, i llavors aquesta nota ha de dir que no es rellegeix.
 
-Deute d’aquesta sessió: d’implementació, al pla i a les notes d’aquí. Cap ADR nou. Revisió `architecture-solid`: una sola regla d’interval reservable; cap I/O al domini.
+Deute d’aquesta sessió: d’implementació, al pla i a les notes d’aquí. Cap ADR nou. Revisió `architecture-solid`: els dos adaptadors de memòria coincideixen amb SQLAlchemy en la branca sense fila; cap capa nova.
 
 Entre feines només queda `main`. La refactorització del backend obre una branca per pas, es fusiona a `main` quan la suite passa, i la branca s’esborra.
 
 ## Següent tasca
 
-Pas 4 de [pla-implementacio-auditoria-backend.md](pla-implementacio-auditoria-backend.md): L-1, el `save` in-memory de reserva i d’avís insereix si no hi ha fila, com SQLAlchemy. Sense canviar el `save` de producció.
+Pas 5 de [pla-implementacio-auditoria-backend.md](pla-implementacio-auditoria-backend.md): D-2, l’email de `lookup_email` surt de `UserRepository.get_by_id`. Sense canviar el text del correu ni afegir SMTP.
 
-En acabar aquest pas, `session-close`: escriure aquí que el pas 4 està fet i deixar com a següent el pas 5. L’ordre sencer és a Notes. No executar-lo tot en una sola sessió.
+En acabar aquest pas, `session-close`: escriure aquí que el pas 5 està fet i deixar com a següent el pas 6. L’ordre sencer és a Notes. No executar-lo tot en una sola sessió.
 
 No la reobren: la vora del camp d’assistència del calendari, publicar l’app, ni el backlog de producte. No és una fase nova.
 
@@ -56,8 +56,8 @@ Cap. API `http://127.0.0.1:8000`; front `http://127.0.0.1:5173`.
   1. D-1: `normalize_space_name` a `domain/space.py`. Fet (pas 1).
   2. DT-2: una validació de nom, aforament i equipament a `domain/space.py`. Fet (pas 2).
   3. DT-1: una comprovació d’interval reservable a `domain/reservation.py`. Fet (pas 3).
-  4. L-1: el `save` in-memory de reserva i d’avís insereix si no hi ha fila, com SQLAlchemy. És la següent tasca.
-  5. D-2: l’email de `lookup_email` surt de `UserRepository.get_by_id`. Pot anar abans o després del pas 4.
+  4. L-1: el `save` in-memory de reserva i d’avís insereix si no hi ha fila, com SQLAlchemy. Fet (pas 4).
+  5. D-2: l’email de `lookup_email` surt de `UserRepository.get_by_id`. És la següent tasca.
   6. Pas 8 del pla: test API d’intervals adjacents (201). Amb el pas 3, o quan es toquin reserves.
   7. DT-3: una sola classe de repositori d’espais in-memory. Només tests.
   8. DT-4: escriure `min_attendance` opcional. Únic pas que canvia el JSON. El defecte es queda `None`.
