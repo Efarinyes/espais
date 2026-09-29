@@ -28,6 +28,7 @@ class CreateSpaceRequest(BaseModel):
     capacity: int = Field(ge=1)
     equipment: str | None = None
     windows: list[AvailabilityWindowBody] | None = None
+    min_attendance: int | bool | None = None
 
 
 class UpdateSpaceRequest(BaseModel):
@@ -36,6 +37,7 @@ class UpdateSpaceRequest(BaseModel):
     equipment: str | None = None
     active: bool = True
     windows: list[AvailabilityWindowBody] | None = None
+    min_attendance: int | bool | None = None
 
 
 class SpaceResponse(BaseModel):
@@ -44,6 +46,7 @@ class SpaceResponse(BaseModel):
     name: str
     capacity: int
     equipment: str | None
+    min_attendance: int | None
     active: bool
     windows: list[AvailabilityWindowBody]
 
@@ -61,6 +64,7 @@ def _to_response(space: Space) -> SpaceResponse:
         name=space.name,
         capacity=space.capacity,
         equipment=space.equipment,
+        min_attendance=space.min_attendance,
         active=space.active,
         windows=[
             AvailabilityWindowBody(weekday=window.weekday, start=window.start, end=window.end)
@@ -84,6 +88,7 @@ def create_space(
                 capacity=body.capacity,
                 equipment=body.equipment,
                 windows=_domain_windows(body.windows),
+                min_attendance=body.min_attendance,
             )
         )
     except ForbiddenError as exc:
@@ -138,6 +143,8 @@ def update_space(
                 equipment=body.equipment,
                 active=body.active,
                 windows=_domain_windows(body.windows),
+                min_attendance=body.min_attendance,
+                min_attendance_set="min_attendance" in body.model_fields_set,
             )
         )
     except SpaceNotFoundError:

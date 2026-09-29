@@ -12,6 +12,7 @@ from app.domain.space import (
     Space,
     default_week_windows,
     normalize_space_name,
+    validate_min_attendance,
     validate_space_fields,
     validate_windows,
 )
@@ -27,6 +28,7 @@ class CreateSpaceCommand:
     capacity: int
     equipment: str | None = None
     windows: tuple[AvailabilityWindow, ...] | None = None
+    min_attendance: int | None = None
 
 
 @dataclass(frozen=True)
@@ -47,6 +49,7 @@ class CreateSpace:
         name, capacity, equipment = validate_space_fields(
             command.name, command.capacity, command.equipment
         )
+        min_attendance = validate_min_attendance(command.min_attendance)
 
         windows = validate_windows(command.windows if command.windows is not None else default_week_windows())
         needle = normalize_space_name(name)
@@ -59,7 +62,7 @@ class CreateSpace:
             name=name,
             capacity=capacity,
             equipment=equipment,
-            min_attendance=None,
+            min_attendance=min_attendance,
             active=True,
             created_at=self._clock.now(),
             windows=windows,

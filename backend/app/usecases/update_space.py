@@ -11,6 +11,7 @@ from app.domain.space import (
     AvailabilityWindow,
     Space,
     normalize_space_name,
+    validate_min_attendance,
     validate_space_fields,
     validate_windows,
 )
@@ -27,6 +28,8 @@ class UpdateSpaceCommand:
     equipment: str | None = None
     active: bool = True
     windows: tuple[AvailabilityWindow, ...] | None = None
+    min_attendance: int | None = None
+    min_attendance_set: bool = False
 
 
 @dataclass(frozen=True)
@@ -49,6 +52,10 @@ class UpdateSpace:
         name, capacity, equipment = validate_space_fields(
             command.name, command.capacity, command.equipment
         )
+        if command.min_attendance_set:
+            min_attendance = validate_min_attendance(command.min_attendance)
+        else:
+            min_attendance = space.min_attendance
 
         needle = normalize_space_name(name)
         existing = self._uow.spaces.get_by_normalized_name(command.entity_id, needle)
@@ -62,6 +69,7 @@ class UpdateSpace:
             capacity=capacity,
             equipment=equipment,
             active=command.active,
+            min_attendance=min_attendance,
             windows=windows,
         )
         try:

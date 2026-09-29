@@ -9,21 +9,19 @@ Actualitza aquest arxiu al final de cada sessió. És el punt d’arrencada del 
 
 ## Darrera feina
 
-Pas 7 del pla temporal del backend, fet (DT-3 al fitxer del pla). `InMemorySpaceRepository` és l’única classe de repositori d’espais en memòria. Rep la llista de l’UoW d’espais o la de reserves. El `rollback` en canvia el contingut, perquè el repositori en guarda la referència. Els dos magatzems continuen separats. Producció no canvia. Tests: 179 verds, sense canviar asserts. Sense ADR nou.
+Pas 8 del pla temporal del backend, fet (DT-4). Es pot desar `min_attendance` en crear i en editar. Qui no l’envia obté el comportament d’abans: `None` en crear, i el valor anterior en editar. `PATCH` amb `null` l’esborra. Un enter ≥ 0 es desa, també el 0. Un negatiu o un booleà és `InvalidSpaceError`. El frontend no s’ha tocat: el formulari segueix sense enviar el camp. Tests: 190 verds. Sense ADR nou.
 
-El pla d’execució continua sent [pla-implementacio-auditoria-backend.md](pla-implementacio-auditoria-backend.md), a l’arrel. No és de la bíblia, no obre fase i no entra a Git. S’esborra en acabar l’últim pas, i llavors aquesta nota ha de dir que no es rellegeix.
+El pla temporal `pla-implementacio-auditoria-backend.md` s’ha esborrat i no es rellegeix.
 
-Deute d’aquesta sessió: d’implementació, al pla i a les notes d’aquí. Cap ADR nou. Revisió `architecture-solid`: una classe de test, cap capa nova, cap UoW ajuntat.
+Deute d’aquesta sessió: d’implementació, tancat amb el pla. Cap ADR nou. Revisió `architecture-solid`: la validació viu al domini, al costat de la de nom i aforament. Cap capa nova. `min_attendance_set` és intern del command d’edició i no surt al JSON.
 
 Entre feines només queda `main`. La refactorització del backend obre una branca per pas, es fusiona a `main` quan la suite passa, i la branca s’esborra.
 
 ## Següent tasca
 
-Pas 8 de [pla-implementacio-auditoria-backend.md](pla-implementacio-auditoria-backend.md): escriure `min_attendance` opcional (DT-4 al fitxer del pla). És l’únic pas que canvia el JSON. Qui no l’envia obté el comportament d’avui: `None` en crear, i el valor anterior en editar. El defecte es queda `None`. No es fa obligatori. No es toca el frontend.
+No hi ha pas obert. La v1 i la refactorització del frontend segueixen tancades. El pla temporal del backend s’ha esborrat i no es rellegeix.
 
-En acabar aquest pas, `session-close`: escriure aquí que el pas 8 està fet, esborrar el pla temporal i deixar escrit que no es rellegeix. L’ordre sencer és a Notes. No executar-lo tot en una sola sessió.
-
-No la reobren: la vora del camp d’assistència del calendari, publicar l’app, ni el backlog de producte. No és una fase nova.
+No la reobren: la vora del camp d’assistència del calendari, publicar l’app, ni el backlog de producte. El formulari d’aforament mínim no és aquest pla i no s’ha començat. No és una fase nova.
 
 ## Blockers
 
@@ -52,16 +50,8 @@ Cap. API `http://127.0.0.1:8000`; front `http://127.0.0.1:5173`.
 - PWA: instal·lable; no desregistrar el SW en DEV. `navigateFallbackDenylist` inclou `/avisos` i `/analisi`.
 - Refactorització del frontend tancada (2026-09-28). El pla temporal del frontend s’esborra i no es rellegeix. La còpia doble dels colors no es fa. El calendari ja està partit. CSV d’anàlisi = backlog. La vora del camp d’assistència no és aquesta feina.
 - Branques: entre feines només `main`. Una branca per pas del backend; fusió a `main` quan la suite passa; després s’esborra. Política a `docs/16-repositori.md`.
-- Pla temporal del backend: `pla-implementacio-auditoria-backend.md`. Es llegeix mentre «Següent tasca» l’apunti. No commitejar-lo. En acabar l’últim pas, esborrar-lo i deixar escrit aquí que no es rellegeix. Ordre, un pas per sessió:
-  1. D-1: `normalize_space_name` a `domain/space.py`. Fet (pas 1).
-  2. DT-2: una validació de nom, aforament i equipament a `domain/space.py`. Fet (pas 2).
-  3. DT-1: una comprovació d’interval reservable a `domain/reservation.py`. Fet (pas 3). Corregit: el missatge de l’hora surt abans de la cerca.
-  4. L-1: el `save` in-memory de reserva i d’avís insereix si no hi ha fila, com SQLAlchemy. Fet (pas 4).
-  5. D-2: l’email de `lookup_email` surt de `UserRepository.get_by_id`. Fet (pas 5).
-  6. Pas 8 del pla: test API d’intervals adjacents (201). Fet (pas 6).
-  7. DT-3: una sola classe de repositori d’espais in-memory. Només tests. Fet (pas 7).
-  8. DT-4: escriure `min_attendance` opcional. Únic pas que canvia el JSON. El defecte es queda `None`. És la següent tasca. En acabar-lo, esborrar aquest pla.
-  Fora del pla: frontend, anul·lació pel coordinador, `pending` / `rescheduled`, ports nous, un servei que agrupi casos d’ús.
+- Pla temporal del backend esborrat (2026-09-29) i no es rellegeix. Fets, en ordre: normalitzar el nom al domini; una validació de nom, aforament i equipament; una comprovació d’interval reservable; el `save` en memòria de reserva i d’avís insereix si no hi ha fila; l’email del correu surt de `UserRepository.get_by_id`; test API d’intervals adjacents (201); una sola classe de repositori d’espais en memòria; `min_attendance` opcional al JSON, amb defecte `None`.
+- Fora d’aquell pla, i sense començar: formulari d’aforament mínim, anul·lació pel coordinador, `pending` / `rescheduled`, ports nous, un servei que agrupi casos d’ús.
 - L’estat `rescheduled` no és una decisió oberta: en canviar l’horari, la reserva continua `confirmed` i l’avís porta l’interval antic i el nou. Un historial de canvis és backlog. L’assistència per nombre i l’avís suau d’aforament són el comportament volgut.
 - El coordinador reprograma la seva reserva sense avís; l’avís només el dispara el responsable.
 - Landing: sense CTAs al cos; sense «gratuït» ni «cobrament»; fotos a `frontend/public/landing/` (hero + opcions + captures).

@@ -166,6 +166,53 @@ def test_capacity_must_be_positive() -> None:
     assert ListSpaces(uow).execute(ENTITY_A) == []
 
 
+def test_create_space_persists_min_attendance() -> None:
+    uow = InMemorySpaceUnitOfWork()
+    result = _create(uow).execute(
+        CreateSpaceCommand(
+            entity_id=ENTITY_A,
+            actor_role=MembershipRole.RESPONSIBLE,
+            name="Sala 1",
+            capacity=40,
+            min_attendance=8,
+        )
+    )
+    assert result.space.min_attendance == 8
+    assert ListSpaces(uow).execute(ENTITY_A)[0].min_attendance == 8
+
+
+def test_create_space_without_min_attendance_leaves_none() -> None:
+    uow = InMemorySpaceUnitOfWork()
+    result = _create(uow).execute(
+        CreateSpaceCommand(
+            entity_id=ENTITY_A,
+            actor_role=MembershipRole.RESPONSIBLE,
+            name="Sala 1",
+            capacity=40,
+        )
+    )
+    assert result.space.min_attendance is None
+
+
+def test_boolean_min_attendance_is_rejected() -> None:
+    uow = InMemorySpaceUnitOfWork()
+    try:
+        _create(uow).execute(
+            CreateSpaceCommand(
+                entity_id=ENTITY_A,
+                actor_role=MembershipRole.RESPONSIBLE,
+                name="Sala 1",
+                capacity=40,
+                min_attendance=True,  # type: ignore[arg-type]
+            )
+        )
+    except InvalidSpaceError as exc:
+        assert str(exc) == "l’aforament mínim ha de ser un enter igual o superior a zero"
+    else:
+        raise AssertionError("expected InvalidSpaceError")
+    assert ListSpaces(uow).execute(ENTITY_A) == []
+
+
 def test_coordinator_cannot_create_space() -> None:
     uow = InMemorySpaceUnitOfWork()
     try:

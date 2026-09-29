@@ -50,6 +50,14 @@ def validate_space_fields(
     return cleaned_name, capacity, cleaned_equipment
 
 
+def validate_min_attendance(value: int | None) -> int | None:
+    if value is None:
+        return None
+    if isinstance(value, bool) or not isinstance(value, int) or value < 0:
+        raise InvalidSpaceError("l’aforament mínim ha de ser un enter igual o superior a zero")
+    return value
+
+
 def default_week_windows() -> tuple[AvailabilityWindow, ...]:
     return tuple(
         AvailabilityWindow(weekday=day, start=DEFAULT_OPEN, end=DEFAULT_CLOSE) for day in range(7)

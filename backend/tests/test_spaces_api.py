@@ -183,6 +183,79 @@ def test_empty_windows_return_400(sqlite_session_factory) -> None:
     assert response.status_code == 400
 
 
+def test_post_min_attendance_is_returned(sqlite_session_factory) -> None:
+    client = TestClient(create_app(session_factory=sqlite_session_factory))
+    created = _register(client, email="anna-minim@example.com")
+    headers = {"Authorization": f"Bearer {created['token']}"}
+    response = client.post(
+        "/espais",
+        headers=headers,
+        json={"name": "Sala 1", "capacity": 40, "min_attendance": 8},
+    )
+    assert response.status_code == 201
+    assert response.json()["min_attendance"] == 8
+
+
+def test_post_without_min_attendance_returns_null(sqlite_session_factory) -> None:
+    client = TestClient(create_app(session_factory=sqlite_session_factory))
+    created = _register(client, email="anna-sense-minim@example.com")
+    headers = {"Authorization": f"Bearer {created['token']}"}
+    response = client.post("/espais", headers=headers, json={"name": "Sala 1", "capacity": 40})
+    assert response.status_code == 201
+    assert response.json()["min_attendance"] is None
+
+
+def test_patch_without_min_attendance_keeps_it(sqlite_session_factory) -> None:
+    client = TestClient(create_app(session_factory=sqlite_session_factory))
+    created = _register(client, email="anna-conserva-minim@example.com")
+    headers = {"Authorization": f"Bearer {created['token']}"}
+    posted = client.post(
+        "/espais",
+        headers=headers,
+        json={"name": "Sala 1", "capacity": 40, "min_attendance": 8},
+    )
+    space_id = posted.json()["id"]
+    response = client.patch(
+        f"/espais/{space_id}",
+        headers=headers,
+        json={"name": "Sala 1", "capacity": 40, "active": True},
+    )
+    assert response.status_code == 200
+    assert response.json()["min_attendance"] == 8
+
+
+def test_post_boolean_min_attendance_returns_400(sqlite_session_factory) -> None:
+    client = TestClient(create_app(session_factory=sqlite_session_factory))
+    created = _register(client, email="anna-boolea@example.com")
+    headers = {"Authorization": f"Bearer {created['token']}"}
+    response = client.post(
+        "/espais",
+        headers=headers,
+        json={"name": "Sala 1", "capacity": 40, "min_attendance": True},
+    )
+    assert response.status_code == 400
+    assert response.json()["detail"] == "l’aforament mínim ha de ser un enter igual o superior a zero"
+
+
+def test_patch_null_min_attendance_clears_it(sqlite_session_factory) -> None:
+    client = TestClient(create_app(session_factory=sqlite_session_factory))
+    created = _register(client, email="anna-buida-minim@example.com")
+    headers = {"Authorization": f"Bearer {created['token']}"}
+    posted = client.post(
+        "/espais",
+        headers=headers,
+        json={"name": "Sala 1", "capacity": 40, "min_attendance": 8},
+    )
+    space_id = posted.json()["id"]
+    response = client.patch(
+        f"/espais/{space_id}",
+        headers=headers,
+        json={"name": "Sala 1", "capacity": 40, "active": True, "min_attendance": None},
+    )
+    assert response.status_code == 200
+    assert response.json()["min_attendance"] is None
+
+
 def test_coordinator_cannot_create_or_update_space(sqlite_session_factory) -> None:
     client = TestClient(create_app(session_factory=sqlite_session_factory))
     created = _register(client, email="anna-permis@example.com")

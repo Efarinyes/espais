@@ -219,6 +219,68 @@ def test_update_blank_equipment_is_stored_as_none() -> None:
     assert result.space.equipment is None
 
 
+def test_update_min_attendance_zero_is_stored() -> None:
+    uow = InMemorySpaceUnitOfWork()
+    ids = SequentialIdGenerator()
+    created = _seed(uow, ids, min_attendance=8)
+    result = _update(uow).execute(
+        UpdateSpaceCommand(
+            entity_id=ENTITY_A,
+            space_id=created.space.id,
+            actor_role=MembershipRole.RESPONSIBLE,
+            name="Sala 1",
+            capacity=20,
+            active=True,
+            min_attendance=0,
+            min_attendance_set=True,
+        )
+    )
+    assert result.space.min_attendance == 0
+    assert GetSpace(uow).execute(ENTITY_A, created.space.id).min_attendance == 0
+
+
+def test_update_without_min_attendance_keeps_previous() -> None:
+    uow = InMemorySpaceUnitOfWork()
+    ids = SequentialIdGenerator()
+    created = _seed(uow, ids, min_attendance=8)
+    result = _update(uow).execute(
+        UpdateSpaceCommand(
+            entity_id=ENTITY_A,
+            space_id=created.space.id,
+            actor_role=MembershipRole.RESPONSIBLE,
+            name="Sala 2",
+            capacity=30,
+            active=True,
+        )
+    )
+    assert result.space.min_attendance == 8
+    assert result.space.name == "Sala 2"
+
+
+def test_negative_min_attendance_is_rejected() -> None:
+    uow = InMemorySpaceUnitOfWork()
+    ids = SequentialIdGenerator()
+    created = _seed(uow, ids, min_attendance=8)
+    try:
+        _update(uow).execute(
+            UpdateSpaceCommand(
+                entity_id=ENTITY_A,
+                space_id=created.space.id,
+                actor_role=MembershipRole.RESPONSIBLE,
+                name="Sala 1",
+                capacity=20,
+                active=True,
+                min_attendance=-1,
+                min_attendance_set=True,
+            )
+        )
+    except InvalidSpaceError as exc:
+        assert str(exc) == "l’aforament mínim ha de ser un enter igual o superior a zero"
+    else:
+        raise AssertionError("expected InvalidSpaceError")
+    assert GetSpace(uow).execute(ENTITY_A, created.space.id).min_attendance == 8
+
+
 def test_update_capacity_must_be_positive() -> None:
     uow = InMemorySpaceUnitOfWork()
     ids = SequentialIdGenerator()
