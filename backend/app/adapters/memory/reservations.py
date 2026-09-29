@@ -5,40 +5,11 @@ from __future__ import annotations
 from datetime import datetime
 from uuid import UUID
 
+from app.adapters.memory.spaces import InMemorySpaceRepository
 from app.domain.attendance import AttendanceRecord
 from app.domain.notification import Notification
 from app.domain.reservation import Reservation, ReservationStatus, intervals_overlap
-from app.domain.space import Space, normalize_space_name
-
-
-class InMemoryReservationSpaceRepository:
-
-    def __init__(self, uow: InMemoryReservationUnitOfWork) -> None:
-        self._res_uow = uow
-
-    def add(self, space: Space) -> None:
-        self._res_uow._working_spaces.append(space)
-
-    def list_by_entity_id(self, entity_id: UUID) -> list[Space]:
-        return [space for space in self._res_uow._working_spaces if space.entity_id == entity_id]
-
-    def get_by_normalized_name(self, entity_id: UUID, name_normalized: str) -> Space | None:
-        for space in self._res_uow._working_spaces:
-            if space.entity_id == entity_id and normalize_space_name(space.name) == name_normalized:
-                return space
-        return None
-
-    def get_by_id(self, entity_id: UUID, space_id: UUID) -> Space | None:
-        for space in self._res_uow._working_spaces:
-            if space.entity_id == entity_id and space.id == space_id:
-                return space
-        return None
-
-    def save(self, space: Space) -> None:
-        for index, existing in enumerate(self._res_uow._working_spaces):
-            if existing.id == space.id and existing.entity_id == space.entity_id:
-                self._res_uow._working_spaces[index] = space
-                return
+from app.domain.space import Space
 
 
 class InMemoryReservationRepository:
@@ -181,7 +152,7 @@ class InMemoryReservationUnitOfWork:
         self._working_attendance: list[AttendanceRecord] = []
         self._committed_notifications: list[Notification] = []
         self._working_notifications: list[Notification] = []
-        self.spaces = InMemoryReservationSpaceRepository(self)
+        self.spaces = InMemorySpaceRepository(self._working_spaces)
         self.reservations = InMemoryReservationRepository(self)
         self.attendance = InMemoryAttendanceRepository(self)
         self.notifications = InMemoryNotificationRepository(self)
@@ -193,7 +164,8 @@ class InMemoryReservationUnitOfWork:
         self._committed_notifications = list(self._working_notifications)
 
     def rollback(self) -> None:
-        self._working_spaces = list(self._committed_spaces)
+        # El repositori d’espais guarda aquesta llista; cal canviar-ne el contingut.
+        self._working_spaces[:] = self._committed_spaces
         self._working_reservations = list(self._committed_reservations)
         self._working_attendance = list(self._committed_attendance)
         self._working_notifications = list(self._committed_notifications)
