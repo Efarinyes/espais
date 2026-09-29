@@ -8,6 +8,7 @@ from enum import StrEnum
 from uuid import UUID
 from zoneinfo import ZoneInfo
 
+from app.domain.errors import InvalidReservationError
 from app.domain.space import AvailabilityWindow
 
 MADRID = ZoneInfo("Europe/Madrid")
@@ -42,6 +43,21 @@ def as_utc(moment: datetime) -> datetime:
 
 def intervals_overlap(start_a: datetime, end_a: datetime, start_b: datetime, end_b: datetime) -> bool:
     return as_utc(start_a) < as_utc(end_b) and as_utc(end_a) > as_utc(start_b)
+
+
+def validate_reservable_interval(
+    starts_at: datetime,
+    ends_at: datetime,
+    *,
+    active: bool,
+    windows: tuple[AvailabilityWindow, ...],
+) -> None:
+    if starts_at >= ends_at:
+        raise InvalidReservationError("l’hora d’inici ha de ser anterior a la de fi")
+    if not active:
+        raise InvalidReservationError("aquest espai no està actiu")
+    if not interval_fits_windows(starts_at, ends_at, windows):
+        raise InvalidReservationError("l’interval queda fora de l’horari de l’espai")
 
 
 def interval_fits_windows(

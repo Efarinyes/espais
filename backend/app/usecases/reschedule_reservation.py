@@ -16,12 +16,7 @@ from app.domain.errors import (
 )
 from app.domain.identity import MembershipRole
 from app.domain.notification import Notification, NotificationPayload, NotificationType
-from app.domain.reservation import (
-    Reservation,
-    ReservationStatus,
-    as_utc,
-    interval_fits_windows,
-)
+from app.domain.reservation import Reservation, ReservationStatus, as_utc, validate_reservable_interval
 from app.ports.identity import Clock, IdGenerator
 from app.ports.notifications import Notifier
 from app.ports.reservations import ReservationUnitOfWork
@@ -74,8 +69,6 @@ class RescheduleReservation:
     def execute(self, command: RescheduleReservationCommand) -> RescheduleReservationResult:
         starts_at = as_utc(command.starts_at)
         ends_at = as_utc(command.ends_at)
-        if starts_at >= ends_at:
-            raise InvalidReservationError("l’hora d’inici ha de ser anterior a la de fi")
 
         reservation = self._uow.reservations.get_by_id(command.entity_id, command.reservation_id)
         if reservation is None:
@@ -94,10 +87,9 @@ class RescheduleReservation:
         space = self._uow.spaces.get_by_id(command.entity_id, reservation.space_id)
         if space is None:
             raise SpaceNotFoundError()
-        if not space.active:
-            raise InvalidReservationError("aquest espai no està actiu")
-        if not interval_fits_windows(starts_at, ends_at, space.windows):
-            raise InvalidReservationError("l’interval queda fora de l’horari de l’espai")
+        validate_reservable_interval(
+            starts_at, ends_at, active=space.active, windows=space.windows
+        )
 
         overlapping = [
             other

@@ -6,19 +6,9 @@ from dataclasses import dataclass
 from datetime import datetime
 from uuid import UUID
 
-from app.domain.errors import (
-    ForbiddenError,
-    InvalidReservationError,
-    ReservationOverlapError,
-    SpaceNotFoundError,
-)
+from app.domain.errors import ForbiddenError, ReservationOverlapError, SpaceNotFoundError
 from app.domain.identity import MembershipRole
-from app.domain.reservation import (
-    Reservation,
-    ReservationStatus,
-    as_utc,
-    interval_fits_windows,
-)
+from app.domain.reservation import Reservation, ReservationStatus, as_utc, validate_reservable_interval
 from app.ports.identity import Clock, IdGenerator
 from app.ports.reservations import ReservationUnitOfWork
 
@@ -54,16 +44,13 @@ class CreateReservation:
             raise ForbiddenError("el responsable no crea reserves; reprograma o anul·la les dels coordinadors")
         starts_at = as_utc(command.starts_at)
         ends_at = as_utc(command.ends_at)
-        if starts_at >= ends_at:
-            raise InvalidReservationError("l’hora d’inici ha de ser anterior a la de fi")
 
         space = self._uow.spaces.get_by_id(command.entity_id, command.space_id)
         if space is None:
             raise SpaceNotFoundError()
-        if not space.active:
-            raise InvalidReservationError("aquest espai no està actiu")
-        if not interval_fits_windows(starts_at, ends_at, space.windows):
-            raise InvalidReservationError("l’interval queda fora de l’horari de l’espai")
+        validate_reservable_interval(
+            starts_at, ends_at, active=space.active, windows=space.windows
+        )
 
         overlapping = self._uow.reservations.list_overlapping(
             command.entity_id,
