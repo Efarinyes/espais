@@ -7,9 +7,8 @@ from uuid import UUID
 
 from app.domain.errors import DuplicateSpaceNameError, ForbiddenError, InvalidSpaceError, SpaceNotFoundError
 from app.domain.identity import MembershipRole
-from app.domain.space import AvailabilityWindow, Space, validate_windows
+from app.domain.space import AvailabilityWindow, Space, normalize_space_name, validate_windows
 from app.ports.spaces import SpaceUnitOfWork
-from app.usecases.create_space import normalize_space_name
 
 
 @dataclass(frozen=True)

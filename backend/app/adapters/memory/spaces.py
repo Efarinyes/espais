@@ -4,8 +4,7 @@ from __future__ import annotations
 
 from uuid import UUID
 
-from app.domain.space import Space
-from app.usecases.create_space import normalize_space_name
+from app.domain.space import Space, normalize_space_name
 
 
 class InMemorySpaceRepository:

@@ -32,6 +32,10 @@ class Space:
     windows: tuple[AvailabilityWindow, ...]
 
 
+def normalize_space_name(name: str) -> str:
+    return name.strip().casefold()
+
+
 def default_week_windows() -> tuple[AvailabilityWindow, ...]:
     return tuple(
         AvailabilityWindow(weekday=day, start=DEFAULT_OPEN, end=DEFAULT_CLOSE) for day in range(7)

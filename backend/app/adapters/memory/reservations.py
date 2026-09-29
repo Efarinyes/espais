@@ -8,8 +8,7 @@ from uuid import UUID
 from app.domain.attendance import AttendanceRecord
 from app.domain.notification import Notification
 from app.domain.reservation import Reservation, ReservationStatus, intervals_overlap
-from app.domain.space import Space
-from app.usecases.create_space import normalize_space_name
+from app.domain.space import Space, normalize_space_name
 
 
 class InMemoryReservationSpaceRepository:

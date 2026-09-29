@@ -7,13 +7,15 @@ from uuid import UUID
 
 from app.domain.errors import DuplicateSpaceNameError, ForbiddenError, InvalidSpaceError
 from app.domain.identity import MembershipRole
-from app.domain.space import AvailabilityWindow, Space, default_week_windows, validate_windows
+from app.domain.space import (
+    AvailabilityWindow,
+    Space,
+    default_week_windows,
+    normalize_space_name,
+    validate_windows,
+)
 from app.ports.identity import Clock, IdGenerator
 from app.ports.spaces import SpaceUnitOfWork
-
-
-def normalize_space_name(name: str) -> str:
-    return name.strip().casefold()
 
 
 @dataclass(frozen=True)

@@ -10,8 +10,7 @@ from sqlalchemy.orm import Session, selectinload, sessionmaker
 
 from app.adapters.sqlalchemy.models import SpaceRow, SpaceWindowRow
 from app.domain.errors import DuplicateSpaceNameError
-from app.domain.space import AvailabilityWindow, Space
-from app.usecases.create_space import normalize_space_name
+from app.domain.space import AvailabilityWindow, Space, normalize_space_name
 
 
 def _is_duplicate_space_name(exc: IntegrityError) -> bool:
