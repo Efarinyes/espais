@@ -15,7 +15,6 @@ from app.adapters.attendance import CountAttendance
 from app.adapters.notifier import LoggingNotifier, SmtpNotifier, build_notifier
 from app.adapters.security import BcryptPasswordHasher
 from app.adapters.sqlalchemy.identity import SqlAlchemyIdentityUnitOfWork
-from app.adapters.sqlalchemy.models import UserRow
 from app.adapters.sqlalchemy.reservations import SqlAlchemyReservationUnitOfWork
 from app.adapters.sqlalchemy.schema import bootstrap_session_factory
 from app.adapters.sqlalchemy.spaces import SqlAlchemySpaceUnitOfWork
@@ -159,6 +158,15 @@ def get_spaces_http(request: Request) -> Iterator[SpacesHttp]:
         uow.close()
 
 
+def email_for_user(session_factory: sessionmaker, user_id: UUID) -> str | None:
+    uow = SqlAlchemyIdentityUnitOfWork(session_factory)
+    try:
+        user = uow.users.get_by_id(user_id)
+        return user.email if user is not None else None
+    finally:
+        uow.close()
+
+
 def get_notifier(request: Request) -> Notifier:
     cached = getattr(request.app.state, "notifier", None)
     if cached is not None:
@@ -166,12 +174,7 @@ def get_notifier(request: Request) -> Notifier:
     factory = get_session_factory(request)
 
     def lookup_email(user_id: UUID) -> str | None:
-        session = factory()
-        try:
-            row = session.get(UserRow, user_id)
-            return row.email if row is not None else None
-        finally:
-            session.close()
+        return email_for_user(factory, user_id)
 
     notifier: LoggingNotifier | SmtpNotifier = build_notifier(lookup_email)
     request.app.state.notifier = notifier

@@ -1,4 +1,7 @@
+from uuid import UUID
+
 from app.adapters.memory.identity import FixedClock
+from app.api.deps import email_for_user
 from app.adapters.security import BcryptPasswordHasher
 from app.adapters.sqlalchemy.identity import (
     FailingSqlAlchemyMembershipRepository,
@@ -128,3 +131,18 @@ def test_sqlalchemy_mid_failure_rolls_back(sqlite_session_factory) -> None:
         assert reader.memberships.list_all() == []
     finally:
         reader.close()
+
+
+def test_email_for_user_returns_registered_email(sqlite_session_factory) -> None:
+    uow = SqlAlchemyIdentityUnitOfWork(sqlite_session_factory)
+    try:
+        result = RegisterEntity(
+            uow, FixedClock(), UuidIdGenerator(), BcryptPasswordHasher()
+        ).execute(_command())
+    finally:
+        uow.close()
+    assert email_for_user(sqlite_session_factory, result.user_id) == "anna@example.com"
+
+
+def test_email_for_user_unknown_id_returns_none(sqlite_session_factory) -> None:
+    assert email_for_user(sqlite_session_factory, UUID(int=999)) is None
