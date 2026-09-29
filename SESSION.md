@@ -11,15 +11,15 @@ Actualitza aquest arxiu al final de cada sessió. És el punt d’arrencada del 
 
 Pas 8 del pla temporal del backend, fet (DT-4). Es pot desar `min_attendance` en crear i en editar. Qui no l’envia obté el comportament d’abans: `None` en crear, i el valor anterior en editar. `PATCH` amb `null` l’esborra. Un enter ≥ 0 es desa, també el 0. Un negatiu o un booleà és `InvalidSpaceError`. El frontend no s’ha tocat: el formulari segueix sense enviar el camp. Tests: 190 verds. Sense ADR nou.
 
-El pla temporal `pla-implementacio-auditoria-backend.md` s’ha esborrat i no es rellegeix.
+El pla temporal `pla-implementacio-auditoria-backend.md` s’ha esborrat i no es rellegeix. `main` és a GitHub, al mateix commit que en local (`577b2ec`). En local i a `origin` només hi ha `main`.
 
-Deute d’aquesta sessió: d’implementació, tancat amb el pla. Cap ADR nou. Revisió `architecture-solid`: la validació viu al domini, al costat de la de nom i aforament. Cap capa nova. `min_attendance_set` és intern del command d’edició i no surt al JSON.
+`docs/auditoria_SOLID_pla_refactoritzacio_frontend.docx` s’ha esborrat del disc. No es rellegeix i no entra a Git. L’encàrrec ja es va executar i el pla temporal del frontend està tancat.
 
-Entre feines només queda `main`. La refactorització del backend obre una branca per pas, es fusiona a `main` quan la suite passa, i la branca s’esborra.
+Deute d’aquesta sessió: cap de nou. El de l’aforament mínim és d’implementació i ja està tancat amb el pla. Cap ADR nou.
 
 ## Següent tasca
 
-No hi ha pas obert. La v1 i la refactorització del frontend segueixen tancades. El pla temporal del backend s’ha esborrat i no es rellegeix.
+No hi ha pas obert. La v1 i la refactorització del frontend segueixen tancades. El pla temporal del backend s’ha esborrat i no es rellegeix. El `.docx` d’auditoria del frontend tampoc.
 
 No la reobren: la vora del camp d’assistència del calendari, publicar l’app, ni el backlog de producte. El formulari d’aforament mínim no és aquest pla i no s’ha començat. No és una fase nova.
 
@@ -48,7 +48,7 @@ Cap. API `http://127.0.0.1:8000`; front `http://127.0.0.1:5173`.
 - Micromamba: `micromamba run -n espais pytest`; no `env create` si `espais` existeix.
 - Front: `cd frontend && npm test` / `npm run dev`. Vue no global. Paleta d’entitat ADR 0011 (defecte Mar i cel; Clar/Fosc al capçal; Tria els colors al lateral, a sobre de Surt); toc ≥ 44px (`min-h-11`). A mòbil el menú d’admin del responsable és un `details` tancat. Lletra Montserrat local.
 - PWA: instal·lable; no desregistrar el SW en DEV. `navigateFallbackDenylist` inclou `/avisos` i `/analisi`.
-- Refactorització del frontend tancada (2026-09-28). El pla temporal del frontend s’esborra i no es rellegeix. La còpia doble dels colors no es fa. El calendari ja està partit. CSV d’anàlisi = backlog. La vora del camp d’assistència no és aquesta feina.
+- Refactorització del frontend tancada (2026-09-28). El pla temporal del frontend s’esborra i no es rellegeix. El `.docx` `docs/auditoria_SOLID_pla_refactoritzacio_frontend.docx` tampoc es rellegeix ni es commiteja. La còpia doble dels colors no es fa. El calendari ja està partit. CSV d’anàlisi = backlog. La vora del camp d’assistència no és aquesta feina.
 - Branques: entre feines només `main`. Una branca per pas del backend; fusió a `main` quan la suite passa; després s’esborra. Política a `docs/16-repositori.md`.
 - Pla temporal del backend esborrat (2026-09-29) i no es rellegeix. Fets, en ordre: normalitzar el nom al domini; una validació de nom, aforament i equipament; una comprovació d’interval reservable; el `save` en memòria de reserva i d’avís insereix si no hi ha fila; l’email del correu surt de `UserRepository.get_by_id`; test API d’intervals adjacents (201); una sola classe de repositori d’espais en memòria; `min_attendance` opcional al JSON, amb defecte `None`.
 - Fora d’aquell pla, i sense començar: formulari d’aforament mínim, anul·lació pel coordinador, `pending` / `rescheduled`, ports nous, un servei que agrupi casos d’ús.
