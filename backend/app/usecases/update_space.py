@@ -5,9 +5,15 @@ from __future__ import annotations
 from dataclasses import dataclass, replace
 from uuid import UUID
 
-from app.domain.errors import DuplicateSpaceNameError, ForbiddenError, InvalidSpaceError, SpaceNotFoundError
+from app.domain.errors import DuplicateSpaceNameError, ForbiddenError, SpaceNotFoundError
 from app.domain.identity import MembershipRole
-from app.domain.space import AvailabilityWindow, Space, normalize_space_name, validate_windows
+from app.domain.space import (
+    AvailabilityWindow,
+    Space,
+    normalize_space_name,
+    validate_space_fields,
+    validate_windows,
+)
 from app.ports.spaces import SpaceUnitOfWork
 
 
@@ -40,15 +46,9 @@ class UpdateSpace:
         if space is None:
             raise SpaceNotFoundError()
 
-        name = command.name.strip()
-        if not name:
-            raise InvalidSpaceError("el nom de l’espai és obligatori")
-        if command.capacity < 1:
-            raise InvalidSpaceError("l’aforament ha de ser un enter positiu")
-
-        equipment = command.equipment.strip() if command.equipment else None
-        if equipment == "":
-            equipment = None
+        name, capacity, equipment = validate_space_fields(
+            command.name, command.capacity, command.equipment
+        )
 
         needle = normalize_space_name(name)
         existing = self._uow.spaces.get_by_normalized_name(command.entity_id, needle)
@@ -59,7 +59,7 @@ class UpdateSpace:
         updated = replace(
             space,
             name=name,
-            capacity=command.capacity,
+            capacity=capacity,
             equipment=equipment,
             active=command.active,
             windows=windows,

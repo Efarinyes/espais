@@ -179,6 +179,46 @@ def test_coordinator_cannot_update_space() -> None:
     assert GetSpace(uow).execute(ENTITY_A, created.space.id).capacity == 20
 
 
+def test_update_blank_name_is_rejected() -> None:
+    uow = InMemorySpaceUnitOfWork()
+    ids = SequentialIdGenerator()
+    created = _seed(uow, ids)
+    try:
+        _update(uow).execute(
+            UpdateSpaceCommand(
+                entity_id=ENTITY_A,
+                space_id=created.space.id,
+                actor_role=MembershipRole.RESPONSIBLE,
+                name="   ",
+                capacity=20,
+                active=True,
+            )
+        )
+    except InvalidSpaceError as exc:
+        assert str(exc) == "el nom de l’espai és obligatori"
+    else:
+        raise AssertionError("expected InvalidSpaceError")
+    assert GetSpace(uow).execute(ENTITY_A, created.space.id).name == "Sala 1"
+
+
+def test_update_blank_equipment_is_stored_as_none() -> None:
+    uow = InMemorySpaceUnitOfWork()
+    ids = SequentialIdGenerator()
+    created = _seed(uow, ids)
+    result = _update(uow).execute(
+        UpdateSpaceCommand(
+            entity_id=ENTITY_A,
+            space_id=created.space.id,
+            actor_role=MembershipRole.RESPONSIBLE,
+            name="Sala 1",
+            capacity=20,
+            equipment="   ",
+            active=True,
+        )
+    )
+    assert result.space.equipment is None
+
+
 def test_update_capacity_must_be_positive() -> None:
     uow = InMemorySpaceUnitOfWork()
     ids = SequentialIdGenerator()
@@ -194,8 +234,8 @@ def test_update_capacity_must_be_positive() -> None:
                 active=True,
             )
         )
-    except InvalidSpaceError:
-        pass
+    except InvalidSpaceError as exc:
+        assert str(exc) == "l’aforament ha de ser un enter positiu"
     else:
         raise AssertionError("expected InvalidSpaceError")
     assert GetSpace(uow).execute(ENTITY_A, created.space.id).capacity == 20

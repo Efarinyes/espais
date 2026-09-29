@@ -36,6 +36,20 @@ def normalize_space_name(name: str) -> str:
     return name.strip().casefold()
 
 
+def validate_space_fields(
+    name: str, capacity: int, equipment: str | None
+) -> tuple[str, int, str | None]:
+    cleaned_name = name.strip()
+    if not cleaned_name:
+        raise InvalidSpaceError("el nom de l’espai és obligatori")
+    if capacity < 1:
+        raise InvalidSpaceError("l’aforament ha de ser un enter positiu")
+    cleaned_equipment = equipment.strip() if equipment else None
+    if cleaned_equipment == "":
+        cleaned_equipment = None
+    return cleaned_name, capacity, cleaned_equipment
+
+
 def default_week_windows() -> tuple[AvailabilityWindow, ...]:
     return tuple(
         AvailabilityWindow(weekday=day, start=DEFAULT_OPEN, end=DEFAULT_CLOSE) for day in range(7)

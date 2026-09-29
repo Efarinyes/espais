@@ -116,6 +116,38 @@ def test_list_spaces_does_not_leak_other_entity() -> None:
     assert names_a == ["Sala Pau Casals"]
 
 
+def test_blank_name_is_rejected() -> None:
+    uow = InMemorySpaceUnitOfWork()
+    try:
+        _create(uow).execute(
+            CreateSpaceCommand(
+                entity_id=ENTITY_A,
+                actor_role=MembershipRole.RESPONSIBLE,
+                name="   ",
+                capacity=10,
+            )
+        )
+    except InvalidSpaceError as exc:
+        assert str(exc) == "el nom de l’espai és obligatori"
+    else:
+        raise AssertionError("expected InvalidSpaceError")
+    assert ListSpaces(uow).execute(ENTITY_A) == []
+
+
+def test_blank_equipment_is_stored_as_none() -> None:
+    uow = InMemorySpaceUnitOfWork()
+    result = _create(uow).execute(
+        CreateSpaceCommand(
+            entity_id=ENTITY_A,
+            actor_role=MembershipRole.RESPONSIBLE,
+            name="Sala 1",
+            capacity=10,
+            equipment="   ",
+        )
+    )
+    assert result.space.equipment is None
+
+
 def test_capacity_must_be_positive() -> None:
     uow = InMemorySpaceUnitOfWork()
     try:
@@ -127,8 +159,8 @@ def test_capacity_must_be_positive() -> None:
                 capacity=0,
             )
         )
-    except InvalidSpaceError:
-        pass
+    except InvalidSpaceError as exc:
+        assert str(exc) == "l’aforament ha de ser un enter positiu"
     else:
         raise AssertionError("expected InvalidSpaceError")
     assert ListSpaces(uow).execute(ENTITY_A) == []
