@@ -16,7 +16,13 @@ from app.domain.errors import (
 )
 from app.domain.identity import MembershipRole
 from app.domain.notification import Notification, NotificationPayload, NotificationType
-from app.domain.reservation import Reservation, ReservationStatus, as_utc, validate_reservable_interval
+from app.domain.reservation import (
+    Reservation,
+    ReservationStatus,
+    as_utc,
+    validate_interval_order,
+    validate_reservable_interval,
+)
 from app.ports.identity import Clock, IdGenerator
 from app.ports.notifications import Notifier
 from app.ports.reservations import ReservationUnitOfWork
@@ -69,6 +75,7 @@ class RescheduleReservation:
     def execute(self, command: RescheduleReservationCommand) -> RescheduleReservationResult:
         starts_at = as_utc(command.starts_at)
         ends_at = as_utc(command.ends_at)
+        validate_interval_order(starts_at, ends_at)
 
         reservation = self._uow.reservations.get_by_id(command.entity_id, command.reservation_id)
         if reservation is None:

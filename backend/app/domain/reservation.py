@@ -45,6 +45,11 @@ def intervals_overlap(start_a: datetime, end_a: datetime, start_b: datetime, end
     return as_utc(start_a) < as_utc(end_b) and as_utc(end_a) > as_utc(start_b)
 
 
+def validate_interval_order(starts_at: datetime, ends_at: datetime) -> None:
+    if starts_at >= ends_at:
+        raise InvalidReservationError("l’hora d’inici ha de ser anterior a la de fi")
+
+
 def validate_reservable_interval(
     starts_at: datetime,
     ends_at: datetime,
@@ -52,8 +57,7 @@ def validate_reservable_interval(
     active: bool,
     windows: tuple[AvailabilityWindow, ...],
 ) -> None:
-    if starts_at >= ends_at:
-        raise InvalidReservationError("l’hora d’inici ha de ser anterior a la de fi")
+    validate_interval_order(starts_at, ends_at)
     if not active:
         raise InvalidReservationError("aquest espai no està actiu")
     if not interval_fits_windows(starts_at, ends_at, windows):

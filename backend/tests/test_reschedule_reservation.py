@@ -201,6 +201,50 @@ def test_outside_windows_is_rejected() -> None:
         mover.execute(_command(created.reservation.id, starts_at=_slot(10)[0], ends_at=_slot(10)[1]))
 
 
+def test_inverted_hours_rejected_before_missing_reservation() -> None:
+    mover, _uow, _mail, _reservation_id = _setup()
+    start, end = _slot(12)
+    with pytest.raises(InvalidReservationError, match="anterior a la de fi"):
+        mover.execute(_command(UUID(int=999), starts_at=end, ends_at=start))
+
+
+def test_inverted_hours_rejected_before_cancelled() -> None:
+    from dataclasses import replace
+
+    mover, uow, _mail, reservation_id = _setup()
+    stored = uow.reservations.get_by_id(ENTITY_A, reservation_id)
+    assert stored is not None
+    uow.reservations.save(replace(stored, status=ReservationStatus.CANCELLED))
+    uow.commit()
+    start, end = _slot(12)
+    with pytest.raises(InvalidReservationError, match="anterior a la de fi"):
+        mover.execute(_command(reservation_id, starts_at=end, ends_at=start))
+    kept = uow.reservations.get_by_id(ENTITY_A, reservation_id)
+    assert kept is not None
+    assert kept.status == ReservationStatus.CANCELLED
+
+
+def test_inverted_hours_rejected_before_forbidden() -> None:
+    mover, uow, mail, reservation_id = _setup()
+    assert isinstance(mail, InMemoryNotifier)
+    start, end = _slot(12)
+    with pytest.raises(InvalidReservationError, match="anterior a la de fi"):
+        mover.execute(
+            _command(
+                reservation_id,
+                actor_user_id=UUID(int=300),
+                actor_role=MembershipRole.COORDINATOR,
+                actor_name="Oriol",
+                starts_at=end,
+                ends_at=start,
+            )
+        )
+    stored = uow.reservations.get_by_id(ENTITY_A, reservation_id)
+    assert stored is not None
+    assert stored.starts_at == as_utc(_slot(10)[0])
+    assert mail.sent == []
+
+
 def test_cancelled_cannot_reschedule() -> None:
     from dataclasses import replace
 

@@ -9,11 +9,11 @@ Actualitza aquest arxiu al final de cada sessió. És el punt d’arrencada del 
 
 ## Darrera feina
 
-Pas 5 del pla temporal del backend, fet. L’email del correu es llegeix amb `users.get_by_id` dins `email_for_user`. `deps.py` ja no importa `UserRow`. El text del correu no canvia i no hi ha SMTP real. Tests: 173 verds. Sense ADR nou. D-2 queda tancat.
+Corregit el pas 3. Si l’hora d’inici no és anterior a la de fi, el missatge de l’hora surt abans de buscar l’espai o la reserva. En crear, el responsable continua sense poder crear reserves, i aquesta prohibició es comprova abans. L’espai inactiu i l’horari de l’espai es comproven quan l’espai ja s’ha trobat. El text dels missatges no canvia. Tests: 178 verds. Sense ADR nou.
 
 El pla d’execució continua sent [pla-implementacio-auditoria-backend.md](pla-implementacio-auditoria-backend.md), a l’arrel. No és de la bíblia, no obre fase i no entra a Git. S’esborra en acabar l’últim pas, i llavors aquesta nota ha de dir que no es rellegeix.
 
-Deute d’aquesta sessió: d’implementació, al pla i a les notes d’aquí. Cap ADR nou. Revisió `architecture-solid`: la lectura de l’email passa pel repositori d’usuaris; cap capa nova.
+Deute d’aquesta sessió: d’implementació, al pla i a les notes d’aquí. Cap ADR nou. Revisió `architecture-solid`: el missatge de l’hora viu en un sol lloc; cap capa nova.
 
 Entre feines només queda `main`. La refactorització del backend obre una branca per pas, es fusiona a `main` quan la suite passa, i la branca s’esborra.
 
@@ -55,7 +55,7 @@ Cap. API `http://127.0.0.1:8000`; front `http://127.0.0.1:5173`.
 - Pla temporal del backend: `pla-implementacio-auditoria-backend.md`. Es llegeix mentre «Següent tasca» l’apunti. No commitejar-lo. En acabar l’últim pas, esborrar-lo i deixar escrit aquí que no es rellegeix. Ordre, un pas per sessió:
   1. D-1: `normalize_space_name` a `domain/space.py`. Fet (pas 1).
   2. DT-2: una validació de nom, aforament i equipament a `domain/space.py`. Fet (pas 2).
-  3. DT-1: una comprovació d’interval reservable a `domain/reservation.py`. Fet (pas 3).
+  3. DT-1: una comprovació d’interval reservable a `domain/reservation.py`. Fet (pas 3). Corregit: el missatge de l’hora surt abans de la cerca.
   4. L-1: el `save` in-memory de reserva i d’avís insereix si no hi ha fila, com SQLAlchemy. Fet (pas 4).
   5. D-2: l’email de `lookup_email` surt de `UserRepository.get_by_id`. Fet (pas 5).
   6. Pas 8 del pla: test API d’intervals adjacents (201). És la següent tasca.

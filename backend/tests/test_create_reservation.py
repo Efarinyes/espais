@@ -150,6 +150,28 @@ def test_inactive_space_cannot_be_reserved() -> None:
         CreateReservation(uow, FixedClock(), SequentialIdGenerator()).execute(_command())
 
 
+def test_inverted_hours_rejected_before_missing_space() -> None:
+    uow = InMemoryReservationUnitOfWork()
+    start, end = _slot(10)
+    with pytest.raises(InvalidReservationError, match="anterior a la de fi"):
+        CreateReservation(uow, FixedClock(), SequentialIdGenerator()).execute(
+            _command(starts_at=end, ends_at=start)
+        )
+    assert uow.reservations.list_all() == []
+
+
+def test_inverted_hours_rejected_before_inactive_space() -> None:
+    uow = InMemoryReservationUnitOfWork()
+    uow.spaces.add(_space(active=False))
+    uow.commit()
+    start, end = _slot(10)
+    with pytest.raises(InvalidReservationError, match="anterior a la de fi"):
+        CreateReservation(uow, FixedClock(), SequentialIdGenerator()).execute(
+            _command(starts_at=end, ends_at=start)
+        )
+    assert uow.reservations.list_all() == []
+
+
 def test_space_of_other_entity_is_not_found() -> None:
     uow = InMemoryReservationUnitOfWork()
     uow.spaces.add(_space(entity_id=ENTITY_B, space_id=UUID(int=2)))

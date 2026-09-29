@@ -8,7 +8,13 @@ from uuid import UUID
 
 from app.domain.errors import ForbiddenError, ReservationOverlapError, SpaceNotFoundError
 from app.domain.identity import MembershipRole
-from app.domain.reservation import Reservation, ReservationStatus, as_utc, validate_reservable_interval
+from app.domain.reservation import (
+    Reservation,
+    ReservationStatus,
+    as_utc,
+    validate_interval_order,
+    validate_reservable_interval,
+)
 from app.ports.identity import Clock, IdGenerator
 from app.ports.reservations import ReservationUnitOfWork
 
@@ -44,6 +50,7 @@ class CreateReservation:
             raise ForbiddenError("el responsable no crea reserves; reprograma o anul·la les dels coordinadors")
         starts_at = as_utc(command.starts_at)
         ends_at = as_utc(command.ends_at)
+        validate_interval_order(starts_at, ends_at)
 
         space = self._uow.spaces.get_by_id(command.entity_id, command.space_id)
         if space is None:
