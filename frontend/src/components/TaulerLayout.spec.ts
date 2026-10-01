@@ -124,7 +124,10 @@ describe("TaulerLayout", () => {
     const plegat = wrapper.get("aside details");
     expect(plegat.attributes("open")).toBeUndefined();
     expect(plegat.get("summary").text()).toContain("AAVV Barri A");
-    expect(wrapper.find("aside .hidden.lg\\:block").exists()).toBe(true);
+    expect(plegat.get("summary svg").attributes("aria-hidden")).toBe("true");
+    const escriptori = wrapper.get("aside .hidden.lg\\:block");
+    expect(escriptori.exists()).toBe(true);
+    expect(escriptori.find("svg").exists()).toBe(false);
   });
 
   it("no mostra el lateral al coordinador", async () => {
