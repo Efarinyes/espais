@@ -297,7 +297,7 @@ watch(calendarApp, (app) => {
 </script>
 
 <template>
-  <main class="mx-auto w-full max-w-6xl px-4 py-6">
+  <main class="mx-auto w-full max-w-6xl">
     <h1 class="text-3xl font-semibold">
       {{ esResponsable ? "Totes les reserves" : "Les meves reserves" }}
     </h1>

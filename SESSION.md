@@ -9,7 +9,7 @@ Actualitza aquest arxiu al final de cada sessió. És el punt d’arrencada del 
 
 ## Darrera feina
 
-A pantalla estreta, el menú d’administració del responsable mostra una fletxa al costat del nom de l’entitat. S’obre el mateix bloc d’abans (Convida, Espais, Estadístiques, Tria els colors, Surt) i la fletxa gira. A escriptori el lateral segueix obert, sense fletxa. El coordinador no veu aquestes opcions. Un menú propi del coordinador no s’ha fet i no es descarta. Test del layout verd. Comprovat a 390 px a `http://localhost/espais`: la fletxa es veu i el bloc s’obre. La imatge `web` s’ha reconstruït.
+Un sol esquelet per als dos rols. Amb sessió, el capçal només té el logo i Clar / Fosc. El lateral és el menú: el responsable hi té Convida, Espais, Calendari, Estadístiques, Tria els colors i Surt; el coordinador hi té Espais, Calendari, Avisos i Surt. Calendari i Avisos queden dins d’aquest layout. Després d’entrar, els dos van a `/espais`. La capçalera duplicada del coordinador a l’inici s’ha tret. A pantalla estreta el `details` (nom de l’entitat i fletxa) val per als dos. Vitest 158. Comprovat a `http://localhost` per sobre i per sota de 1024 px; la imatge `web` s’ha reconstruït.
 
 Dockerització de l’Alpha+ per a proves de camp (ADR 0012). Caddy serveix la SPA i fa de proxy de `/api` cap a FastAPI sense aquest prefix. Les rutes internes de l’API no canvien. SQLite persistent al volum `espais_data` (`/data/espais.sqlite3`). Alembic segueix a l’arrencada. Un sol worker. El port 8000 no es publica. `ESPAIS_SECRET` és obligatori amb `ESPAIS_ENV=production`.
 
@@ -47,7 +47,7 @@ Cap. API de desenvolupament `http://127.0.0.1:8000`; front de desenvolupament `h
 - Glossari: entitat, responsable, coordinador, espai, reserva, assistència, aforament.
 - Ús intern i gratuït. Sense cobrament al model.
 - Micromamba: `micromamba run -n espais pytest`; no `env create` si `espais` existeix.
-- Front: `cd frontend && npm test` / `npm run dev`. Vue no global. Paleta d’entitat ADR 0011 (defecte Mar i cel; Clar/Fosc al capçal; Tria els colors al lateral, a sobre de Surt); toc ≥ 44px (`min-h-11`). A mòbil el menú d’admin del responsable és un `details` tancat, amb el nom de l’entitat i una fletxa. Lletra Montserrat local.
+- Front: `cd frontend && npm test` / `npm run dev`. Vue no global. Paleta d’entitat ADR 0011 (defecte Mar i cel; Clar/Fosc al capçal; Tria els colors al lateral del responsable, a sobre de Surt); toc ≥ 44px (`min-h-11`). Amb sessió el capçal és compartit (logo i mode). El lateral és per rol. A mòbil és un `details` tancat, amb el nom de l’entitat i una fletxa. Lletra Montserrat local.
 - PWA: instal·lable; no desregistrar el SW en DEV. `navigateFallbackDenylist` és `/api`. Les rutes Vue ja no es deneguen pel nom.
 - Refactorització del frontend tancada (2026-09-28). El pla temporal del frontend s’esborra i no es rellegeix. El `.docx` `docs/auditoria_SOLID_pla_refactoritzacio_frontend.docx` tampoc es rellegeix ni es commiteja. La còpia doble dels colors no es fa. El calendari ja està partit. CSV d’anàlisi = backlog. La vora del camp d’assistència no és aquesta feina.
 - Branques: `main` segueix a `7d3f474`, igual que `backup/pre-dockeritzacio` i `origin/backup/pre-dockeritzacio`. La peça Docker és `feat/docker-caddy-sqlite` i no s’ha fet push. Política a `docs/16-repositori.md`.

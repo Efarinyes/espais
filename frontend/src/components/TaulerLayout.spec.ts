@@ -5,6 +5,8 @@ import { flushPromises, mount } from "@vue/test-utils";
 import { defineComponent } from "vue";
 
 import TaulerLayout from "./TaulerLayout.vue";
+import { disparadorCalendariKey } from "../calendariLive";
+import { avisosApiKey, type AvisDto, type AvisosApi } from "../services/avisos";
 import { useSessioStore } from "../stores/sessio";
 import type { SessioDto } from "../services/identitat";
 
@@ -18,11 +20,13 @@ const sessioAnna: SessioDto = {
   typology: "associació de veïns",
 };
 
-async function muntar(path: string, dto: SessioDto = sessioAnna) {
+async function muntar(path: string, dto: SessioDto | null = sessioAnna, avisos: AvisDto[] = []) {
   localStorage.clear();
   const pinia = createPinia();
   setActivePinia(pinia);
-  useSessioStore().iniciar(dto);
+  if (dto) {
+    useSessioStore().iniciar(dto);
+  }
   const router = createRouter({
     history: createMemoryHistory(),
     routes: [
@@ -54,6 +58,16 @@ async function muntar(path: string, dto: SessioDto = sessioAnna) {
           { path: "", name: "convidar-coordinador", component: { template: "<div>centre-convida</div>" } },
         ],
       },
+      {
+        path: "/calendari",
+        component: TaulerLayout,
+        children: [{ path: "", name: "calendari", component: { template: "<div>centre-calendari</div>" } }],
+      },
+      {
+        path: "/avisos",
+        component: TaulerLayout,
+        children: [{ path: "", name: "avisos", component: { template: "<div>centre-avisos</div>" } }],
+      },
     ],
   });
   await router.push(path);
@@ -62,18 +76,32 @@ async function muntar(path: string, dto: SessioDto = sessioAnna) {
     components: { RouterView },
     template: "<RouterView />",
   });
-  const wrapper = mount(Host, { global: { plugins: [pinia, router] } });
+  const avisosApi: AvisosApi = {
+    llistar: async () => avisos,
+    marcarLlegit: async (_token, id) => avisos.find((avis) => avis.id === id) ?? avisos[0],
+    arxivar: async () => undefined,
+  };
+  const wrapper = mount(Host, {
+    global: {
+      plugins: [pinia, router],
+      provide: {
+        [avisosApiKey as symbol]: avisosApi,
+        [disparadorCalendariKey as symbol]: { iniciar: () => () => undefined },
+      },
+    },
+  });
   await flushPromises();
   return { wrapper, router };
 }
 
 describe("TaulerLayout", () => {
-  it("mostra les quatre opcions d’administració i el centre", async () => {
+  it("mostra les opcions del responsable i el centre", async () => {
     const { wrapper } = await muntar("/espais");
     const nav = wrapper.get("nav[aria-label='Administració']");
     expect(nav.findAll("a").map((enllac) => enllac.text())).toEqual([
       "Convida coordinadors",
       "Espais",
+      "Calendari",
       "Estadístiques",
       "Tria els colors",
     ]);
@@ -96,10 +124,11 @@ describe("TaulerLayout", () => {
     const { wrapper } = await muntar("/espais");
     const nav = wrapper.get("nav[aria-label='Administració']");
     const items = nav.findAll("li");
-    expect(items).toHaveLength(5);
-    expect(items[3].get("a").text()).toBe("Tria els colors");
-    expect(items[3].classes()).toContain("border-t");
-    const surt = items[4].get("button");
+    expect(items).toHaveLength(6);
+    expect(items[3].get("a").text()).toBe("Estadístiques");
+    expect(items[4].get("a").text()).toBe("Tria els colors");
+    expect(items[4].classes()).toContain("border-t");
+    const surt = items[5].get("button");
     expect(surt.text()).toBe("Surt");
     expect(surt.classes()).toContain("text-error");
   });
@@ -130,8 +159,45 @@ describe("TaulerLayout", () => {
     expect(escriptori.find("svg").exists()).toBe(false);
   });
 
-  it("no mostra el lateral al coordinador", async () => {
-    const { wrapper } = await muntar("/espais", { ...sessioAnna, role: "coordinator", user_name: "Carla" });
+  it("marca Calendari com a pàgina activa", async () => {
+    const { wrapper } = await muntar("/calendari");
+    expect(wrapper.get("a[href='/calendari']").attributes("aria-current")).toBe("page");
+    expect(wrapper.get("a[href='/espais']").attributes("aria-current")).toBeUndefined();
+    expect(wrapper.text()).toContain("centre-calendari");
+  });
+
+  it("el coordinador veu les seves opcions i el compte d’avisos", async () => {
+    const { wrapper } = await muntar("/espais", { ...sessioAnna, role: "coordinator", user_name: "Carla" }, [
+      {
+        id: "a1",
+        type: "reservation_cancelled",
+        reservation_id: "r1",
+        entity_name: "AAVV Barri A",
+        space_name: "Sala 1",
+        starts_at: "2026-09-08T08:00:00Z",
+        ends_at: "2026-09-08T09:00:00Z",
+        new_starts_at: null,
+        new_ends_at: null,
+        responsible_name: "Anna",
+        reason: null,
+        read_at: null,
+        created_at: "2026-09-08T10:00:00Z",
+      },
+    ]);
+    const nav = wrapper.get("nav[aria-label='Administració']");
+    expect(nav.findAll("a").map((enllac) => enllac.text().replace(/\s+/g, " ").trim())).toEqual([
+      "Espais",
+      "Calendari",
+      "Avisos 1",
+    ]);
+    expect(nav.text()).not.toContain("Convida coordinadors");
+    expect(nav.text()).not.toContain("Estadístiques");
+    expect(nav.text()).not.toContain("Tria els colors");
+    expect(nav.get("a[href='/avisos']").text()).toContain("1");
+  });
+
+  it("no mostra el lateral sense sessió", async () => {
+    const { wrapper } = await muntar("/espais", null);
     expect(wrapper.find("nav[aria-label='Administració']").exists()).toBe(false);
     expect(wrapper.text()).toContain("centre-espais");
   });

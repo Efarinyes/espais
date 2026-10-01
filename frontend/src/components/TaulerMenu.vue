@@ -2,6 +2,7 @@
 import { computed } from "vue";
 import { RouterLink, useRoute, useRouter } from "vue-router";
 
+import { useComptadorAvisos } from "../composables/useAvisos";
 import { useSessioStore } from "../stores/sessio";
 
 defineProps<{
@@ -11,11 +12,15 @@ defineProps<{
 const sessio = useSessioStore();
 const ruta = useRoute();
 const router = useRouter();
+const { noLlegits } = useComptadorAvisos();
 
+const esResponsable = computed(() => sessio.role === "responsible");
 const esEspais = computed(() => ruta.path.startsWith("/espais"));
 const esColors = computed(() => ruta.path.startsWith("/entitat/colors"));
 const esConvida = computed(() => ruta.path.startsWith("/coordinadors/convidar"));
 const esEstadistiques = computed(() => ruta.path.startsWith("/analisi"));
+const esCalendari = computed(() => ruta.path.startsWith("/calendari"));
+const esAvisos = computed(() => ruta.path.startsWith("/avisos"));
 
 function sortir() {
   sessio.sortir();
@@ -41,7 +46,7 @@ function sortir() {
     </div>
     <nav class="mt-4 border-t border-base-content/10" aria-label="Administració">
       <ul class="menu w-full p-2">
-        <li>
+        <li v-if="esResponsable">
           <RouterLink
             class="min-h-11"
             to="/coordinadors/convidar"
@@ -51,15 +56,16 @@ function sortir() {
           </RouterLink>
         </li>
         <li>
-          <RouterLink
-            class="min-h-11"
-            to="/espais"
-            :aria-current="esEspais ? 'page' : undefined"
-          >
+          <RouterLink class="min-h-11" to="/espais" :aria-current="esEspais ? 'page' : undefined">
             Espais
           </RouterLink>
         </li>
         <li>
+          <RouterLink class="min-h-11" to="/calendari" :aria-current="esCalendari ? 'page' : undefined">
+            Calendari
+          </RouterLink>
+        </li>
+        <li v-if="esResponsable">
           <RouterLink
             class="min-h-11"
             to="/analisi"
@@ -68,7 +74,19 @@ function sortir() {
             Estadístiques
           </RouterLink>
         </li>
-        <li class="border-t border-base-content/20">
+        <li v-if="!esResponsable">
+          <RouterLink class="min-h-11" to="/avisos" :aria-current="esAvisos ? 'page' : undefined">
+            Avisos
+            <span
+              v-if="noLlegits > 0"
+              class="badge badge-primary"
+              :aria-label="noLlegits + ' no llegits'"
+            >
+              {{ noLlegits }}
+            </span>
+          </RouterLink>
+        </li>
+        <li v-if="esResponsable" class="border-t border-base-content/20">
           <RouterLink
             class="min-h-11"
             to="/entitat/colors"
@@ -77,7 +95,7 @@ function sortir() {
             Tria els colors
           </RouterLink>
         </li>
-        <li>
+        <li :class="esResponsable ? '' : 'border-t border-base-content/20'">
           <button class="min-h-11 text-error" type="button" @click="sortir">Surt</button>
         </li>
       </ul>

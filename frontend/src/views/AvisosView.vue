@@ -15,7 +15,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <main class="mx-auto w-full max-w-md px-4 py-6">
+  <main class="mx-auto w-full max-w-md">
     <h1 class="text-3xl font-semibold">Avisos</h1>
     <p v-if="sessio.role === 'responsible'" class="mt-2 text-base-content/80">
       Quan canvies o anul·les una reserva, l’avís el rep el coordinador, no aquesta llista.

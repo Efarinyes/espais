@@ -70,33 +70,32 @@ function muntar(dto?: SessioDto) {
 }
 
 describe("App", () => {
-  it("mostra el menú compacte del responsable sense duplicar l’administració", () => {
+  it("amb sessió el capçal només té el logo i el mode", () => {
     const wrapper = muntar(sessioResp);
-    expect(wrapper.text()).toContain("Administració de AAVV Barri A");
-    expect(wrapper.text()).not.toContain("Responsable");
-    expect(wrapper.text()).not.toContain("Coordinador");
-    const principal = wrapper.get("nav[aria-label='Principal']");
-    expect(principal.text()).toContain("Menú");
-    expect(principal.text()).toContain("Calendari");
-    expect(principal.text()).not.toContain("Surt");
-    expect(principal.text()).not.toContain("Els espais");
-    expect(principal.text()).not.toContain("Estadístiques");
-    expect(principal.text()).not.toContain("Convida");
-    expect(principal.text()).not.toContain("Avisos");
+    const capcal = wrapper.get("header");
+    expect(capcal.text()).toContain("Espais");
+    expect(capcal.text()).toContain("Clar");
+    expect(capcal.text()).toContain("Fosc");
+    expect(capcal.text()).not.toContain("Menú");
+    expect(capcal.text()).not.toContain("Administració de");
+    expect(capcal.text()).not.toContain("Coordinador");
+    expect(capcal.text()).not.toContain("Calendari");
+    expect(capcal.text()).not.toContain("Surt");
+    expect(wrapper.find("nav[aria-label='Principal']").exists()).toBe(false);
     expect(wrapper.get("footer").text()).toContain("Eduard Farinyes");
     expect(wrapper.get("footer").text()).toContain("Codi obert");
     expect(wrapper.get("footer").text()).toContain("ús intern");
     expect(wrapper.get("footer").text()).not.toContain("gratuït");
   });
 
-  it("mostra l’insígnia de coordinador", () => {
+  it("el coordinador tampoc té insígnia ni menú al capçal", () => {
     const wrapper = muntar({ ...sessioResp, role: "coordinator", user_name: "Carla" });
-    expect(wrapper.text()).toContain("Coordinador");
-    expect(wrapper.text()).not.toContain("Responsable");
-    expect(wrapper.text()).not.toContain("Estadístiques");
-    expect(wrapper.get("nav[aria-label='Principal']").text()).toContain("Avisos");
-    expect(wrapper.get("nav[aria-label='Principal']").text()).toContain("Els espais");
-    expect(wrapper.get("nav[aria-label='Principal']").text()).toContain("Surt");
+    const capcal = wrapper.get("header");
+    expect(capcal.text()).not.toContain("Coordinador");
+    expect(capcal.text()).not.toContain("Responsable");
+    expect(capcal.text()).not.toContain("Menú");
+    expect(capcal.text()).not.toContain("Avisos");
+    expect(wrapper.find("nav[aria-label='Principal']").exists()).toBe(false);
   });
 
   it("no mostra rol sense sessió i posa l’accés al capçal", () => {

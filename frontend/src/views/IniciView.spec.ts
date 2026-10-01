@@ -3,7 +3,6 @@ import { createPinia, setActivePinia } from "pinia";
 import { createMemoryHistory, createRouter } from "vue-router";
 import { flushPromises, mount } from "@vue/test-utils";
 
-import { ApiError } from "../services/http";
 import type { SessioDto } from "../services/identitat";
 import { espaisApiKey, type EspaisApi } from "../services/espais";
 import { finestresPerDefecte } from "../disponibilitat";
@@ -112,53 +111,11 @@ describe("IniciView", () => {
     expect(wrapper.text()).not.toContain("Convida coordinadors");
   });
 
-  it("no convida ni defineix espais si el coordinador entra sense espais", async () => {
-    const { wrapper } = muntar({ ...sessioAnna, role: "coordinator", user_name: "Carla" });
+  it("envia el coordinador al tauler d’espais", async () => {
+    const { wrapper, router } = muntar({ ...sessioAnna, role: "coordinator", user_name: "Carla" });
     await flushPromises();
-    expect(wrapper.text()).toContain("Encara no hi ha espais");
-    expect(wrapper.text()).not.toContain("Defineix el primer espai");
-    expect(wrapper.text()).not.toContain("Convida coordinadors");
-    expect(wrapper.text()).not.toContain("Tria els colors");
-  });
-
-  it("llista els espais del coordinador quan n’hi ha", async () => {
-    const { wrapper } = muntar(
-      { ...sessioAnna, role: "coordinator", user_name: "Carla" },
-      {
-        ...apiBuit,
-        llistar: async () => [
-          {
-            id: "s1",
-            entity_id: "e1",
-            name: "Sala Pau Casals",
-            capacity: 40,
-            equipment: null,
-            active: true,
-            windows: finestresPerDefecte(),
-          },
-        ],
-      },
-    );
-    await flushPromises();
-    expect(wrapper.text()).toContain("Sala Pau Casals");
-    expect(wrapper.text()).toContain("Aforament: 40");
-    expect(wrapper.find("#llista-titol").exists()).toBe(true);
-    expect(wrapper.text()).not.toContain("Editar");
-    expect(wrapper.text()).not.toContain("Estadístiques");
-  });
-
-  it("mostra l’error i no l’empty state si la llista falla", async () => {
-    const { wrapper } = muntar(
-      { ...sessioAnna, role: "coordinator", user_name: "Carla" },
-      {
-        ...apiBuit,
-        llistar: async () => {
-          throw new ApiError("No s’han pogut carregar els espais.", 500);
-        },
-      },
-    );
-    await flushPromises();
-    expect(wrapper.text()).toContain("No s’han pogut carregar els espais.");
-    expect(wrapper.text()).not.toContain("Encara no hi ha espais");
+    expect(router.currentRoute.value.name).toBe("espais");
+    expect(wrapper.text()).not.toContain("Els vostres espais");
+    expect(wrapper.text()).not.toContain("Hola, Carla");
   });
 });

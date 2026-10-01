@@ -41,15 +41,13 @@ export const router = createRouter({
     },
     {
       path: "/calendari",
-      name: "calendari",
-      component: CalendariView,
-      meta: metaAuth,
+      component: TaulerLayout,
+      children: [{ path: "", name: "calendari", component: CalendariView, meta: metaAuth }],
     },
     {
       path: "/avisos",
-      name: "avisos",
-      component: AvisosView,
-      meta: metaAuth,
+      component: TaulerLayout,
+      children: [{ path: "", name: "avisos", component: AvisosView, meta: metaAuth }],
     },
     {
       path: "/analisi",
@@ -79,14 +77,14 @@ export const router = createRouter({
 
 router.beforeEach((to) => {
   const sessio = useSessioStore();
-  if (to.name === "inici" && sessio.iniciada && sessio.role === "responsible") {
+  if (to.name === "inici" && sessio.iniciada) {
     return destiDespresSessio(sessio.role);
   }
   if (to.meta.requiresAuth && !sessio.iniciada) {
     return { name: "iniciar-sessio" };
   }
   if (to.meta.requiresResponsible && sessio.role !== "responsible") {
-    return { name: "inici" };
+    return destiDespresSessio(sessio.role);
   }
   if (to.meta.guestOnly && sessio.iniciada) {
     return destiDespresSessio(sessio.role);
