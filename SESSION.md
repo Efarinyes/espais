@@ -27,7 +27,7 @@ Verificat: pytest 195, Vitest 158, build del front, `docker compose` config/buil
 
 ## Següent tasca
 
-Fusionar `feat/docker-caddy-sqlite` a `main` quan es demani. El calendari (horari visible, mida i lectura) encara no és a `origin` fins que es demani el push. No esborrar `backup/pre-dockeritzacio` (local ni remota) fins que es decideixi explícitament. El desplegament a `https://espais.duckdns.org` no forma part d’aquesta peça.
+Fusionar `feat/docker-caddy-sqlite` a `main` quan es demani. El calendari (horari visible, mida i lectura) és a `origin` amb la resta de la branca. No esborrar `backup/pre-dockeritzacio` (local ni remota) fins que es decideixi explícitament. El desplegament a `https://espais.duckdns.org` el fa qui opera el VPS, amb `git pull` i `docker compose up -d --build` a la carpeta del projecte.
 
 No es reobre: el formulari d’aforament mínim, ni el backlog de producte (llista d’espais, estadístiques, invitacions, altres formularis). No és una fase nova.
 
