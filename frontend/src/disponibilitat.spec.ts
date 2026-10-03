@@ -7,6 +7,7 @@ import {
   attrDiesTancats,
   clicDinsFinestra,
   configGraella,
+  diaEnDireccio,
   diaObert,
   diesAFinestres,
   diesOberts,
@@ -87,11 +88,11 @@ describe("disponibilitat", () => {
       "Divendres",
     ]);
     expect(attrDiesTancats(laborables)).toBe("5 6");
-    expect(alcadaGraella("18:00", "22:00")).toBe(560);
+    expect(alcadaGraella("18:00", "22:00")).toBe(352);
     expect(configGraella(laborables)).toEqual({
       start: "17:00",
       end: "23:00",
-      gridHeight: 840,
+      gridHeight: 528,
       margeInici: true,
       margeFi: true,
     });
@@ -106,7 +107,7 @@ describe("disponibilitat", () => {
     expect(configGraella(finestresDelsEspais(espais))).toEqual({
       start: "16:00",
       end: "24:00",
-      gridHeight: 1120,
+      gridHeight: 704,
       margeInici: true,
       margeFi: true,
     });
@@ -118,28 +119,28 @@ describe("disponibilitat", () => {
     expect(configGraella(salaTecnica)).toEqual({
       start: "16:00",
       end: "23:00",
-      gridHeight: 980,
+      gridHeight: 616,
       margeInici: true,
       margeFi: true,
     });
     expect(configGraella([{ weekday: 0, start: "17:30", end: "22:30" }])).toEqual({
       start: "16:00",
       end: "24:00",
-      gridHeight: 1120,
+      gridHeight: 704,
       margeInici: true,
       margeFi: true,
     });
     expect(configGraella([{ weekday: 0, start: "00:30", end: "02:00" }])).toEqual({
       start: "00:00",
       end: "03:00",
-      gridHeight: 420,
+      gridHeight: 264,
       margeInici: false,
       margeFi: true,
     });
     expect(configGraella([{ weekday: 0, start: "22:00", end: "24:00" }])).toEqual({
       start: "21:00",
       end: "24:00",
-      gridHeight: 420,
+      gridHeight: 264,
       margeInici: true,
       margeFi: false,
     });
@@ -180,10 +181,29 @@ describe("disponibilitat", () => {
     expect(proximaDataDelWeekday(dimarts, 0).toString()).toBe("2026-09-14");
   });
 
+  it("un dia usa el seu horari, i un dia tancat no en té", () => {
+    const windows = [
+      { weekday: 0, start: "18:00", end: "22:00" },
+      { weekday: 5, start: "10:00", end: "14:00" },
+    ];
+    expect(configGraella(windows, 0)).toMatchObject({ start: "17:00", end: "23:00" });
+    expect(configGraella(windows, 5)).toMatchObject({ start: "09:00", end: "15:00" });
+    expect(configGraella(windows, 6)).toBeNull();
+    expect(configGraella(windows)).toMatchObject({ start: "09:00", end: "23:00" });
+  });
+
   it("salta al proper dia obert si avui és tancat", () => {
     const windows = [0, 2, 4].map((weekday) => ({ weekday, start: "17:30", end: "22:00" }));
     const dijous = Temporal.PlainDate.from("2026-09-10");
     expect(properDiaObert(windows, dijous).toString()).toBe("2026-09-11");
     expect(properDiaObert(windows, Temporal.PlainDate.from("2026-09-11")).toString()).toBe("2026-09-11");
+  });
+
+  it("enrere cau al dia obert anterior i endavant al següent", () => {
+    const windows = [0, 1, 2, 3, 4].map((weekday) => ({ weekday, start: "18:00", end: "22:00" }));
+    const diumenge = Temporal.PlainDate.from("2026-09-13");
+    expect(diaEnDireccio(windows, diumenge, true).toString()).toBe("2026-09-14");
+    expect(diaEnDireccio(windows, diumenge, false).toString()).toBe("2026-09-11");
+    expect(diaEnDireccio(windows, Temporal.PlainDate.from("2026-09-08"), true).toString()).toBe("2026-09-08");
   });
 });

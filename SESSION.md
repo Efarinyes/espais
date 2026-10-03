@@ -15,7 +15,9 @@ El calendari mostra una hora abans d’obrir i una després de tancar, esmorteï
 
 PWA: icones PNG 192 i 512, i el botó «Instal·la» només si el navegador ho permet. A l’iPhone, el text explica Comparteix i Afegeix a la pantalla d’inici.
 
-Vitest 161, pytest 199, `vue-tsc` net. La pàgina pública s’ha vist a `http://127.0.0.1:5173` a 390 px (sense Clar / Fosc) i a 1280 px (amb Clar / Fosc). El calendari d’aquesta sessió de prova no tenia cap espai, així que les bandes i la fitxa no s’han vist a pantalla; les cobreixen els tests.
+Vitest 165, pytest 199, `vue-tsc` net. La pàgina pública s’ha vist a `http://127.0.0.1:5173` a 390 px (sense Clar / Fosc) i a 1280 px (amb Clar / Fosc).
+
+El calendari ja no pinta el dia sencer. La graella és l’horari de l’espai més una hora abans i una després, només els dies oberts. Al telèfon, un dia usa el seu horari i saltar de dia va al dia obert següent o anterior. La caixa es desplaça per dins. La casella no porta text: el color és la sala i, per al responsable, el tramat és el coordinador. El coordinador veu la franja ocupada sense el nom. La sessió local de prova no tenia espais (i el token no valia contra l’API de desenvolupament), així que la graella no s’ha vist a pantalla; les hores, els dies i el tramat els cobreixen els tests.
 
 Dockerització de l’Alpha+ per a proves de camp (ADR 0012). Caddy serveix la SPA i fa de proxy de `/api` cap a FastAPI sense aquest prefix. Les rutes internes de l’API no canvien. SQLite persistent al volum `espais_data` (`/data/espais.sqlite3`). Alembic segueix a l’arrencada. Un sol worker. El port 8000 no es publica. `ESPAIS_SECRET` és obligatori amb `ESPAIS_ENV=production`.
 
@@ -25,7 +27,7 @@ Verificat: pytest 195, Vitest 158, build del front, `docker compose` config/buil
 
 ## Següent tasca
 
-Fusionar `feat/docker-caddy-sqlite` a `main` quan es demani. Aquesta passada d’UX encara no és a `origin` fins que es demani el push. No esborrar `backup/pre-dockeritzacio` (local ni remota) fins que es decideixi explícitament. El desplegament a `https://espais.duckdns.org` no forma part d’aquesta peça.
+Fusionar `feat/docker-caddy-sqlite` a `main` quan es demani. El calendari (horari visible, mida i lectura) encara no és a `origin` fins que es demani el push. No esborrar `backup/pre-dockeritzacio` (local ni remota) fins que es decideixi explícitament. El desplegament a `https://espais.duckdns.org` no forma part d’aquesta peça.
 
 No es reobre: el formulari d’aforament mínim, ni el backlog de producte (llista d’espais, estadístiques, invitacions, altres formularis). No és una fase nova.
 

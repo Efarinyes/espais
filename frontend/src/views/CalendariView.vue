@@ -16,13 +16,22 @@ import {
   reservaIdDeElement,
   zonedDesDePuntGraella,
 } from "../arrossegarReserva";
-import { configGraella, finestresDelsEspais, minutsDeHora } from "../disponibilitat";
+import {
+  configGraella,
+  diaEnDireccio,
+  diesOberts,
+  finestresDelsEspais,
+  minutsDeHora,
+  weekdayDelModel,
+  type Graella,
+} from "../disponibilitat";
 
 type CalendariIntern = {
   destroy: () => void;
   $app?: {
     calendarState: {
       setRange: (date: Temporal.PlainDate) => void;
+      view: { value: string };
     };
     datePickerState: {
       selectedDate: { value: Temporal.PlainDate };
@@ -36,6 +45,7 @@ const {
   espaisActius,
   espaiSeleccionat,
   calendaris,
+  llegendaCoordinadors,
   carregant,
   error,
   modal,
@@ -87,13 +97,57 @@ const aparenca = useAparencaStore();
 const eventsServiceHolder = { current: createEventsServicePlugin() };
 const calendarApp = shallowRef<ReturnType<typeof createCalendar> | null>(null);
 const diaActiu = ref(Temporal.Now.zonedDateTimeISO("Europe/Madrid").toPlainDate());
+const vistaUnDia = ref(typeof window.matchMedia === "function" && window.matchMedia("(max-width: 1023px)").matches);
 const arrossegant = ref(false);
 const acabaDArrossegar = ref(false);
 const fantasma = ref<{ x: number; y: number } | null>(null);
 const reservaArrossegadaId = ref("");
 let origenArrossegament: { x: number; y: number } | null = null;
 let netejaArrossegament: (() => void) | null = null;
-const graella = computed(() => configGraella(finestresDelsEspais(espaisActius.value)));
+const finestresVisibles = computed(() => finestresDelsEspais(espaisActius.value));
+const graella = computed((): Graella => {
+  const windows = finestresVisibles.value;
+  if (vistaUnDia.value) {
+    return configGraella(windows, weekdayDelModel(diaActiu.value)) ?? configGraella(windows);
+  }
+  return configGraella(windows);
+});
+const diesObertsAttr = computed(() => diesOberts(finestresVisibles.value).map((dia) => String(dia.weekday)).join(" "));
+
+function colorSala(id: string): string {
+  const colors = calendaris.value[id];
+  if (!colors) {
+    return "transparent";
+  }
+  return aparenca.mode === "fosc" ? colors.darkColors.main : colors.lightColors.main;
+}
+
+function encaixarDiaObert() {
+  if (!vistaUnDia.value) {
+    return;
+  }
+  const desti = diaEnDireccio(finestresVisibles.value, diaActiu.value, true);
+  if (Temporal.PlainDate.compare(desti, diaActiu.value) !== 0) {
+    diaActiu.value = desti;
+  }
+}
+
+function aplicarDia(data: Temporal.PlainDate) {
+  if (!vistaUnDia.value) {
+    diaActiu.value = data;
+    return;
+  }
+  const desti = diaEnDireccio(
+    finestresVisibles.value,
+    data,
+    Temporal.PlainDate.compare(data, diaActiu.value) >= 0,
+  );
+  if (Temporal.PlainDate.compare(desti, data) !== 0) {
+    activarDia(desti);
+    return;
+  }
+  diaActiu.value = desti;
+}
 
 function percentMarge(actiu: boolean): string {
   if (!actiu) {
@@ -219,7 +273,7 @@ function muntarCalendari() {
       firstDayOfWeek: 1,
       isDark: aparenca.mode === "fosc",
       views: [vistaSetmana, vistaDia],
-      defaultView: window.matchMedia("(max-width: 1023px)").matches ? vistaDia.name : vistaSetmana.name,
+      defaultView: vistaUnDia.value ? vistaDia.name : vistaSetmana.name,
       selectedDate: diaActiu.value,
       dayBoundaries: { start, end },
       weekOptions: { gridStep: 30, gridHeight, nDays: 7 },
@@ -229,8 +283,18 @@ function muntarCalendari() {
         onBeforeEventUpdate() {
           return false;
         },
+        onRangeUpdate() {
+          const vista = (calendarApp.value as unknown as CalendariIntern | null)?.$app?.calendarState.view.value;
+          if (vista !== "day" && vista !== "week") {
+            return;
+          }
+          const unDia = vista === "day";
+          if (unDia !== vistaUnDia.value) {
+            vistaUnDia.value = unDia;
+          }
+        },
         onSelectedDateUpdate(date) {
-          diaActiu.value = date;
+          aplicarDia(date);
         },
         async fetchEvents(range) {
           const items = await carregarReserves(range.start, range.end);
@@ -305,6 +369,9 @@ onUnmounted(() => {
   calendarApp.value?.destroy();
 });
 
+watch(finestresVisibles, encaixarDiaObert);
+watch(vistaUnDia, encaixarDiaObert);
+
 watch([carregant, clauCalendari], () => {
   if (!carregant.value) {
     muntarCalendari();
@@ -363,15 +430,27 @@ watch(calendarApp, (app) => {
     </section>
 
     <template v-else>
+      <ul class="llegenda-calendari mt-4" aria-label="Sales">
+        <li v-for="espai in espaisActius" :key="espai.id">
+          <span class="llegenda-calendari__mostra" :style="{ backgroundColor: colorSala(espai.id) }" />
+          <span>{{ espai.name }}</span>
+        </li>
+      </ul>
+      <ul v-if="esResponsable && llegendaCoordinadors.length > 0" class="llegenda-calendari" aria-label="Coordinadors">
+        <li v-for="entrada in llegendaCoordinadors" :key="entrada.nom">
+          <span class="llegenda-calendari__mostra" :class="entrada.classe" />
+          <span>{{ entrada.nom }}</span>
+        </li>
+      </ul>
       <div
         v-if="calendarApp"
         :key="clauCalendari"
         class="calendari-espais mt-4"
         :class="{ 'calendari-espais--arrossegant': arrossegant }"
+        :data-dies-oberts="diesObertsAttr"
         :data-marge-inici="graella.margeInici ? '1' : '0'"
         :data-marge-fi="graella.margeFi ? '1' : '0'"
         :style="{
-          '--cal-alcada': `${graella.gridHeight + 120}px`,
           '--marge-inici': percentMarge(graella.margeInici),
           '--marge-fi': percentMarge(graella.margeFi),
         }"

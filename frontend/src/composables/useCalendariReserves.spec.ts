@@ -265,6 +265,48 @@ describe("useCalendariReserves", () => {
     expect(event.title).toBe("Carla");
     expect(event.calendarId).toBe("s1");
     expect(event.people).toEqual(["Carla"]);
+    expect(event._options?.additionalClasses).toEqual(["reserva-tramat-0"]);
+  });
+
+  it("el responsable distingeix els coordinadors pel tramat i el coordinador no", async () => {
+    const wrapperResp = await muntar(
+      {
+        llistar: async () => [
+          reserva({ id: "r1", coordinator_name: "Núria" }),
+          reserva({ id: "r2", space_id: "s2", coordinator_name: "Carla" }),
+        ],
+      },
+      {},
+      sessioResp,
+      [espai, { ...espai, id: "s2", name: "Sala 2" }],
+    );
+    await wrapperResp.vm.carregarEspais();
+    const items = await wrapperResp.vm.carregarReserves("2026-09-07T22:00:00Z", "2026-09-14T22:00:00Z");
+    const events = wrapperResp.vm.eventsDeReserves(items);
+    expect(events.map((event) => event.calendarId)).toEqual(["s1", "s2"]);
+    expect(events.map((event) => event._options?.additionalClasses?.[0])).toEqual([
+      "reserva-tramat-1",
+      "reserva-tramat-0",
+    ]);
+    expect(wrapperResp.vm.llegendaCoordinadors.map((entrada) => entrada.nom)).toEqual(["Carla", "Núria"]);
+
+    const wrapperCoord = await muntar(
+      {
+        llistar: async () => [
+          reserva({ id: "r1", mine: true, coordinator_name: "Carla" }),
+          reserva({ id: "r2", mine: false, coordinator_name: "Núria" }),
+        ],
+      },
+      { espai: "s1" },
+      sessioCoord,
+    );
+    await wrapperCoord.vm.carregarEspais();
+    const propies = await wrapperCoord.vm.carregarReserves("2026-09-07T22:00:00Z", "2026-09-14T22:00:00Z");
+    const vistes = wrapperCoord.vm.eventsDeReserves(propies);
+    expect(vistes).toHaveLength(2);
+    expect(vistes.every((event) => event._options === undefined)).toBe(true);
+    expect(vistes.map((event) => event.title)).toEqual(["Sala 1", "Ocupat"]);
+    expect(wrapperCoord.vm.llegendaCoordinadors).toEqual([]);
   });
 
   it("el responsable ignora ?espai= i llista totes les reserves", async () => {

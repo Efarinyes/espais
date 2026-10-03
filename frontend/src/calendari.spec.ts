@@ -1,7 +1,13 @@
 import "temporal-polyfill/global";
 import { describe, expect, it } from "vitest";
 
-import { arrodoneixClicAFranja, parseCompteAssistencia, titolReserva, valorRangAIso } from "./calendari";
+import {
+  arrodoneixClicAFranja,
+  llegendaTramats,
+  parseCompteAssistencia,
+  titolReserva,
+  valorRangAIso,
+} from "./calendari";
 import type { ReservaDto } from "./services/reserves";
 
 const reserva: ReservaDto = {
@@ -31,6 +37,14 @@ describe("calendari", () => {
 
   it("mostra l’espai a la reserva pròpia del coordinador", () => {
     expect(titolReserva(reserva, "coordinator")).toBe("Sala 1");
+  });
+
+  it("assigna un tramat estable a cada coordinador", () => {
+    const llegenda = llegendaTramats(["Núria", "Carla", "Carla", "  ", null]);
+    expect(llegenda.map((entrada) => entrada.nom)).toEqual(["Carla", "Núria"]);
+    expect(llegenda[0]?.classe).toBe("reserva-tramat-0");
+    expect(llegenda[1]?.classe).toBe("reserva-tramat-1");
+    expect(llegenda[0]?.classe).not.toBe(llegenda[1]?.classe);
   });
 
   it("accepta un compte escrit o numèric", () => {

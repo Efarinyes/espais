@@ -7,6 +7,7 @@ import {
   DURADA_PER_DEFECTE_MINUTS,
   DURADES_RESERVA_MINUTS,
   franjaDesDeInici,
+  llegendaTramats,
   titolReserva,
   valorRangAIso,
   type FranjaReserva,
@@ -83,6 +84,9 @@ export function useCalendariReserves() {
     () => espaisActius.value.find((espai) => espai.id === espaiId.value) ?? null,
   );
   const calendaris = computed(() => calendarisPerEspais(espaisActius.value));
+  const llegendaCoordinadors = computed(() =>
+    esResponsable.value ? llegendaTramats(reservesCarregades.value.map((reserva) => reserva.coordinator_name)) : [],
+  );
   const pendent = computed(() => (modal.value?.tipus === "crear" ? modal.value.franja : null));
   const detall = computed(() =>
     modal.value?.tipus === "detall" || modal.value?.tipus === "confirmar-anulacio"
@@ -169,14 +173,25 @@ export function useCalendariReserves() {
     const visibles = esResponsable.value
       ? items
       : items.filter((item) => item.mine || (espaiId.value !== "" && item.space_id === espaiId.value));
-    return visibles.map((item) => ({
-      id: item.id,
-      title: titolReserva(item, rol),
-      calendarId: item.space_id,
-      people: item.coordinator_name ? [item.coordinator_name] : undefined,
-      start: Temporal.Instant.from(item.starts_at).toZonedDateTimeISO("Europe/Madrid"),
-      end: Temporal.Instant.from(item.ends_at).toZonedDateTimeISO("Europe/Madrid"),
-    }));
+    const tramats = new Map(
+      llegendaTramats([
+        ...reservesCarregades.value.map((reserva) => reserva.coordinator_name),
+        ...visibles.map((reserva) => reserva.coordinator_name),
+      ]).map((entrada) => [entrada.nom, entrada.classe]),
+    );
+    return visibles.map((item) => {
+      const nom = item.coordinator_name?.trim() ?? "";
+      const classe = esResponsable.value && nom ? tramats.get(nom) : undefined;
+      return {
+        id: item.id,
+        title: titolReserva(item, rol),
+        calendarId: item.space_id,
+        people: item.coordinator_name ? [item.coordinator_name] : undefined,
+        _options: classe ? { additionalClasses: [classe] } : undefined,
+        start: Temporal.Instant.from(item.starts_at).toZonedDateTimeISO("Europe/Madrid"),
+        end: Temporal.Instant.from(item.ends_at).toZonedDateTimeISO("Europe/Madrid"),
+      };
+    });
   }
 
   function tancarModal() {
@@ -341,6 +356,7 @@ export function useCalendariReserves() {
     espaiId,
     espaiSeleccionat,
     calendaris,
+    llegendaCoordinadors,
     carregant,
     error,
     modal,

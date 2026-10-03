@@ -19,6 +19,23 @@ export function parseCompteAssistencia(valor: unknown): number | null {
   return n;
 }
 
+const NOMBRE_TRAMATS = 6;
+
+export type EntradaTramat = {
+  nom: string;
+  classe: string;
+};
+
+export function llegendaTramats(noms: (string | null | undefined)[]): EntradaTramat[] {
+  const unics = [...new Set(noms.map((nom) => nom?.trim() ?? "").filter(Boolean))].sort((a, b) =>
+    a.localeCompare(b, "ca"),
+  );
+  return unics.map((nom, index) => ({
+    nom,
+    classe: `reserva-tramat-${index % NOMBRE_TRAMATS}`,
+  }));
+}
+
 export function titolReserva(item: ReservaDto, role: RolSessio): string {
   if (!item.mine && role !== "responsible") {
     return "Ocupat";

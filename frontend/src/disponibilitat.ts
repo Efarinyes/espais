@@ -107,7 +107,7 @@ function uneixNoms(noms: string[]): string {
   return `${noms.slice(0, -1).join(", ")} i ${noms[noms.length - 1]}`;
 }
 
-export const PIXELS_PER_HORA = 140;
+export const PIXELS_PER_HORA = 88;
 const PROXIMITAT_FINESTRA_MINUTS = 30;
 const GRAELLA_DEFECTE = { start: OBERTURA, end: TANCAMENT };
 
@@ -199,8 +199,19 @@ export type Graella = {
   margeFi: boolean;
 };
 
-export function configGraella(windows: FinestraDto[] | null | undefined): Graella {
-  const envolupant = envolupantHorari(windows);
+export function configGraella(windows: FinestraDto[] | null | undefined): Graella;
+export function configGraella(windows: FinestraDto[] | null | undefined, weekday: number): Graella | null;
+export function configGraella(
+  windows: FinestraDto[] | null | undefined,
+  weekday?: number,
+): Graella | null {
+  const llista = windows ?? [];
+  const delDia =
+    weekday === undefined ? llista : llista.filter((finestra) => Number(finestra.weekday) === weekday);
+  if (weekday !== undefined && delDia.length === 0) {
+    return null;
+  }
+  const envolupant = envolupantHorari(delDia);
   const obertura = minutsDeHora(horaSenceraAvall(envolupant.start));
   const tancament = minutsDeHora(horaSenceraAmunt(envolupant.end));
   const inici = Math.max(0, obertura - MARGE_HORARI_MINUTS);
@@ -275,4 +286,28 @@ export function properDiaObert(
     }
   }
   return desDe;
+}
+
+export function diaObertAnterior(
+  windows: FinestraDto[] | null | undefined,
+  desDe: Temporal.PlainDate,
+): Temporal.PlainDate {
+  for (let delta = 0; delta < 7; delta += 1) {
+    const data = desDe.subtract({ days: delta });
+    if (diaObert(windows, weekdayDelModel(data))) {
+      return data;
+    }
+  }
+  return desDe;
+}
+
+export function diaEnDireccio(
+  windows: FinestraDto[] | null | undefined,
+  desDe: Temporal.PlainDate,
+  endavant: boolean,
+): Temporal.PlainDate {
+  if (diesOberts(windows).length === 0 || diaObert(windows, weekdayDelModel(desDe))) {
+    return desDe;
+  }
+  return endavant ? properDiaObert(windows, desDe) : diaObertAnterior(windows, desDe);
 }
