@@ -80,6 +80,7 @@ def _command(reservation_id: UUID, **overrides: object) -> RecordAttendanceComma
     data: dict[str, object] = {
         "entity_id": ENTITY_A,
         "actor_user_id": USER_A,
+        "actor_role": MembershipRole.COORDINATOR,
         "reservation_id": reservation_id,
         "count": 12,
     }
@@ -128,10 +129,20 @@ def test_other_coordinator_cannot_record() -> None:
         recorder.execute(_command(reservation_id, actor_user_id=USER_B))
 
 
-def test_responsible_cannot_record_others_reservation() -> None:
-    recorder, _uow, reservation_id = _use_case()
-    with pytest.raises(ForbiddenError):
-        recorder.execute(_command(reservation_id, actor_user_id=USER_B))
+def test_responsible_records_others_reservation() -> None:
+    recorder, uow, reservation_id = _use_case()
+    result = recorder.execute(
+        _command(
+            reservation_id,
+            actor_user_id=USER_B,
+            actor_role=MembershipRole.RESPONSIBLE,
+            count=7,
+        )
+    )
+    assert result.record.count == 7
+    stored = uow.attendance.get_by_reservation_id(ENTITY_A, reservation_id)
+    assert stored is not None
+    assert stored.count == 7
 
 
 def test_responsible_sees_count_on_list() -> None:

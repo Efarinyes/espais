@@ -88,6 +88,22 @@ def test_coordinator_records_attendance_and_responsible_sees_it(sqlite_session_f
     assert listed.json()[0]["mine"] is False
 
 
+def test_responsible_records_attendance(sqlite_session_factory) -> None:
+    client = TestClient(create_app(session_factory=sqlite_session_factory))
+    created = _register(client, email="anna-assist-resp@example.com")
+    headers_resp = {"Authorization": f"Bearer {created['token']}"}
+    coord = _invite_coordinator(client, headers_resp, "carla-assist-resp@example.com")
+    headers_coord = {"Authorization": f"Bearer {coord['token']}"}
+    reservation = _space_and_reservation(client, headers_resp, headers_coord)
+    response = client.put(
+        f"/reserves/{reservation['id']}/assistencia",
+        headers=headers_resp,
+        json={"count": 7},
+    )
+    assert response.status_code == 200
+    assert response.json()["attendance_count"] == 7
+
+
 def test_other_coordinator_cannot_record_attendance(sqlite_session_factory) -> None:
     client = TestClient(create_app(session_factory=sqlite_session_factory))
     created = _register(client, email="anna-assist-403@example.com")

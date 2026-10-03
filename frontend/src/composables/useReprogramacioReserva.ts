@@ -2,7 +2,7 @@ import { computed, ref, type Ref } from "vue";
 import "temporal-polyfill/global";
 
 import { DURADA_PER_DEFECTE_MINUTS, valorRangAIso } from "../calendari";
-import { clicDinsFinestra, diaObert, weekdayDelModel, type FinestraDto } from "../disponibilitat";
+import { clicDinsFinestra, diaObert, diesOberts, weekdayDelModel, type FinestraDto } from "../disponibilitat";
 import { ApiError } from "../services/http";
 import { requireReservesApi, type ReservaDto } from "../services/reserves";
 import { useSessioStore } from "../stores/sessio";
@@ -23,6 +23,8 @@ export function useReprogramacioReserva(deps: ReprogramacioReservaDeps) {
   const reservesApi = requireReservesApi();
   const sessio = useSessioStore();
   const enviantReprogramacio = ref(false);
+  const diaHorari = ref("");
+  const horaHorari = ref("");
   const esResponsable = computed(() => sessio.role === "responsible");
 
   const potReprogramar = computed(() => {
@@ -34,6 +36,22 @@ export function useReprogramacioReserva(deps: ReprogramacioReservaDeps) {
   });
 
   const reprogramacioAmbAvis = computed(() => esResponsable.value);
+
+  const diesReservables = computed(() => {
+    const reserva = deps.reservaEnDetall();
+    if (!reserva) {
+      return "";
+    }
+    return diesOberts(deps.finestresDe(reserva.space_id))
+      .map((dia) => dia.etiqueta)
+      .join(", ");
+  });
+
+  function prepararHorari(reserva: ReservaDto) {
+    const inici = Temporal.Instant.from(reserva.starts_at).toZonedDateTimeISO("Europe/Madrid");
+    diaHorari.value = inici.toPlainDate().toString();
+    horaHorari.value = `${String(inici.hour).padStart(2, "0")}:${String(inici.minute).padStart(2, "0")}`;
+  }
 
   function duradaDeReserva(reserva: ReservaDto): number {
     const minuts = Math.round((Date.parse(reserva.ends_at) - Date.parse(reserva.starts_at)) / 60_000);
@@ -106,6 +124,24 @@ export function useReprogramacioReserva(deps: ReprogramacioReservaDeps) {
     }
   }
 
+  async function canviarHorariFitxa(): Promise<ReservaDto | null> {
+    const reserva = deps.reservaEnDetall();
+    if (!reserva || !diaHorari.value || !horaHorari.value) {
+      return null;
+    }
+    const [hour, minute] = horaHorari.value.split(":").map(Number);
+    if (!Number.isInteger(hour) || !Number.isInteger(minute)) {
+      deps.mostrarError("L’hora no és vàlida.");
+      return null;
+    }
+    const inici = Temporal.PlainDate.from(diaHorari.value).toZonedDateTime({
+      timeZone: "Europe/Madrid",
+      plainTime: new Temporal.PlainTime(hour, minute),
+    });
+    const fi = inici.add({ minutes: duradaDeReserva(reserva) });
+    return moureReserva(reserva.id, inici, fi);
+  }
+
   return {
     enviantReprogramacio,
     potReprogramar,
@@ -113,5 +149,10 @@ export function useReprogramacioReserva(deps: ReprogramacioReservaDeps) {
     esReservaMovible,
     duradaDeReserva,
     moureReserva,
+    diaHorari,
+    horaHorari,
+    diesReservables,
+    prepararHorari,
+    canviarHorariFitxa,
   };
 }

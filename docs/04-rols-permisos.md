@@ -9,7 +9,7 @@ Pot:
 - Completar i editar dades de l’entitat, inclosa la paleta de colors (ADR [0011](adr/0011-paleta-entitat-mode-personal.md)).
 - Crear, editar i desactivar espais.
 - Convidar coordinadors.
-- Veure **totes** les reserves de l’entitat i la seva assistència.
+- Veure **totes** les reserves de l’entitat i canviar-ne el nombre d’assistents.
 - Reprogramar i anul·lar qualsevol reserva.
 - Veure l’anàlisi d’ús.
 
@@ -43,7 +43,7 @@ No pot:
 | Crear reserva | no | sí |
 | Veure totes les reserves | sí | no |
 | Veure les seves reserves | sí | sí |
-| Registrar assistència (pròpia reserva) | sí si n’és l’autor | sí |
+| Registrar assistència | sí, a qualsevol reserva | sí, a la seva |
 | Reprogramar qualsevol reserva | sí | no |
 | Reprogramar la seva (si no hi ha conflicte) | sí | sí (v1) |
 | Anul·lar com a responsable (amb avís) | sí | no |

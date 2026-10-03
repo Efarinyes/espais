@@ -26,6 +26,7 @@ from app.ports.notifications import Notifier
 from app.usecases.accept_invitation import AcceptInvitation
 from app.usecases.archive_notification import ArchiveNotification
 from app.usecases.authenticate_user import AuthenticateUser
+from app.usecases.cancel_own_reservation import CancelOwnReservation
 from app.usecases.cancel_reservation_by_responsible import CancelReservationByResponsible
 from app.usecases.create_reservation import CreateReservation
 from app.usecases.create_space import CreateSpace
@@ -89,6 +90,7 @@ class ReservationsHttp:
     list: ListReservations
     record: RecordAttendance
     cancel: CancelReservationByResponsible
+    cancel_own: CancelOwnReservation
     reschedule: RescheduleReservation
 
 
@@ -191,6 +193,7 @@ def get_reservations_http(request: Request) -> Iterator[ReservationsHttp]:
             cancel=CancelReservationByResponsible(
                 uow, get_notifier(request), SystemClock(), UuidIdGenerator()
             ),
+            cancel_own=CancelOwnReservation(uow),
             reschedule=RescheduleReservation(
                 uow, get_notifier(request), SystemClock(), UuidIdGenerator()
             ),

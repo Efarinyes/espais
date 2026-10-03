@@ -34,7 +34,7 @@ const passes = [
 <template>
   <main class="w-full">
     <section
-      class="landing-hero relative flex min-h-[75vh] items-end overflow-hidden md:min-h-[85vh] md:items-center"
+      class="landing-hero relative flex overflow-hidden md:min-h-[85vh] md:items-center"
       aria-labelledby="hero-titol"
     >
       <div class="absolute inset-0" aria-hidden="true">
@@ -51,23 +51,23 @@ const passes = [
       </div>
       <div class="absolute inset-0 bg-[#202A2E]/75" aria-hidden="true"></div>
       <div class="relative z-10 mx-auto flex w-full max-w-5xl flex-col px-4 py-16 md:py-24">
-        <h1 id="hero-titol" class="text-4xl font-semibold leading-tight text-white md:text-6xl">
-          Qui té la sala, a quina hora, i amb quants?
+        <h1 id="hero-titol" class="text-3xl font-semibold leading-tight text-white md:text-6xl">
+          Qui té la sala, a quina hora, qui vindrà?
         </h1>
-        <p class="mt-6 max-w-3xl text-xl leading-snug text-white md:text-2xl">
+        <p class="mt-6 max-w-3xl text-lg leading-snug text-white md:text-2xl">
           Gestionar un col·lectiu és molt més que tenir un grup de xat. Amb Espais teniu una app
           interna per organitzar els vostres espais, consultar horaris i controlar
           l’aforament de manera fàcil i clara.
         </p>
+        <button
+          v-if="!reduccio"
+          class="btn btn-ghost z-10 mt-8 min-h-11 self-start text-white"
+          type="button"
+          @click="togglePausa"
+        >
+          {{ pausat ? "Reprèn el fons" : "Atura el fons" }}
+        </button>
       </div>
-      <button
-        v-if="!reduccio"
-        class="btn btn-ghost absolute bottom-4 right-4 z-10 min-h-11 text-white"
-        type="button"
-        @click="togglePausa"
-      >
-        {{ pausat ? "Reprèn el fons" : "Atura el fons" }}
-      </button>
     </section>
 
     <section class="mx-auto w-full max-w-5xl px-4 py-16" aria-labelledby="com-funciona">
@@ -89,7 +89,7 @@ const passes = [
           <figure :class="i % 2 === 1 ? 'md:order-1' : ''">
             <img
               v-if="pas.imatge"
-              class="w-full rounded-box border border-base-300 bg-base-100 shadow-sm"
+              class="h-72 w-full rounded-box border border-base-300 bg-base-100 object-cover object-top shadow-sm md:h-auto md:object-contain"
               :src="pas.imatge"
               :alt="pas.alt"
               width="960"

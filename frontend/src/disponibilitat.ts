@@ -179,13 +179,41 @@ export function finestresDelsEspais(
   return (espais ?? []).flatMap((espai) => espai.windows ?? []);
 }
 
-export function configGraella(
-  windows: FinestraDto[] | null | undefined,
-): { start: string; end: string; gridHeight: number } {
+const MINUTS_DIA = 24 * 60;
+const MARGE_HORARI_MINUTS = 60;
+
+function horaDesDeMinuts(minuts: number): string {
+  const limitats = Math.min(MINUTS_DIA, Math.max(0, minuts));
+  if (limitats === MINUTS_DIA) {
+    return "24:00";
+  }
+  const hores = Math.floor(limitats / 60);
+  return `${String(hores).padStart(2, "0")}:00`;
+}
+
+export type Graella = {
+  start: string;
+  end: string;
+  gridHeight: number;
+  margeInici: boolean;
+  margeFi: boolean;
+};
+
+export function configGraella(windows: FinestraDto[] | null | undefined): Graella {
   const envolupant = envolupantHorari(windows);
-  const start = horaSenceraAvall(envolupant.start);
-  const end = horaSenceraAmunt(envolupant.end);
-  return { start, end, gridHeight: alcadaGraella(start, end) };
+  const obertura = minutsDeHora(horaSenceraAvall(envolupant.start));
+  const tancament = minutsDeHora(horaSenceraAmunt(envolupant.end));
+  const inici = Math.max(0, obertura - MARGE_HORARI_MINUTS);
+  const fi = Math.min(MINUTS_DIA, tancament + MARGE_HORARI_MINUTS);
+  const start = horaDesDeMinuts(inici);
+  const end = horaDesDeMinuts(fi);
+  return {
+    start,
+    end,
+    gridHeight: alcadaGraella(start, end),
+    margeInici: inici < obertura,
+    margeFi: fi > tancament,
+  };
 }
 
 export function finestraDelDia(

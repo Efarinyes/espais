@@ -109,11 +109,18 @@ describe("useAnulacioReserva", () => {
     expect(wrapper.vm.tancat()).toBe(true);
   });
 
-  it("el coordinador no obre la confirmació des del detall", () => {
-    const wrapper = muntar({}, { ...sessioResp, role: "coordinator", user_id: "u2" }, reserva({ mine: true }));
+  it("el coordinador d’una reserva d’altri no obre la confirmació", () => {
+    const wrapper = muntar({}, { ...sessioResp, role: "coordinator", user_id: "u2" }, reserva({ mine: false }));
     expect(wrapper.vm.potAnular).toBe(false);
     wrapper.vm.demanarAnulacio();
     expect(wrapper.vm.modal).toBe("detall");
+  });
+
+  it("el coordinador confirma l’anul·lació de la seva reserva", () => {
+    const wrapper = muntar({}, { ...sessioResp, role: "coordinator", user_id: "u2" }, reserva({ mine: true }));
+    expect(wrapper.vm.potAnular).toBe(true);
+    wrapper.vm.demanarAnulacio();
+    expect(wrapper.vm.modal).toBe("confirmar-anulacio");
   });
 
   it("torna al detall des de la confirmació", () => {

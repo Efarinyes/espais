@@ -1,4 +1,4 @@
-"""Registra el nombre d’assistents d’una reserva pròpia."""
+"""Registra el nombre d’assistents: el coordinador a la seva reserva, el responsable a qualsevol."""
 
 from __future__ import annotations
 
@@ -7,6 +7,7 @@ from uuid import UUID
 
 from app.domain.attendance import AttendanceRecord, attendance_flags
 from app.domain.errors import ForbiddenError, InvalidAttendanceError, ReservationNotFoundError, SpaceNotFoundError
+from app.domain.identity import MembershipRole
 from app.domain.reservation import Reservation, ReservationStatus
 from app.ports.attendance import AttendanceStrategy
 from app.ports.identity import Clock, IdGenerator
@@ -17,6 +18,7 @@ from app.ports.reservations import ReservationUnitOfWork
 class RecordAttendanceCommand:
     entity_id: UUID
     actor_user_id: UUID
+    actor_role: MembershipRole
     reservation_id: UUID
     count: int
 
@@ -51,7 +53,8 @@ class RecordAttendance:
             raise ReservationNotFoundError()
         if reservation.status == ReservationStatus.CANCELLED:
             raise InvalidAttendanceError("no es pot registrar assistència d’una reserva anul·lada")
-        if reservation.coordinator_id != command.actor_user_id:
+        es_responsable = command.actor_role == MembershipRole.RESPONSIBLE
+        if not es_responsable and reservation.coordinator_id != command.actor_user_id:
             raise ForbiddenError("només qui ha fet la reserva pot registrar-ne l’assistència")
 
         space = self._uow.spaces.get_by_id(command.entity_id, reservation.space_id)

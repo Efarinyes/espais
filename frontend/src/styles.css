@@ -322,6 +322,27 @@ dialog.modal.modal-open .modal-box {
   }
 }
 
+.calendari-espais {
+  --fora-horari: color-mix(in oklab, var(--color-base-content) 14%, var(--color-base-300));
+}
+
+.calendari-espais .sx__time-grid-day {
+  background-image: linear-gradient(
+    to bottom,
+    var(--fora-horari) 0,
+    var(--fora-horari) var(--marge-inici, 0%),
+    transparent var(--marge-inici, 0%),
+    transparent calc(100% - var(--marge-fi, 0%)),
+    var(--fora-horari) calc(100% - var(--marge-fi, 0%)),
+    var(--fora-horari) 100%
+  );
+}
+
+.calendari-espais[data-marge-inici="1"] .sx__week-grid__hour:nth-child(-n + 2) .sx__week-grid__hour-text,
+.calendari-espais[data-marge-fi="1"] .sx__week-grid__hour:nth-last-child(-n + 2) .sx__week-grid__hour-text {
+  opacity: 0.45;
+}
+
 .calendari-espais .sx-vue-calendar-wrapper {
   width: 100%;
   height: min(78vh, var(--cal-alcada, 880px));

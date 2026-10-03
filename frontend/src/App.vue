@@ -3,6 +3,7 @@ import { RouterView } from "vue-router";
 
 import AppFooter from "./components/AppFooter.vue";
 import AppHeader from "./components/AppHeader.vue";
+import InstalacioApp from "./components/InstalacioApp.vue";
 import { useSincronitzaSessio } from "./composables/useSincronitzaSessio";
 
 useSincronitzaSessio();
@@ -12,6 +13,7 @@ useSincronitzaSessio();
   <div class="min-h-screen flex flex-col">
     <a class="skip-link" href="#contingut">Ves al contingut</a>
     <AppHeader />
+    <InstalacioApp />
     <div id="contingut" class="flex-1">
       <RouterView />
     </div>

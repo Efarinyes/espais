@@ -74,6 +74,9 @@ describe("App", () => {
     const wrapper = muntar(sessioResp);
     const capcal = wrapper.get("header");
     expect(capcal.text()).toContain("Espais");
+    expect(wrapper.get("[aria-label='Mode de pantalla']").element.parentElement?.className).not.toContain(
+      "max-lg:hidden",
+    );
     expect(capcal.text()).toContain("Clar");
     expect(capcal.text()).toContain("Fosc");
     expect(capcal.text()).not.toContain("Menú");
@@ -111,6 +114,9 @@ describe("App", () => {
 
   it("mostra Clar i Fosc al capçal, sense paleta", () => {
     const wrapper = muntar();
+    expect(wrapper.get("[aria-label='Mode de pantalla']").element.parentElement?.className).toContain(
+      "max-lg:hidden",
+    );
     expect(wrapper.get("[aria-label='Mode de pantalla']").text()).toContain("Clar");
     expect(wrapper.get("[aria-label='Mode de pantalla']").text()).toContain("Fosc");
     expect(wrapper.find("#mode-clar").exists()).toBe(true);

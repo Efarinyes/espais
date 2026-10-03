@@ -19,6 +19,7 @@ from app.domain.errors import (
 )
 from app.domain.identity import MembershipRole
 from app.domain.reservation import ReservationStatus
+from app.usecases.cancel_own_reservation import CancelOwnReservationCommand
 from app.usecases.cancel_reservation_by_responsible import CancelReservationByResponsibleCommand
 from app.usecases.create_reservation import CreateReservationCommand
 from app.usecases.list_reservations import ListReservationsQuery, ReservationListItem
@@ -165,6 +166,7 @@ def record_attendance(
             RecordAttendanceCommand(
                 entity_id=view.entity_id,
                 actor_user_id=view.user_id,
+                actor_role=view.role,
                 reservation_id=reservation_id,
                 count=body.count,
             )
@@ -207,17 +209,27 @@ def cancel_reservation(
 ) -> ReservationResponse:
     payload = body or CancelReservationRequest()
     try:
-        result = reservations.cancel.execute(
-            CancelReservationByResponsibleCommand(
-                entity_id=view.entity_id,
-                actor_user_id=view.user_id,
-                actor_role=view.role,
-                actor_name=view.user_name,
-                entity_name=view.entity_name,
-                reservation_id=reservation_id,
-                reason=payload.reason,
+        if view.role == MembershipRole.COORDINATOR:
+            result = reservations.cancel_own.execute(
+                CancelOwnReservationCommand(
+                    entity_id=view.entity_id,
+                    actor_user_id=view.user_id,
+                    actor_role=view.role,
+                    reservation_id=reservation_id,
+                )
             )
-        )
+        else:
+            result = reservations.cancel.execute(
+                CancelReservationByResponsibleCommand(
+                    entity_id=view.entity_id,
+                    actor_user_id=view.user_id,
+                    actor_role=view.role,
+                    actor_name=view.user_name,
+                    entity_name=view.entity_name,
+                    reservation_id=reservation_id,
+                    reason=payload.reason,
+                )
+            )
     except ReservationNotFoundError:
         raise HTTPException(status_code=404, detail="aquesta reserva no existeix a l’entitat") from None
     except ForbiddenError as exc:

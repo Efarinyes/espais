@@ -58,6 +58,7 @@ export function useCalendariReserves() {
   function mostrarError(text: string) {
     okReprogramacio.value = "";
     error.value = text;
+    errorDetall.value = text;
     tancarAvisTemporitzat();
     temporitzadorAvis = setTimeout(() => {
       error.value = "";
@@ -240,6 +241,11 @@ export function useCalendariReserves() {
     esReservaMovible,
     duradaDeReserva,
     moureReserva,
+    diaHorari,
+    horaHorari,
+    diesReservables,
+    prepararHorari,
+    canviarHorariFitxa,
   } = useReprogramacioReserva({
     reservaEnDetall: () => (modal.value?.tipus === "detall" ? modal.value.reserva : null),
     reservesCarregades,
@@ -307,6 +313,7 @@ export function useCalendariReserves() {
     errorDetall.value = "";
     okDetall.value = "";
     campAssistencia.value = item.attendance_count == null ? "" : String(item.attendance_count);
+    prepararHorari(item);
     modal.value = { tipus: "detall", reserva: item };
   }
 
@@ -371,6 +378,10 @@ export function useCalendariReserves() {
     duradaDeReserva,
     reservaCarregada,
     moureReserva,
+    diaHorari,
+    horaHorari,
+    diesReservables,
+    canviarHorariFitxa,
     resumDetall,
     avisAforament,
     obrirDetall,

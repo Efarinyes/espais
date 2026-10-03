@@ -16,7 +16,7 @@ import {
   reservaIdDeElement,
   zonedDesDePuntGraella,
 } from "../arrossegarReserva";
-import { configGraella, finestresDelsEspais } from "../disponibilitat";
+import { configGraella, finestresDelsEspais, minutsDeHora } from "../disponibilitat";
 
 type CalendariIntern = {
   destroy: () => void;
@@ -72,6 +72,12 @@ const {
   duradaDeReserva,
   reservaCarregada,
   moureReserva,
+  diaHorari,
+  horaHorari,
+  diesReservables,
+  canviarHorariFitxa,
+  enviantReprogramacio,
+  potRegistrarAssistencia,
   darrerRang,
   okReprogramacio,
 } = useCalendariReserves();
@@ -88,6 +94,17 @@ const reservaArrossegadaId = ref("");
 let origenArrossegament: { x: number; y: number } | null = null;
 let netejaArrossegament: (() => void) | null = null;
 const graella = computed(() => configGraella(finestresDelsEspais(espaisActius.value)));
+
+function percentMarge(actiu: boolean): string {
+  if (!actiu) {
+    return "0%";
+  }
+  const hores = (minutsDeHora(graella.value.end) - minutsDeHora(graella.value.start)) / 60;
+  if (hores <= 0) {
+    return "0%";
+  }
+  return `${100 / hores}%`;
+}
 const reservaArrossegada = computed(() => reservaCarregada(reservaArrossegadaId.value));
 const clauCalendari = computed(
   () =>
@@ -202,7 +219,7 @@ function muntarCalendari() {
       firstDayOfWeek: 1,
       isDark: aparenca.mode === "fosc",
       views: [vistaSetmana, vistaDia],
-      defaultView: vistaSetmana.name,
+      defaultView: window.matchMedia("(max-width: 1023px)").matches ? vistaDia.name : vistaSetmana.name,
       selectedDate: diaActiu.value,
       dayBoundaries: { start, end },
       weekOptions: { gridStep: 30, gridHeight, nDays: 7 },
@@ -240,6 +257,13 @@ function muntarCalendari() {
     } as Parameters<typeof createCalendar>[0],
     [eventsServiceHolder.current],
   ) as unknown as ReturnType<typeof createCalendar>;
+}
+
+async function canviarHorari() {
+  const moguda = await canviarHorariFitxa();
+  if (moguda) {
+    await aplicarAvisCalendari();
+  }
 }
 
 async function aplicarAvisCalendari() {
@@ -344,7 +368,13 @@ watch(calendarApp, (app) => {
         :key="clauCalendari"
         class="calendari-espais mt-4"
         :class="{ 'calendari-espais--arrossegant': arrossegant }"
-        :style="{ '--cal-alcada': `${graella.gridHeight + 120}px` }"
+        :data-marge-inici="graella.margeInici ? '1' : '0'"
+        :data-marge-fi="graella.margeFi ? '1' : '0'"
+        :style="{
+          '--cal-alcada': `${graella.gridHeight + 120}px`,
+          '--marge-inici': percentMarge(graella.margeInici),
+          '--marge-fi': percentMarge(graella.margeFi),
+        }"
         @click="clicarCapcaleraDia"
         @pointerdown="iniciarArrossegament"
       >
@@ -365,6 +395,15 @@ watch(calendarApp, (app) => {
       :resum-pendent="resumPendent"
       :resum-detall="resumDetall"
       :durada-minuts="duradaMinuts"
+      :durada-detall="modal.tipus === 'detall' || modal.tipus === 'confirmar-anulacio' ? duradaDeReserva(modal.reserva) : duradaMinuts"
+      :dia-horari="diaHorari"
+      :hora-horari="horaHorari"
+      :dies-reservables="diesReservables"
+      :enviant-reprogramacio="enviantReprogramacio"
+      :pot-registrar-assistencia="potRegistrarAssistencia"
+      @update:dia-horari="diaHorari = $event"
+      @update:hora-horari="horaHorari = $event"
+      @canviar-horari="canviarHorari"
       :durades="durades"
       :enviant="enviant"
       :camp-assistencia="campAssistencia"

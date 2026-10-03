@@ -21,7 +21,13 @@ export function useAnulacioReserva(deps: AnulacioReservaDeps) {
 
   const potAnular = computed(() => {
     const reserva = deps.reservaEnDetall();
-    return sessio.role === "responsible" && reserva != null && !reserva.mine;
+    if (!reserva) {
+      return false;
+    }
+    if (sessio.role === "responsible") {
+      return true;
+    }
+    return sessio.role === "coordinator" && Boolean(reserva.mine);
   });
 
   function demanarAnulacio() {

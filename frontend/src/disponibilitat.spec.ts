@@ -89,9 +89,11 @@ describe("disponibilitat", () => {
     expect(attrDiesTancats(laborables)).toBe("5 6");
     expect(alcadaGraella("18:00", "22:00")).toBe(560);
     expect(configGraella(laborables)).toEqual({
-      start: "18:00",
-      end: "22:00",
-      gridHeight: 560,
+      start: "17:00",
+      end: "23:00",
+      gridHeight: 840,
+      margeInici: true,
+      margeFi: true,
     });
   });
 
@@ -102,9 +104,11 @@ describe("disponibilitat", () => {
       { windows: [0, 2, 4].map((weekday) => ({ weekday, start: "18:00", end: "23:00" })) },
     ];
     expect(configGraella(finestresDelsEspais(espais))).toEqual({
-      start: "17:00",
-      end: "23:00",
-      gridHeight: 840,
+      start: "16:00",
+      end: "24:00",
+      gridHeight: 1120,
+      margeInici: true,
+      margeFi: true,
     });
   });
 
@@ -112,14 +116,32 @@ describe("disponibilitat", () => {
     const salaTecnica = [0, 2, 4].map((weekday) => ({ weekday, start: "17:30", end: "22:00" }));
     expect(envolupantHorari(salaTecnica)).toEqual({ start: "17:30", end: "22:00" });
     expect(configGraella(salaTecnica)).toEqual({
-      start: "17:00",
-      end: "22:00",
-      gridHeight: 700,
+      start: "16:00",
+      end: "23:00",
+      gridHeight: 980,
+      margeInici: true,
+      margeFi: true,
     });
     expect(configGraella([{ weekday: 0, start: "17:30", end: "22:30" }])).toEqual({
-      start: "17:00",
-      end: "23:00",
-      gridHeight: 840,
+      start: "16:00",
+      end: "24:00",
+      gridHeight: 1120,
+      margeInici: true,
+      margeFi: true,
+    });
+    expect(configGraella([{ weekday: 0, start: "00:30", end: "02:00" }])).toEqual({
+      start: "00:00",
+      end: "03:00",
+      gridHeight: 420,
+      margeInici: false,
+      margeFi: true,
+    });
+    expect(configGraella([{ weekday: 0, start: "22:00", end: "24:00" }])).toEqual({
+      start: "21:00",
+      end: "24:00",
+      gridHeight: 420,
+      margeInici: true,
+      margeFi: false,
     });
     const graella = configGraella(salaTecnica);
     const app = createCalendar({

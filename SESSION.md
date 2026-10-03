@@ -9,7 +9,13 @@ Actualitza aquest arxiu al final de cada sessió. És el punt d’arrencada del 
 
 ## Darrera feina
 
-Un sol esquelet per als dos rols. Amb sessió, el capçal només té el logo i Clar / Fosc. El lateral és el menú: el responsable hi té Convida, Espais, Calendari, Estadístiques, Tria els colors i Surt; el coordinador hi té Espais, Calendari, Avisos i Surt. Calendari i Avisos queden dins d’aquest layout. Després d’entrar, els dos van a `/espais`. La capçalera duplicada del coordinador a l’inici s’ha tret. A pantalla estreta el `details` (nom de l’entitat i fletxa) val per als dos. Vitest 158. Comprovat a `http://localhost` per sobre i per sota de 1024 px; la imatge `web` s’ha reconstruït.
+Passada d’UX de camp, a la mateixa branca, sense desplegar. A la pàgina pública el títol és «Qui té la sala, a quina hora, qui vindrà?»; en pantalles petites Clar / Fosc no hi és, i els dos enllaços d’accés van a sota del logo. Amb sessió, Clar / Fosc segueix al capçal, també al telèfon.
+
+El calendari mostra una hora abans d’obrir i una després de tancar, esmorteïdes, sense saltar de dia. Al telèfon s’obre en un dia; a l’ordinador, en la setmana. Arrossegar la reserva es manté. En clicar-la, coordinador i responsable canvien el dia (només dies reservables), l’hora i el nombre d’assistents; la durada no canvia. El camp «Nombre d’assistents» té vora visible. El coordinador anul·la la seva sense avís (`CancelOwnReservation`). El responsable anul·la qualsevol i el coordinador rep l’avís. El responsable també pot desar el nombre a qualsevol reserva de l’entitat.
+
+PWA: icones PNG 192 i 512, i el botó «Instal·la» només si el navegador ho permet. A l’iPhone, el text explica Comparteix i Afegeix a la pantalla d’inici.
+
+Vitest 161, pytest 199, `vue-tsc` net. La pàgina pública s’ha vist a `http://127.0.0.1:5173` a 390 px (sense Clar / Fosc) i a 1280 px (amb Clar / Fosc). El calendari d’aquesta sessió de prova no tenia cap espai, així que les bandes i la fitxa no s’han vist a pantalla; les cobreixen els tests.
 
 Dockerització de l’Alpha+ per a proves de camp (ADR 0012). Caddy serveix la SPA i fa de proxy de `/api` cap a FastAPI sense aquest prefix. Les rutes internes de l’API no canvien. SQLite persistent al volum `espais_data` (`/data/espais.sqlite3`). Alembic segueix a l’arrencada. Un sol worker. El port 8000 no es publica. `ESPAIS_SECRET` és obligatori amb `ESPAIS_ENV=production`.
 
@@ -19,9 +25,9 @@ Verificat: pytest 195, Vitest 158, build del front, `docker compose` config/buil
 
 ## Següent tasca
 
-Fusionar `feat/docker-caddy-sqlite` a `main` quan es demani. La branca ja és a `origin`. No esborrar `backup/pre-dockeritzacio` (local ni remota) fins que es decideixi explícitament.
+Fusionar `feat/docker-caddy-sqlite` a `main` quan es demani. Aquesta passada d’UX encara no és a `origin` fins que es demani el push. No esborrar `backup/pre-dockeritzacio` (local ni remota) fins que es decideixi explícitament. El desplegament a `https://espais.duckdns.org` no forma part d’aquesta peça.
 
-No la reobren: la vora del camp d’assistència del calendari, el formulari d’aforament mínim, ni el backlog de producte. No és una fase nova.
+No es reobre: el formulari d’aforament mínim, ni el backlog de producte (llista d’espais, estadístiques, invitacions, altres formularis). No és una fase nova.
 
 ## Blockers
 
@@ -49,10 +55,10 @@ Cap. API de desenvolupament `http://127.0.0.1:8000`; front de desenvolupament `h
 - Micromamba: `micromamba run -n espais pytest`; no `env create` si `espais` existeix.
 - Front: `cd frontend && npm test` / `npm run dev`. Vue no global. Paleta d’entitat ADR 0011 (defecte Mar i cel; Clar/Fosc al capçal; Tria els colors al lateral del responsable, a sobre de Surt); toc ≥ 44px (`min-h-11`). Amb sessió el capçal és compartit (logo i mode). El lateral és per rol. A mòbil és un `details` tancat, amb el nom de l’entitat i una fletxa. Lletra Montserrat local.
 - PWA: instal·lable; no desregistrar el SW en DEV. `navigateFallbackDenylist` és `/api`. Les rutes Vue ja no es deneguen pel nom.
-- Refactorització del frontend tancada (2026-09-28). El pla temporal del frontend s’esborra i no es rellegeix. El `.docx` `docs/auditoria_SOLID_pla_refactoritzacio_frontend.docx` tampoc es rellegeix ni es commiteja. La còpia doble dels colors no es fa. El calendari ja està partit. CSV d’anàlisi = backlog. La vora del camp d’assistència no és aquesta feina.
+- Refactorització del frontend tancada (2026-09-28). El pla temporal del frontend s’esborra i no es rellegeix. El `.docx` `docs/auditoria_SOLID_pla_refactoritzacio_frontend.docx` tampoc es rellegeix ni es commiteja. La còpia doble dels colors no es fa. El calendari ja està partit. CSV d’anàlisi = backlog.
 - Branques: `main` segueix a `7d3f474`, igual que `backup/pre-dockeritzacio` i `origin/backup/pre-dockeritzacio`. `feat/docker-caddy-sqlite` és a `origin`. Política a `docs/16-repositori.md`.
 - Pla temporal del backend esborrat (2026-09-29) i no es rellegeix. Fets, en ordre: normalitzar el nom al domini; una validació de nom, aforament i equipament; una comprovació d’interval reservable; el `save` en memòria de reserva i d’avís insereix si no hi ha fila; l’email del correu surt de `UserRepository.get_by_id`; test API d’intervals adjacents (201); una sola classe de repositori d’espais en memòria; `min_attendance` opcional al JSON, amb defecte `None`.
-- Fora d’aquell pla, i sense començar: formulari d’aforament mínim, anul·lació pel coordinador, `pending` / `rescheduled`, ports nous, un servei que agrupi casos d’ús.
+- Fora d’aquell pla, i sense començar: formulari d’aforament mínim, `pending` / `rescheduled`, ports nous, un servei que agrupi casos d’ús. L’anul·lació de la pròpia reserva pel coordinador ja hi és, sense correu.
 - L’estat `rescheduled` no és una decisió oberta: en canviar l’horari, la reserva continua `confirmed` i l’avís porta l’interval antic i el nou. Un historial de canvis és backlog. L’assistència per nombre i l’avís suau d’aforament són el comportament volgut.
 - El coordinador reprograma la seva reserva sense avís; l’avís només el dispara el responsable.
 - Landing: sense CTAs al cos; sense «gratuït» ni «cobrament»; fotos a `frontend/public/landing/` (hero + opcions + captures).

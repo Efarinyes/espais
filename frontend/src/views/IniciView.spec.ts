@@ -83,7 +83,7 @@ function muntar(dto?: SessioDto, api: EspaisApi = apiBuit) {
 describe("IniciView", () => {
   it("mostra el problema, la solució i com funciona sense CTAs d’accés", () => {
     const { wrapper } = muntar();
-    expect(wrapper.text()).toContain("Qui té la sala, a quina hora, i amb quants?");
+    expect(wrapper.text()).toContain("Qui té la sala, a quina hora, qui vindrà?");
     expect(wrapper.text()).toContain("Gestionar un col·lectiu és molt més que tenir un grup de xat");
     expect(wrapper.text()).toContain("app interna");
     expect(wrapper.text()).not.toContain("gratuïta");

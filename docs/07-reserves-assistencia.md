@@ -35,7 +35,7 @@ v1: mutar l’interval de la mateixa fila i deixar l’estat en `confirmed`. L�
 
 ## Assistència v1
 
-El coordinador registra un **nombre d’assistents** (`count` ≥ 0) a `AttendanceRecord` amb `strategy = count`.
+El coordinador registra un **nombre d’assistents** (`count` ≥ 0) a la seva reserva. El responsable el pot registrar a qualsevol reserva de l’entitat. El registre és un `AttendanceRecord` amb `strategy = count`.
 
 - Es pot actualitzar mentre la reserva no estigui `cancelled`.
 - Si hi ha aforament màxim, v1 **adverteix** si `count > capacity`, no bloqueja (decisió suau; es pot endurir amb ADR).

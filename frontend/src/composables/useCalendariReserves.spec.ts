@@ -387,10 +387,15 @@ describe("useCalendariReserves", () => {
     expect(wrapper.vm.modal).toBeNull();
   });
 
-  it("el responsable veu l’assistència d’una reserva aliena sense editar-la", async () => {
+  it("el responsable desa el nombre d’assistents d’una reserva aliena", async () => {
+    let enviat: number | null = null;
     const wrapper = await muntar(
       {
         llistar: async () => [reserva({ attendance_count: 8 })],
+        registrarAssistencia: async (_token, _id, count) => {
+          enviat = count;
+          return reserva({ attendance_count: count });
+        },
       },
       {},
       sessioResp,
@@ -398,9 +403,11 @@ describe("useCalendariReserves", () => {
     await wrapper.vm.carregarEspais();
     await wrapper.vm.carregarReserves("2026-09-07T22:00:00Z", "2026-09-14T22:00:00Z");
     wrapper.vm.obrirDetall("r1");
-    expect(wrapper.vm.potRegistrarAssistencia).toBe(false);
-    expect(wrapper.vm.detall?.attendance_count).toBe(8);
-    expect(await wrapper.vm.desarAssistencia()).toBeNull();
+    expect(wrapper.vm.potRegistrarAssistencia).toBe(true);
+    wrapper.vm.campAssistencia = "9";
+    const desada = await wrapper.vm.desarAssistencia();
+    expect(desada?.attendance_count).toBe(9);
+    expect(enviat).toBe(9);
   });
 
   it("el coordinador no obre el detall d’una reserva d’altri", async () => {
@@ -454,16 +461,57 @@ describe("useCalendariReserves", () => {
     expect(wrapper.vm.modal).toBeNull();
   });
 
-  it("el coordinador no pot anul·lar des del detall", async () => {
+  it("el coordinador pot anul·lar la seva reserva des del detall", async () => {
     const wrapper = await muntar({
       llistar: async () => [reserva({ mine: true })],
     });
     await wrapper.vm.carregarEspais();
     await wrapper.vm.carregarReserves("2026-09-07T22:00:00Z", "2026-09-14T22:00:00Z");
     wrapper.vm.obrirDetall("r1");
-    expect(wrapper.vm.potAnular).toBe(false);
+    expect(wrapper.vm.potAnular).toBe(true);
     wrapper.vm.demanarAnulacio();
-    expect(wrapper.vm.modal?.tipus).toBe("detall");
+    expect(wrapper.vm.modal?.tipus).toBe("confirmar-anulacio");
+  });
+
+  it("la fitxa canvia el dia i l’hora i manté la durada", async () => {
+    let enviat: { starts_at: string; ends_at: string } | null = null;
+    const wrapper = await muntar({
+      llistar: async () => [reserva({ mine: true })],
+      reprogramar: async (_token, _id, input) => {
+        enviat = { starts_at: input.starts_at, ends_at: input.ends_at };
+        return reserva({ mine: true, starts_at: input.starts_at, ends_at: input.ends_at });
+      },
+    });
+    await wrapper.vm.carregarEspais();
+    await wrapper.vm.carregarReserves("2026-09-07T22:00:00Z", "2026-09-14T22:00:00Z");
+    wrapper.vm.obrirDetall("r1");
+    wrapper.vm.diaHorari = "2026-09-16";
+    wrapper.vm.horaHorari = "11:00";
+    const moguda = await wrapper.vm.canviarHorariFitxa();
+    expect(moguda?.starts_at).toBe("2026-09-16T09:00:00Z");
+    expect(enviat).toEqual({
+      starts_at: "2026-09-16T09:00:00Z",
+      ends_at: "2026-09-16T09:30:00Z",
+    });
+  });
+
+  it("la fitxa rebutja un dia en què la sala no es pot reservar", async () => {
+    const wrapper = await muntar(
+      {
+        llistar: async () => [reserva({ mine: true })],
+        reprogramar: async () => reserva({ mine: true }),
+      },
+      { espai: "s1" },
+      sessioCoord,
+      espaiLaborables,
+    );
+    await wrapper.vm.carregarEspais();
+    await wrapper.vm.carregarReserves("2026-09-07T22:00:00Z", "2026-09-14T22:00:00Z");
+    wrapper.vm.obrirDetall("r1");
+    wrapper.vm.diaHorari = "2026-09-13";
+    wrapper.vm.horaHorari = "18:00";
+    expect(await wrapper.vm.canviarHorariFitxa()).toBeNull();
+    expect(wrapper.vm.errorDetall).toContain("no és accessible");
   });
 
   it("el responsable reprograma l’horari sense modal", async () => {

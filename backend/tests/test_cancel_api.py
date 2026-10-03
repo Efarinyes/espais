@@ -120,7 +120,7 @@ def test_coordinator_cannot_archive_unread_aviso(sqlite_session_factory) -> None
     assert len(client.get("/avisos", headers=headers_coord).json()) == 1
 
 
-def test_coordinator_cannot_cancel_via_api(sqlite_session_factory) -> None:
+def test_coordinator_cancels_own_without_notice(sqlite_session_factory) -> None:
     client = TestClient(create_app(session_factory=sqlite_session_factory))
     created = _register(client, email="anna-cancel-403@example.com")
     headers_resp = {"Authorization": f"Bearer {created['token']}"}
@@ -134,7 +134,9 @@ def test_coordinator_cannot_cancel_via_api(sqlite_session_factory) -> None:
         json={"space_id": space.json()["id"], "starts_at": start, "ends_at": end},
     )
     response = client.post(f"/reserves/{posted.json()['id']}/anulacio", headers=headers_coord)
-    assert response.status_code == 403
+    assert response.status_code == 200
+    assert response.json()["status"] == "cancelled"
+    assert client.get("/avisos", headers=headers_coord).json() == []
 
 
 def test_cancel_requires_session(sqlite_session_factory) -> None:

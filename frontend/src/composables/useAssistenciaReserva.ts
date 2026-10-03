@@ -20,9 +20,13 @@ export function useAssistenciaReserva(deps: AssistenciaReservaDeps) {
   const campAssistencia = ref("");
   const enviantAssistencia = ref(false);
 
-  const potRegistrarAssistencia = computed(
-    () => deps.esDetall() && Boolean(deps.reservaDetall()?.mine),
-  );
+  const potRegistrarAssistencia = computed(() => {
+    const reserva = deps.reservaDetall();
+    if (!deps.esDetall() || !reserva) {
+      return false;
+    }
+    return sessio.role === "responsible" || Boolean(reserva.mine);
+  });
 
   const avisAforament = computed(() => {
     const reserva = deps.reservaDetall();
@@ -49,7 +53,7 @@ export function useAssistenciaReserva(deps: AssistenciaReservaDeps) {
 
   async function desarAssistencia(): Promise<ReservaDto | null> {
     const reserva = deps.reservaDetall();
-    if (!sessio.token || !reserva?.mine) {
+    if (!sessio.token || reserva == null || !(sessio.role === "responsible" || reserva.mine)) {
       return null;
     }
     const n = parseCompteAssistencia(campAssistencia.value);
