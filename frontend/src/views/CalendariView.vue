@@ -17,13 +17,12 @@ import {
   zonedDesDePuntGraella,
 } from "../arrossegarReserva";
 import {
-  configGraella,
   diaEnDireccio,
   diesOberts,
-  finestresDelsEspais,
+  finestresPerRol,
+  graellaDelRol,
   minutsDeHora,
   weekdayDelModel,
-  type Graella,
 } from "../disponibilitat";
 
 type CalendariIntern = {
@@ -104,14 +103,17 @@ const fantasma = ref<{ x: number; y: number } | null>(null);
 const reservaArrossegadaId = ref("");
 let origenArrossegament: { x: number; y: number } | null = null;
 let netejaArrossegament: (() => void) | null = null;
-const finestresVisibles = computed(() => finestresDelsEspais(espaisActius.value));
-const graella = computed((): Graella => {
-  const windows = finestresVisibles.value;
-  if (vistaUnDia.value) {
-    return configGraella(windows, weekdayDelModel(diaActiu.value)) ?? configGraella(windows);
-  }
-  return configGraella(windows);
-});
+const finestresVisibles = computed(() =>
+  finestresPerRol(esResponsable.value, espaiSeleccionat.value, espaisActius.value),
+);
+const graella = computed(() =>
+  graellaDelRol(
+    finestresVisibles.value,
+    esResponsable.value,
+    vistaUnDia.value,
+    weekdayDelModel(diaActiu.value),
+  ),
+);
 const diesObertsAttr = computed(() => diesOberts(finestresVisibles.value).map((dia) => String(dia.weekday)).join(" "));
 
 function colorSala(id: string): string {
@@ -149,15 +151,26 @@ function aplicarDia(data: Temporal.PlainDate) {
   diaActiu.value = desti;
 }
 
-function percentMarge(actiu: boolean): string {
-  if (!actiu) {
+function percentMarge(minuts: number): string {
+  const total = minutsDeHora(graella.value.end) - minutsDeHora(graella.value.start);
+  if (minuts <= 0 || total <= 0) {
     return "0%";
   }
-  const hores = (minutsDeHora(graella.value.end) - minutsDeHora(graella.value.start)) / 60;
-  if (hores <= 0) {
-    return "0%";
+  return `${(minuts / total) * 100}%`;
+}
+
+function slotsInici(minuts: number): number {
+  if (minuts <= 0) {
+    return 0;
   }
-  return `${100 / hores}%`;
+  return Math.ceil(minuts / 30);
+}
+
+function slotsFi(minuts: number): number {
+  if (minuts <= 0) {
+    return 0;
+  }
+  return Math.floor(minuts / 30);
 }
 const reservaArrossegada = computed(() => reservaCarregada(reservaArrossegadaId.value));
 const clauCalendari = computed(
@@ -448,11 +461,11 @@ watch(calendarApp, (app) => {
         class="calendari-espais mt-4"
         :class="{ 'calendari-espais--arrossegant': arrossegant }"
         :data-dies-oberts="diesObertsAttr"
-        :data-marge-inici="graella.margeInici ? '1' : '0'"
-        :data-marge-fi="graella.margeFi ? '1' : '0'"
+        :data-slots-inici="slotsInici(graella.minutsMargeInici)"
+        :data-slots-fi="slotsFi(graella.minutsMargeFi)"
         :style="{
-          '--marge-inici': percentMarge(graella.margeInici),
-          '--marge-fi': percentMarge(graella.margeFi),
+          '--marge-inici': percentMarge(graella.minutsMargeInici),
+          '--marge-fi': percentMarge(graella.minutsMargeFi),
         }"
         @click="clicarCapcaleraDia"
         @pointerdown="iniciarArrossegament"

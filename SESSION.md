@@ -9,31 +9,15 @@ Actualitza aquest arxiu al final de cada sessió. És el punt d’arrencada del 
 
 ## Darrera feina
 
-Sessió de criteri, sense canvi de codi. El calendari que es veu a les captures no s’ha tocat. La branca segueix a `15171d5` (local i `origin`). El que hi ha desplegat encara resta una hora i arrodoneix l’obertura; això no és la regla acordada.
+Graella del calendari a `feat/docker-caddy-sqlite`, sense fusionar a `main`. El marge és de 30 minuts sobre l’hora real i després s’encaixa a `HH:00` (Schedule-X). El gris és només el que queda fora de la franja reservable. Un tancament a les 23:59 es talla a les 24:00 i no salta de dia. Exemple: sala 1 de 20:00 a 23:59 i sala 2 de 18:30 a 23:00 donen l’eix 18:00–24:00, amb 30 minuts grisos abans de les 18:30 i un minut després de les 23:59.
 
-La regla, per implementar a la propera sessió, és aquesta. El coordinador, al telèfon i a l’ordinador, només veu els dies oberts i l’horari en què es pot reservar la sala que té seleccionada. El responsable, als dos, veu totes les sales: l’eix va de l’obertura més d’hora al tancament més tard. Exemple: sala 1 de 20:00 a 23:59 i sala 2 de 18:30 a 23:00 donen 18:30–23:59. Mitja hora abans i mitja hora després es pinten com a no reservables. Un dia es mostra si hi ha almenys una sala oberta. El dia seleccionat no es pinta sencer. El detall és al pla `calendari_pantalla_real` (marge de 30 minuts sobre l’hora real; Schedule-X només accepta vora `HH:00`; un tancament a les 23:59 es talla a les 24:00 i no salta de dia).
+El coordinador, amb sala seleccionada, al telèfon usa l’horari d’aquell dia i a l’ordinador l’obertura més d’hora i el tancament més tard d’aquesta sala. Sense sala a la ruta, usa totes les sales actives. El responsable, al telèfon i a l’ordinador, usa l’envolupant de totes les sales actives. Un dia es mostra si hi ha almenys una sala oberta (la seleccionada, si el coordinador n’ha triat una). No s’ha tocat el formulari de la sala ni el solapament.
 
-Passada d’UX de camp, a la mateixa branca, sense desplegar. A la pàgina pública el títol és «Qui té la sala, a quina hora, qui vindrà?»; en pantalles petites Clar / Fosc no hi és, i els dos enllaços d’accés van a sota del logo. Amb sessió, Clar / Fosc segueix al capçal, també al telèfon.
-
-El calendari mostra una hora abans d’obrir i una després de tancar, esmorteïdes, sense saltar de dia. Al telèfon s’obre en un dia; a l’ordinador, en la setmana. Arrossegar la reserva es manté. En clicar-la, coordinador i responsable canvien el dia (només dies reservables), l’hora i el nombre d’assistents; la durada no canvia. El camp «Nombre d’assistents» té vora visible. El coordinador anul·la la seva sense avís (`CancelOwnReservation`). El responsable anul·la qualsevol i el coordinador rep l’avís. El responsable també pot desar el nombre a qualsevol reserva de l’entitat.
-
-PWA: icones PNG 192 i 512, i el botó «Instal·la» només si el navegador ho permet. A l’iPhone, el text explica Comparteix i Afegeix a la pantalla d’inici.
-
-Vitest 165, pytest 199, `vue-tsc` net. La pàgina pública s’ha vist a `http://127.0.0.1:5173` a 390 px (sense Clar / Fosc) i a 1280 px (amb Clar / Fosc).
-
-El calendari ja no pinta el dia sencer. La graella és l’horari de l’espai més una hora abans i una després, només els dies oberts. Al telèfon, un dia usa el seu horari i saltar de dia va al dia obert següent o anterior. La caixa es desplaça per dins. La casella no porta text: el color és la sala i, per al responsable, el tramat és el coordinador. El coordinador veu la franja ocupada sense el nom. La sessió local de prova no tenia espais (i el token no valia contra l’API de desenvolupament), així que la graella no s’ha vist a pantalla; les hores, els dies i el tramat els cobreixen els tests.
-
-Dockerització de l’Alpha+ per a proves de camp (ADR 0012). Caddy serveix la SPA i fa de proxy de `/api` cap a FastAPI sense aquest prefix. Les rutes internes de l’API no canvien. SQLite persistent al volum `espais_data` (`/data/espais.sqlite3`). Alembic segueix a l’arrencada. Un sol worker. El port 8000 no es publica. `ESPAIS_SECRET` és obligatori amb `ESPAIS_ENV=production`.
-
-Abans de tocar res, `main` es va copiar a `backup/pre-dockeritzacio` (local i `origin`), commit `7d3f474`. Aquesta branca no s’esborra.
-
-Verificat: pytest 195, Vitest 158, build del front, `docker compose` config/build/up, `GET /api/salut` amb 200 i `{"estat":"ok"}`, ruta Vue `/iniciar-sessio` amb l’HTML de la SPA, dada que sobreviu a un `stop`/`up`, restauració SQLite, reinici del backend sense tornar a aplicar migracions, usuari del backend `espais` (uid 10001), service worker amb denylist `/api` i `fetch('/api/salut')` que torna JSON.
+Vitest 169. `vue-tsc` net. Els tests de `disponibilitat.spec.ts` i `CalendariView.spec.ts` cobreixen el marge, els rols i el percentatge de gris. La graella pintada no s’ha vist al navegador: la sessió oberta (Pau, Entitat paleta UI) no té espais.
 
 ## Següent tasca
 
-Implementar la graella acordada, a `feat/docker-caddy-sqlite`, sense fusionar a `main`. Primer els tests de `frontend/src/disponibilitat.spec.ts`: marge de 30 minuts sobre l’hora real, no 60 després d’arrodonir. Després [configGraella](frontend/src/disponibilitat.ts) i [CalendariView.vue](frontend/src/views/CalendariView.vue): el coordinador usa la sala seleccionada (al telèfon, l’horari d’aquell dia; a l’ordinador, l’obertura més d’hora i el tancament més tard d’aquesta sala); el responsable, telèfon i ordinador, usa l’envolupant de totes les sales actives. El gris és només el que queda fora de la franja reservable. No es toca el formulari de la sala ni el solapament.
-
-Després, si es demana, pujar la branca i al VPS `docker compose up -d --build` a la carpeta del projecte. Fusionar a `main` només quan es demani. No esborrar `backup/pre-dockeritzacio`.
+Si es demana, pujar la branca i al VPS `docker compose up -d --build` a la carpeta del projecte. Fusionar a `main` només quan es demani. No esborrar `backup/pre-dockeritzacio`.
 
 No es reobre: el formulari d’aforament mínim, ni el backlog de producte (llista d’espais, estadístiques, invitacions, altres formularis). No és una fase nova.
 
@@ -71,4 +55,4 @@ Cap. API de desenvolupament `http://127.0.0.1:8000`; front de desenvolupament `h
 - El coordinador reprograma la seva reserva sense avís; l’avís només el dispara el responsable.
 - Landing: sense CTAs al cos; sense «gratuït» ni «cobrament»; fotos a `frontend/public/landing/` (hero + opcions + captures).
 - Docker local: `.env` (no versionat) amb `ESPAIS_DOMAIN=http://localhost`. Al VPS, el domini real sense esquema. Operació a `docs/17-desplegament-docker.md`. `environment.yml` continua sent l’entorn local; `backend/requirements.txt` és només el runtime de la imatge.
-- Deute d’aquesta sessió: cap de nou, i cap ADR. La regla de la graella (mitja hora, coordinador per sala, responsable per envolupant) és la següent implementació, no un canvi de model. La decisió d’infraestructura continua sent l’ADR 0012. Caddy corre com a root dins la imatge oficial per poder escoltar 80/443; el backend no.
+- Deute d’aquesta sessió: cap de nou, i cap ADR. La graella (mitja hora sobre l’hora real, coordinador per sala, responsable per envolupant) ja és el comportament. La decisió d’infraestructura continua sent l’ADR 0012. Caddy corre com a root dins la imatge oficial per poder escoltar 80/443; el backend no.

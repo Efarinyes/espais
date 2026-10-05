@@ -180,7 +180,7 @@ export function finestresDelsEspais(
 }
 
 const MINUTS_DIA = 24 * 60;
-const MARGE_HORARI_MINUTS = 60;
+const MARGE_HORARI_MINUTS = 30;
 
 function horaDesDeMinuts(minuts: number): string {
   const limitats = Math.min(MINUTS_DIA, Math.max(0, minuts));
@@ -191,12 +191,24 @@ function horaDesDeMinuts(minuts: number): string {
   return `${String(hores).padStart(2, "0")}:00`;
 }
 
+function minutsAHora(minuts: number): string {
+  const limitats = Math.min(MINUTS_DIA, Math.max(0, minuts));
+  if (limitats === MINUTS_DIA) {
+    return "24:00";
+  }
+  const hores = Math.floor(limitats / 60);
+  const resta = limitats % 60;
+  return `${String(hores).padStart(2, "0")}:${String(resta).padStart(2, "0")}`;
+}
+
 export type Graella = {
   start: string;
   end: string;
   gridHeight: number;
   margeInici: boolean;
   margeFi: boolean;
+  minutsMargeInici: number;
+  minutsMargeFi: number;
 };
 
 export function configGraella(windows: FinestraDto[] | null | undefined): Graella;
@@ -212,19 +224,48 @@ export function configGraella(
     return null;
   }
   const envolupant = envolupantHorari(delDia);
-  const obertura = minutsDeHora(horaSenceraAvall(envolupant.start));
-  const tancament = minutsDeHora(horaSenceraAmunt(envolupant.end));
-  const inici = Math.max(0, obertura - MARGE_HORARI_MINUTS);
-  const fi = Math.min(MINUTS_DIA, tancament + MARGE_HORARI_MINUTS);
+  const obertura = minutsDeHora(envolupant.start);
+  const tancament = minutsDeHora(envolupant.end);
+  const ambInici = Math.max(0, obertura - MARGE_HORARI_MINUTS);
+  const ambFi = Math.min(MINUTS_DIA, tancament + MARGE_HORARI_MINUTS);
+  const inici = minutsDeHora(horaSenceraAvall(minutsAHora(ambInici)));
+  const fi = minutsDeHora(horaSenceraAmunt(minutsAHora(ambFi)));
   const start = horaDesDeMinuts(inici);
   const end = horaDesDeMinuts(fi);
+  const minutsMargeInici = Math.max(0, obertura - inici);
+  const minutsMargeFi = Math.max(0, fi - tancament);
   return {
     start,
     end,
     gridHeight: alcadaGraella(start, end),
-    margeInici: inici < obertura,
-    margeFi: fi > tancament,
+    margeInici: minutsMargeInici > 0,
+    margeFi: minutsMargeFi > 0,
+    minutsMargeInici,
+    minutsMargeFi,
   };
+}
+
+export function finestresPerRol(
+  esResponsable: boolean,
+  espaiSeleccionat: { windows?: FinestraDto[] | null } | null | undefined,
+  espaisActius: { windows?: FinestraDto[] | null }[] | null | undefined,
+): FinestraDto[] {
+  if (!esResponsable && espaiSeleccionat) {
+    return espaiSeleccionat.windows ?? [];
+  }
+  return finestresDelsEspais(espaisActius);
+}
+
+export function graellaDelRol(
+  windows: FinestraDto[] | null | undefined,
+  esResponsable: boolean,
+  unDia: boolean,
+  weekday: number,
+): Graella {
+  if (!esResponsable && unDia) {
+    return configGraella(windows, weekday) ?? configGraella(windows);
+  }
+  return configGraella(windows);
 }
 
 export function finestraDelDia(

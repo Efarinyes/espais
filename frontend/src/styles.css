@@ -442,8 +442,14 @@ dialog.modal.modal-open .modal-box {
   );
 }
 
-.calendari-espais[data-marge-inici="1"] .sx__week-grid__hour:nth-child(-n + 2) .sx__week-grid__hour-text,
-.calendari-espais[data-marge-fi="1"] .sx__week-grid__hour:nth-last-child(-n + 2) .sx__week-grid__hour-text {
+.calendari-espais[data-slots-inici="1"] .sx__week-grid__hour:nth-child(-n + 1) .sx__week-grid__hour-text,
+.calendari-espais[data-slots-fi="1"] .sx__week-grid__hour:nth-last-child(-n + 1) .sx__week-grid__hour-text,
+.calendari-espais[data-slots-inici="2"] .sx__week-grid__hour:nth-child(-n + 2) .sx__week-grid__hour-text,
+.calendari-espais[data-slots-fi="2"] .sx__week-grid__hour:nth-last-child(-n + 2) .sx__week-grid__hour-text,
+.calendari-espais[data-slots-inici="3"] .sx__week-grid__hour:nth-child(-n + 3) .sx__week-grid__hour-text,
+.calendari-espais[data-slots-fi="3"] .sx__week-grid__hour:nth-last-child(-n + 3) .sx__week-grid__hour-text,
+.calendari-espais[data-slots-inici="4"] .sx__week-grid__hour:nth-child(-n + 4) .sx__week-grid__hour-text,
+.calendari-espais[data-slots-fi="4"] .sx__week-grid__hour:nth-last-child(-n + 4) .sx__week-grid__hour-text {
   opacity: 0.45;
 }
 

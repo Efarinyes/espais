@@ -16,6 +16,8 @@ import {
   envolupantHorari,
   finestresADies,
   finestresDelsEspais,
+  finestresPerRol,
+  graellaDelRol,
   proximaDataDelWeekday,
   properDiaObert,
   resumFinestres,
@@ -95,6 +97,8 @@ describe("disponibilitat", () => {
       gridHeight: 528,
       margeInici: true,
       margeFi: true,
+      minutsMargeInici: 60,
+      minutsMargeFi: 60,
     });
   });
 
@@ -105,37 +109,45 @@ describe("disponibilitat", () => {
       { windows: [0, 2, 4].map((weekday) => ({ weekday, start: "18:00", end: "23:00" })) },
     ];
     expect(configGraella(finestresDelsEspais(espais))).toEqual({
-      start: "16:00",
+      start: "17:00",
       end: "24:00",
-      gridHeight: 704,
-      margeInici: true,
-      margeFi: true,
-    });
-  });
-
-  it("arrodoneix l’envolupant a hores senceres per a Schedule-X", () => {
-    const salaTecnica = [0, 2, 4].map((weekday) => ({ weekday, start: "17:30", end: "22:00" }));
-    expect(envolupantHorari(salaTecnica)).toEqual({ start: "17:30", end: "22:00" });
-    expect(configGraella(salaTecnica)).toEqual({
-      start: "16:00",
-      end: "23:00",
       gridHeight: 616,
       margeInici: true,
       margeFi: true,
+      minutsMargeInici: 30,
+      minutsMargeFi: 60,
     });
-    expect(configGraella([{ weekday: 0, start: "17:30", end: "22:30" }])).toEqual({
-      start: "16:00",
-      end: "24:00",
-      gridHeight: 704,
+  });
+
+  it("aplica 30 minuts a l’hora real i després encaixa a HH:00", () => {
+    const salaTecnica = [0, 2, 4].map((weekday) => ({ weekday, start: "17:30", end: "22:00" }));
+    expect(envolupantHorari(salaTecnica)).toEqual({ start: "17:30", end: "22:00" });
+    expect(configGraella(salaTecnica)).toEqual({
+      start: "17:00",
+      end: "23:00",
+      gridHeight: 528,
       margeInici: true,
       margeFi: true,
+      minutsMargeInici: 30,
+      minutsMargeFi: 60,
+    });
+    expect(configGraella([{ weekday: 0, start: "17:30", end: "22:30" }])).toEqual({
+      start: "17:00",
+      end: "23:00",
+      gridHeight: 528,
+      margeInici: true,
+      margeFi: true,
+      minutsMargeInici: 30,
+      minutsMargeFi: 30,
     });
     expect(configGraella([{ weekday: 0, start: "00:30", end: "02:00" }])).toEqual({
       start: "00:00",
       end: "03:00",
       gridHeight: 264,
-      margeInici: false,
+      margeInici: true,
       margeFi: true,
+      minutsMargeInici: 30,
+      minutsMargeFi: 60,
     });
     expect(configGraella([{ weekday: 0, start: "22:00", end: "24:00" }])).toEqual({
       start: "21:00",
@@ -143,6 +155,22 @@ describe("disponibilitat", () => {
       gridHeight: 264,
       margeInici: true,
       margeFi: false,
+      minutsMargeInici: 60,
+      minutsMargeFi: 0,
+    });
+    expect(
+      configGraella([
+        { weekday: 0, start: "20:00", end: "23:59" },
+        { weekday: 0, start: "18:30", end: "23:00" },
+      ]),
+    ).toEqual({
+      start: "18:00",
+      end: "24:00",
+      gridHeight: 528,
+      margeInici: true,
+      margeFi: true,
+      minutsMargeInici: 30,
+      minutsMargeFi: 1,
     });
     const graella = configGraella(salaTecnica);
     const app = createCalendar({
@@ -190,6 +218,39 @@ describe("disponibilitat", () => {
     expect(configGraella(windows, 5)).toMatchObject({ start: "09:00", end: "15:00" });
     expect(configGraella(windows, 6)).toBeNull();
     expect(configGraella(windows)).toMatchObject({ start: "09:00", end: "23:00" });
+  });
+
+  it("el coordinador usa la sala seleccionada i el responsable l’envolupant", () => {
+    const sala = [
+      { weekday: 0, start: "20:00", end: "22:00" },
+      { weekday: 5, start: "10:00", end: "12:00" },
+    ];
+    const altra = [{ weekday: 0, start: "18:30", end: "23:59" }];
+    const espais = [
+      { windows: sala },
+      { windows: altra },
+    ];
+    const delCoordinador = finestresPerRol(false, espais[0], espais);
+    expect(delCoordinador).toEqual(sala);
+    expect(graellaDelRol(delCoordinador, false, true, 0)).toMatchObject({
+      start: "19:00",
+      end: "23:00",
+    });
+    expect(graellaDelRol(delCoordinador, false, false, 0)).toMatchObject({
+      start: "09:00",
+      end: "23:00",
+    });
+    const senseSala = finestresPerRol(false, null, espais);
+    expect(senseSala).toEqual([...sala, ...altra]);
+    const delResponsable = finestresPerRol(true, espais[0], espais);
+    expect(delResponsable).toEqual([...sala, ...altra]);
+    expect(graellaDelRol(delResponsable, true, true, 0)).toMatchObject({
+      start: "09:00",
+      end: "24:00",
+      minutsMargeInici: 60,
+      minutsMargeFi: 1,
+    });
+    expect(graellaDelRol(delResponsable, true, false, 5).start).toBe("09:00");
   });
 
   it("salta al proper dia obert si avui és tancat", () => {
