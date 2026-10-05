@@ -17,7 +17,7 @@ Vitest 171. `vue-tsc` net. Al navegador, amb la mateixa graella (19:00–24:00 r
 
 ## Següent tasca
 
-El retall de l’eix visible és local, encara no a `origin`. Pujar-lo només quan es demani. El desplegament el fa qui opera el VPS: `git pull` i `docker compose up -d --build` a la carpeta del projecte. Fusionar a `main` només quan es demani. No esborrar `backup/pre-dockeritzacio`.
+La branca `feat/docker-caddy-sqlite` és a `origin` a `a1f01b4`. El desplegament el fa qui opera el VPS: `git pull` i `docker compose up -d --build` a la carpeta del projecte. Fusionar a `main` només quan es demani. No esborrar `backup/pre-dockeritzacio`.
 
 No es reobre: el formulari d’aforament mínim, ni el backlog de producte (llista d’espais, estadístiques, invitacions, altres formularis). No és una fase nova.
 
