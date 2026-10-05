@@ -17,7 +17,7 @@ Vitest 169. `vue-tsc` net. Els tests de `disponibilitat.spec.ts` i `CalendariVie
 
 ## Següent tasca
 
-Si es demana, pujar la branca i al VPS `docker compose up -d --build` a la carpeta del projecte. Fusionar a `main` només quan es demani. No esborrar `backup/pre-dockeritzacio`.
+La branca `feat/docker-caddy-sqlite` és a `origin` a `6a05c0e`. El desplegament el fa qui opera el VPS: `docker compose up -d --build` a la carpeta del projecte. Fusionar a `main` només quan es demani. No esborrar `backup/pre-dockeritzacio`.
 
 No es reobre: el formulari d’aforament mínim, ni el backlog de producte (llista d’espais, estadístiques, invitacions, altres formularis). No és una fase nova.
 
