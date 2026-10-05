@@ -132,9 +132,22 @@ async function muntar(opts: {
   });
 }
 
+type ConfigCalendari = {
+  dayBoundaries: { start: string; end: string };
+  weekOptions: {
+    gridHeight: number;
+    timeAxisFormatOptions: { hour: string; minute: string; hourCycle: string };
+  };
+};
+
+function darreraConfig(): ConfigCalendari {
+  return crearCalendari.mock.calls.at(-1)?.[0] as unknown as ConfigCalendari;
+}
+
 describe("CalendariView graella", () => {
   afterEach(() => {
     vi.restoreAllMocks();
+    crearCalendari.mockClear();
   });
 
   it("una sala de 20:00 a 23:59 es veu de 19:30 a 24:00", async () => {
@@ -153,11 +166,9 @@ describe("CalendariView graella", () => {
       estreta: false,
     });
     await flushPromises();
-    const config = crearCalendari.mock.calls.at(-1)?.[0] as {
-      dayBoundaries: { start: string; end: string };
-      weekOptions: { timeAxisFormatOptions: { hour: string; minute: string; hourCycle: string } };
-    };
-    expect(config.dayBoundaries).toEqual({ start: "19:00", end: "24:00" });
+    const config = darreraConfig();
+    expect(config.dayBoundaries).toEqual({ start: "19:30", end: "24:00" });
+    expect(config.weekOptions.gridHeight).toBe(396);
     expect(config.weekOptions.timeAxisFormatOptions).toEqual({
       hour: "2-digit",
       minute: "2-digit",
@@ -165,29 +176,40 @@ describe("CalendariView graella", () => {
     });
     const graella = wrapper.get(".calendari-espais");
     expect(graella.attributes("data-dies-oberts")).toBe("2 3 4 5 6");
-    expect(graella.attributes("style")).toContain("--retall-inici: 44px");
-    expect(graella.attributes("style")).toContain("--retall-fi: 0px");
-    expect(graella.attributes("style")).toContain("--marge-inici: 20%");
+    expect(graella.attributes("style")).not.toContain("--retall");
+    expect(graella.attributes("style")).toContain("--marge-inici: 11.11111111111111%");
     wrapper.unmount();
   });
 
-  it("el responsable pinta l’envolupant de totes les sales, també en un dia", async () => {
+  it("el responsable a l’ordinador veu de mitja hora abans a mitja hora després de totes les sales", async () => {
+    const wrapper = await muntar({
+      role: "responsible",
+      espais: [sala1, sala2],
+      estreta: false,
+    });
+    await flushPromises();
+    expect(darreraConfig().dayBoundaries).toEqual({ start: "09:30", end: "24:00" });
+    expect(wrapper.get(".calendari-espais").attributes("data-dies-oberts")).toBe("0 5");
+    wrapper.unmount();
+  });
+
+  it("el responsable al telèfon només compta les sales obertes aquell dia", async () => {
     const wrapper = await muntar({
       role: "responsible",
       espais: [sala1, sala2],
       estreta: true,
     });
     await flushPromises();
+    expect(darreraConfig().dayBoundaries).toEqual({ start: "18:00", end: "24:00" });
     const graella = wrapper.get(".calendari-espais");
-    expect(graella.attributes("data-dies-oberts")).toBe("0 5");
-    expect(graella.attributes("data-slots-inici")).toBe("2");
+    expect(graella.attributes("data-slots-inici")).toBe("1");
     expect(graella.attributes("data-slots-fi")).toBe("0");
-    expect(graella.attributes("style")).toContain("--marge-inici: 6.666666666666667%");
-    expect(graella.attributes("style")).toContain("--marge-fi: 0.1111111111111111%");
+    expect(graella.attributes("style")).toContain("--marge-inici: 8.333333333333332%");
+    expect(graella.attributes("style")).toContain("--marge-fi: 0.2777777777777778%");
     wrapper.unmount();
   });
 
-  it("el coordinador a l’ordinador usa l’envolupant de la sala seleccionada", async () => {
+  it("el coordinador a l’ordinador usa la setmana de la sala seleccionada", async () => {
     const wrapper = await muntar({
       role: "coordinator",
       espais: [sala1, sala2],
@@ -195,12 +217,12 @@ describe("CalendariView graella", () => {
       espai: "s1",
     });
     await flushPromises();
+    expect(darreraConfig().dayBoundaries).toEqual({ start: "09:30", end: "22:30" });
+    expect(darreraConfig().weekOptions.gridHeight).toBe(1144);
     const graella = wrapper.get(".calendari-espais");
     expect(graella.attributes("data-dies-oberts")).toBe("0 5");
-    expect(graella.attributes("data-slots-inici")).toBe("2");
-    expect(graella.attributes("data-slots-fi")).toBe("2");
-    expect(graella.attributes("style")).toContain("--marge-inici: 7.142857142857142%");
-    expect(graella.attributes("style")).toContain("--marge-fi: 7.142857142857142%");
+    expect(graella.attributes("data-slots-inici")).toBe("1");
+    expect(graella.attributes("data-slots-fi")).toBe("1");
     wrapper.unmount();
   });
 
@@ -212,12 +234,26 @@ describe("CalendariView graella", () => {
       espai: "s1",
     });
     await flushPromises();
+    expect(darreraConfig().dayBoundaries).toEqual({ start: "19:30", end: "22:30" });
     const graella = wrapper.get(".calendari-espais");
-    expect(graella.attributes("data-dies-oberts")).toBe("0 5");
-    expect(graella.attributes("data-slots-inici")).toBe("2");
-    expect(graella.attributes("data-slots-fi")).toBe("2");
-    expect(graella.attributes("style")).toContain("--marge-inici: 25%");
-    expect(graella.attributes("style")).toContain("--marge-fi: 25%");
+    expect(graella.attributes("style")).toContain("--marge-inici: 16.666666666666664%");
+    expect(graella.attributes("style")).toContain("--marge-fi: 16.666666666666664%");
+    wrapper.unmount();
+  });
+
+  it("el coordinador que canvia de sala veu el rang de la nova", async () => {
+    const wrapper = await muntar({
+      role: "coordinator",
+      espais: [sala1, sala2],
+      estreta: false,
+      espai: "s1",
+    });
+    await flushPromises();
+    expect(darreraConfig().dayBoundaries).toEqual({ start: "09:30", end: "22:30" });
+    await wrapper.vm.$router.push({ name: "calendari", query: { espai: "s2" } });
+    await flushPromises();
+    expect(darreraConfig().dayBoundaries).toEqual({ start: "18:00", end: "24:00" });
+    expect(wrapper.get(".calendari-espais").attributes("data-dies-oberts")).toBe("0");
     wrapper.unmount();
   });
 });

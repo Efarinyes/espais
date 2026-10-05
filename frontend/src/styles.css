@@ -430,19 +430,6 @@ dialog.modal.modal-open .modal-box {
   display: none;
 }
 
-.calendari-espais .sx__week-grid {
-  height: calc(
-    var(--sx-week-grid-height) - var(--retall-inici, 0px) - var(--retall-fi, 0px) + var(--retall-etiqueta, 0px)
-  );
-}
-
-.calendari-espais .sx__week-grid__time-axis,
-.calendari-espais .sx__time-grid-day {
-  height: var(--sx-week-grid-height);
-  flex-shrink: 0;
-  transform: translateY(calc(-1 * var(--retall-inici, 0px) + var(--retall-etiqueta, 0px)));
-}
-
 .calendari-espais .sx__time-grid-day {
   background-image: linear-gradient(
     to bottom,

@@ -159,20 +159,6 @@ export function alcadaGraella(start: string, end: string): number {
   return Math.max(hores, 1) * PIXELS_PER_HORA;
 }
 
-export function horaSenceraAvall(hora: string): string {
-  const hores = Math.floor(minutsDeHora(hora) / 60);
-  return `${String(Math.max(0, hores)).padStart(2, "0")}:00`;
-}
-
-export function horaSenceraAmunt(hora: string): string {
-  const minuts = minutsDeHora(hora);
-  const hores = minuts % 60 === 0 ? minuts / 60 : Math.ceil(minuts / 60);
-  if (hores >= 24) {
-    return "24:00";
-  }
-  return `${String(hores).padStart(2, "0")}:00`;
-}
-
 export function finestresDelsEspais(
   espais: { windows?: FinestraDto[] | null }[] | null | undefined,
 ): FinestraDto[] {
@@ -181,15 +167,6 @@ export function finestresDelsEspais(
 
 const MINUTS_DIA = 24 * 60;
 const MARGE_HORARI_MINUTS = 30;
-
-function horaDesDeMinuts(minuts: number): string {
-  const limitats = Math.min(MINUTS_DIA, Math.max(0, minuts));
-  if (limitats === MINUTS_DIA) {
-    return "24:00";
-  }
-  const hores = Math.floor(limitats / 60);
-  return `${String(hores).padStart(2, "0")}:00`;
-}
 
 function minutsAHora(minuts: number): string {
   const limitats = Math.min(MINUTS_DIA, Math.max(0, minuts));
@@ -209,8 +186,6 @@ export type Graella = {
   margeFi: boolean;
   minutsMargeInici: number;
   minutsMargeFi: number;
-  retallInici: number;
-  retallFi: number;
 };
 
 export function configGraella(windows: FinestraDto[] | null | undefined): Graella;
@@ -228,14 +203,12 @@ export function configGraella(
   const envolupant = envolupantHorari(delDia);
   const obertura = minutsDeHora(envolupant.start);
   const tancament = minutsDeHora(envolupant.end);
-  const ambInici = Math.max(0, obertura - MARGE_HORARI_MINUTS);
-  const ambFi = Math.min(MINUTS_DIA, tancament + MARGE_HORARI_MINUTS);
-  const inici = minutsDeHora(horaSenceraAvall(minutsAHora(ambInici)));
-  const fi = minutsDeHora(horaSenceraAmunt(minutsAHora(ambFi)));
-  const start = horaDesDeMinuts(inici);
-  const end = horaDesDeMinuts(fi);
-  const minutsMargeInici = Math.max(0, obertura - inici);
-  const minutsMargeFi = Math.max(0, fi - tancament);
+  const inici = Math.max(0, obertura - MARGE_HORARI_MINUTS);
+  const fi = Math.min(MINUTS_DIA, tancament + MARGE_HORARI_MINUTS);
+  const start = minutsAHora(inici);
+  const end = minutsAHora(fi);
+  const minutsMargeInici = obertura - inici;
+  const minutsMargeFi = fi - tancament;
   return {
     start,
     end,
@@ -244,8 +217,6 @@ export function configGraella(
     margeFi: minutsMargeFi > 0,
     minutsMargeInici,
     minutsMargeFi,
-    retallInici: Math.max(0, minutsMargeInici - MARGE_HORARI_MINUTS),
-    retallFi: Math.max(0, minutsMargeFi - MARGE_HORARI_MINUTS),
   };
 }
 
@@ -260,13 +231,12 @@ export function finestresPerRol(
   return finestresDelsEspais(espaisActius);
 }
 
-export function graellaDelRol(
+export function graellaDeLaVista(
   windows: FinestraDto[] | null | undefined,
-  esResponsable: boolean,
   unDia: boolean,
   weekday: number,
 ): Graella {
-  if (!esResponsable && unDia) {
+  if (unDia) {
     return configGraella(windows, weekday) ?? configGraella(windows);
   }
   return configGraella(windows);

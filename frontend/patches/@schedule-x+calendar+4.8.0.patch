@@ -1,0 +1,106 @@
+diff --git a/node_modules/@schedule-x/calendar/dist/core.cjs.js b/node_modules/@schedule-x/calendar/dist/core.cjs.js
+index 39315f1..85c6b44 100644
+--- a/node_modules/@schedule-x/calendar/dist/core.cjs.js
++++ b/node_modules/@schedule-x/calendar/dist/core.cjs.js
+@@ -2047,7 +2047,21 @@ const getTimeAxisHours = ({ start, end }, isHybridDay) => {
+     return hours;
+ };
+ 
++const minutesFromTimePoints = (timePoints) => Math.floor(timePoints / 100) * 60 +
++    Math.round((timePoints % 100) / minuteTimePointMultiplier);
++const hasMinuteBoundaries = ({ start, end }) => start % 100 !== 0 || end % 100 !== 0;
+ const computeGridSteps = (dayBoundaries, isHybridDay, gridStep) => {
++    if (hasMinuteBoundaries(dayBoundaries)) {
++        const startMinutes = minutesFromTimePoints(dayBoundaries.start);
++        const endMinutes = minutesFromTimePoints(dayBoundaries.end);
++        const steps = [];
++        const lastMinute = endMinutes > startMinutes ? endMinutes : endMinutes + 24 * 60;
++        for (let minutes = startMinutes; minutes < lastMinute; minutes += gridStep) {
++            const minuteOfDay = minutes % (24 * 60);
++            steps.push({ hour: Math.floor(minuteOfDay / 60), minute: minuteOfDay % 60 });
++        }
++        return steps;
++    }
+     const hourSteps = getTimeAxisHours(dayBoundaries, isHybridDay);
+     const result = [];
+     hourSteps.forEach((hour) => {
+@@ -2082,7 +2096,10 @@ function TimeAxis() {
+     signals.useSignalEffect(() => {
+         const result = computeGridSteps($app.config.dayBoundaries.value, $app.config.isHybridDay, $app.config.weekOptions.value.gridStep);
+         setGridSteps(result);
+-        const pixelsPerGridStep = $app.config.weekOptions.value.gridHeight / result.length;
++        const pixelsPerGridStep = hasMinuteBoundaries($app.config.dayBoundaries.value)
++            ? ($app.config.weekOptions.value.gridHeight * $app.config.weekOptions.value.gridStep) /
++                minutesFromTimePoints($app.config.timePointsPerDay)
++            : $app.config.weekOptions.value.gridHeight / result.length;
+         // TODO v4: rename --sx-week-grid-hour-height to --sx-week-grid-grid-step-height
+         document.documentElement.style.setProperty('--sx-week-grid-hour-height', `${pixelsPerGridStep}px`);
+     });
+@@ -6163,12 +6180,12 @@ const validateConfig = (config) => {
+         config.monthGridOptions.nEventsPerDay < 0) {
+         throw new Error('[Schedule-X error]: monthGridOptions.nEventsPerDay must be a positive number');
+     }
+-    const dayBoundaryPattern = /^\d{2}:00$/;
++    const dayBoundaryPattern = /^\d{2}:[0-5]\d$/;
+     if (typeof config.dayBoundaries !== 'undefined') {
+         const startFormatIsInvalid = !dayBoundaryPattern.test(config.dayBoundaries.start);
+         const endFormatIsInvalid = !dayBoundaryPattern.test(config.dayBoundaries.end);
+         if (startFormatIsInvalid || endFormatIsInvalid) {
+-            throw new Error('[Schedule-X error]: dayBoundaries must be an object with "start"- and "end" properties, each as a whole hour in the format HH:00 (e.g. 08:00, 19:00)');
++            throw new Error('[Schedule-X error]: dayBoundaries must be an object with "start"- and "end" properties, each in the format HH:mm (e.g. 08:00, 17:30)');
+         }
+     }
+ };
+diff --git a/node_modules/@schedule-x/calendar/dist/core.js b/node_modules/@schedule-x/calendar/dist/core.js
+index be9b905..b81d3a1 100644
+--- a/node_modules/@schedule-x/calendar/dist/core.js
++++ b/node_modules/@schedule-x/calendar/dist/core.js
+@@ -2045,7 +2045,21 @@ const getTimeAxisHours = ({ start, end }, isHybridDay) => {
+     return hours;
+ };
+ 
++const minutesFromTimePoints = (timePoints) => Math.floor(timePoints / 100) * 60 +
++    Math.round((timePoints % 100) / minuteTimePointMultiplier);
++const hasMinuteBoundaries = ({ start, end }) => start % 100 !== 0 || end % 100 !== 0;
+ const computeGridSteps = (dayBoundaries, isHybridDay, gridStep) => {
++    if (hasMinuteBoundaries(dayBoundaries)) {
++        const startMinutes = minutesFromTimePoints(dayBoundaries.start);
++        const endMinutes = minutesFromTimePoints(dayBoundaries.end);
++        const steps = [];
++        const lastMinute = endMinutes > startMinutes ? endMinutes : endMinutes + 24 * 60;
++        for (let minutes = startMinutes; minutes < lastMinute; minutes += gridStep) {
++            const minuteOfDay = minutes % (24 * 60);
++            steps.push({ hour: Math.floor(minuteOfDay / 60), minute: minuteOfDay % 60 });
++        }
++        return steps;
++    }
+     const hourSteps = getTimeAxisHours(dayBoundaries, isHybridDay);
+     const result = [];
+     hourSteps.forEach((hour) => {
+@@ -2080,7 +2094,10 @@ function TimeAxis() {
+     useSignalEffect(() => {
+         const result = computeGridSteps($app.config.dayBoundaries.value, $app.config.isHybridDay, $app.config.weekOptions.value.gridStep);
+         setGridSteps(result);
+-        const pixelsPerGridStep = $app.config.weekOptions.value.gridHeight / result.length;
++        const pixelsPerGridStep = hasMinuteBoundaries($app.config.dayBoundaries.value)
++            ? ($app.config.weekOptions.value.gridHeight * $app.config.weekOptions.value.gridStep) /
++                minutesFromTimePoints($app.config.timePointsPerDay)
++            : $app.config.weekOptions.value.gridHeight / result.length;
+         // TODO v4: rename --sx-week-grid-hour-height to --sx-week-grid-grid-step-height
+         document.documentElement.style.setProperty('--sx-week-grid-hour-height', `${pixelsPerGridStep}px`);
+     });
+@@ -6161,12 +6178,12 @@ const validateConfig = (config) => {
+         config.monthGridOptions.nEventsPerDay < 0) {
+         throw new Error('[Schedule-X error]: monthGridOptions.nEventsPerDay must be a positive number');
+     }
+-    const dayBoundaryPattern = /^\d{2}:00$/;
++    const dayBoundaryPattern = /^\d{2}:[0-5]\d$/;
+     if (typeof config.dayBoundaries !== 'undefined') {
+         const startFormatIsInvalid = !dayBoundaryPattern.test(config.dayBoundaries.start);
+         const endFormatIsInvalid = !dayBoundaryPattern.test(config.dayBoundaries.end);
+         if (startFormatIsInvalid || endFormatIsInvalid) {
+-            throw new Error('[Schedule-X error]: dayBoundaries must be an object with "start"- and "end" properties, each as a whole hour in the format HH:00 (e.g. 08:00, 19:00)');
++            throw new Error('[Schedule-X error]: dayBoundaries must be an object with "start"- and "end" properties, each in the format HH:mm (e.g. 08:00, 17:30)');
+         }
+     }
+ };

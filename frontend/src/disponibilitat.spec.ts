@@ -1,5 +1,5 @@
 import "temporal-polyfill/global";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { createCalendar, createViewWeek } from "@schedule-x/calendar";
 
 import {
@@ -17,7 +17,7 @@ import {
   finestresADies,
   finestresDelsEspais,
   finestresPerRol,
-  graellaDelRol,
+  graellaDeLaVista,
   proximaDataDelWeekday,
   properDiaObert,
   resumFinestres,
@@ -91,116 +91,7 @@ describe("disponibilitat", () => {
     ]);
     expect(attrDiesTancats(laborables)).toBe("5 6");
     expect(alcadaGraella("18:00", "22:00")).toBe(352);
-    expect(configGraella(laborables)).toEqual({
-      start: "17:00",
-      end: "23:00",
-      gridHeight: 528,
-      margeInici: true,
-      margeFi: true,
-      minutsMargeInici: 60,
-      minutsMargeFi: 60,
-      retallInici: 30,
-      retallFi: 30,
-    });
   });
-
-  it("la graella de diversos espais comença a l’obertura més d’hora", () => {
-    const espais = [
-      { windows: [0, 2, 4].map((weekday) => ({ weekday, start: "17:30", end: "22:00" })) },
-      { windows: [0, 2, 4].map((weekday) => ({ weekday, start: "18:00", end: "23:00" })) },
-      { windows: [0, 2, 4].map((weekday) => ({ weekday, start: "18:00", end: "23:00" })) },
-    ];
-    expect(configGraella(finestresDelsEspais(espais))).toEqual({
-      start: "17:00",
-      end: "24:00",
-      gridHeight: 616,
-      margeInici: true,
-      margeFi: true,
-      minutsMargeInici: 30,
-      minutsMargeFi: 60,
-      retallInici: 0,
-      retallFi: 30,
-    });
-  });
-
-  it("aplica 30 minuts a l’hora real i després encaixa a HH:00", () => {
-    const salaTecnica = [0, 2, 4].map((weekday) => ({ weekday, start: "17:30", end: "22:00" }));
-    expect(envolupantHorari(salaTecnica)).toEqual({ start: "17:30", end: "22:00" });
-    expect(configGraella(salaTecnica)).toEqual({
-      start: "17:00",
-      end: "23:00",
-      gridHeight: 528,
-      margeInici: true,
-      margeFi: true,
-      minutsMargeInici: 30,
-      minutsMargeFi: 60,
-      retallInici: 0,
-      retallFi: 30,
-    });
-    expect(configGraella([{ weekday: 0, start: "17:30", end: "22:30" }])).toEqual({
-      start: "17:00",
-      end: "23:00",
-      gridHeight: 528,
-      margeInici: true,
-      margeFi: true,
-      minutsMargeInici: 30,
-      minutsMargeFi: 30,
-      retallInici: 0,
-      retallFi: 0,
-    });
-    expect(configGraella([{ weekday: 0, start: "00:30", end: "02:00" }])).toEqual({
-      start: "00:00",
-      end: "03:00",
-      gridHeight: 264,
-      margeInici: true,
-      margeFi: true,
-      minutsMargeInici: 30,
-      minutsMargeFi: 60,
-      retallInici: 0,
-      retallFi: 30,
-    });
-    expect(configGraella([{ weekday: 0, start: "22:00", end: "24:00" }])).toEqual({
-      start: "21:00",
-      end: "24:00",
-      gridHeight: 264,
-      margeInici: true,
-      margeFi: false,
-      minutsMargeInici: 60,
-      minutsMargeFi: 0,
-      retallInici: 30,
-      retallFi: 0,
-    });
-    expect(
-      configGraella([
-        { weekday: 0, start: "20:00", end: "23:59" },
-        { weekday: 0, start: "18:30", end: "23:00" },
-      ]),
-    ).toEqual({
-      start: "18:00",
-      end: "24:00",
-      gridHeight: 528,
-      margeInici: true,
-      margeFi: true,
-      minutsMargeInici: 30,
-      minutsMargeFi: 1,
-      retallInici: 0,
-      retallFi: 0,
-    });
-    const graella = configGraella(salaTecnica);
-    const app = createCalendar({
-      views: [createViewWeek()],
-      dayBoundaries: { start: graella.start, end: graella.end },
-    });
-    expect(app).toBeTruthy();
-    app.destroy();
-    expect(() =>
-      createCalendar({
-        views: [createViewWeek()],
-        dayBoundaries: { start: "17:30", end: "22:00" },
-      }),
-    ).toThrow(/HH:00/);
-  });
-
 
   it("accepta un clic dins de la finestra i n’encaixa un de proper", () => {
     const windows = [{ weekday: 1, start: "18:00", end: "22:00" }];
@@ -223,65 +114,6 @@ describe("disponibilitat", () => {
     expect(proximaDataDelWeekday(dimarts, 0).toString()).toBe("2026-09-14");
   });
 
-  it("un dia usa el seu horari, i un dia tancat no en té", () => {
-    const windows = [
-      { weekday: 0, start: "18:00", end: "22:00" },
-      { weekday: 5, start: "10:00", end: "14:00" },
-    ];
-    expect(configGraella(windows, 0)).toMatchObject({ start: "17:00", end: "23:00" });
-    expect(configGraella(windows, 5)).toMatchObject({ start: "09:00", end: "15:00" });
-    expect(configGraella(windows, 6)).toBeNull();
-    expect(configGraella(windows)).toMatchObject({ start: "09:00", end: "23:00" });
-  });
-
-  it("una sala de 20:00 a 23:59 es veu de 19:30 a 24:00", () => {
-    const windows = [2, 3, 4, 5, 6].map((weekday) => ({ weekday, start: "20:00", end: "23:59" }));
-    expect(graellaDelRol(windows, true, false, 0)).toEqual({
-      start: "19:00",
-      end: "24:00",
-      gridHeight: 440,
-      margeInici: true,
-      margeFi: true,
-      minutsMargeInici: 60,
-      minutsMargeFi: 1,
-      retallInici: 30,
-      retallFi: 0,
-    });
-  });
-
-  it("el coordinador usa la sala seleccionada i el responsable l’envolupant", () => {
-    const sala = [
-      { weekday: 0, start: "20:00", end: "22:00" },
-      { weekday: 5, start: "10:00", end: "12:00" },
-    ];
-    const altra = [{ weekday: 0, start: "18:30", end: "23:59" }];
-    const espais = [
-      { windows: sala },
-      { windows: altra },
-    ];
-    const delCoordinador = finestresPerRol(false, espais[0], espais);
-    expect(delCoordinador).toEqual(sala);
-    expect(graellaDelRol(delCoordinador, false, true, 0)).toMatchObject({
-      start: "19:00",
-      end: "23:00",
-    });
-    expect(graellaDelRol(delCoordinador, false, false, 0)).toMatchObject({
-      start: "09:00",
-      end: "23:00",
-    });
-    const senseSala = finestresPerRol(false, null, espais);
-    expect(senseSala).toEqual([...sala, ...altra]);
-    const delResponsable = finestresPerRol(true, espais[0], espais);
-    expect(delResponsable).toEqual([...sala, ...altra]);
-    expect(graellaDelRol(delResponsable, true, true, 0)).toMatchObject({
-      start: "09:00",
-      end: "24:00",
-      minutsMargeInici: 60,
-      minutsMargeFi: 1,
-    });
-    expect(graellaDelRol(delResponsable, true, false, 5).start).toBe("09:00");
-  });
-
   it("salta al proper dia obert si avui és tancat", () => {
     const windows = [0, 2, 4].map((weekday) => ({ weekday, start: "17:30", end: "22:00" }));
     const dijous = Temporal.PlainDate.from("2026-09-10");
@@ -295,5 +127,172 @@ describe("disponibilitat", () => {
     expect(diaEnDireccio(windows, diumenge, true).toString()).toBe("2026-09-14");
     expect(diaEnDireccio(windows, diumenge, false).toString()).toBe("2026-09-11");
     expect(diaEnDireccio(windows, Temporal.PlainDate.from("2026-09-08"), true).toString()).toBe("2026-09-08");
+  });
+});
+
+describe("graella del calendari: mitja hora abans i mitja hora després", () => {
+  const franja = (weekdays: number[], start: string, end: string) =>
+    weekdays.map((weekday) => ({ weekday, start, end }));
+  const sala1 = { windows: franja([2, 3, 4, 5, 6], "18:00", "21:00") };
+  const sala2 = { windows: franja([1, 2, 3, 4, 5], "19:00", "22:30") };
+  const sala3 = { windows: franja([0, 1, 2, 3, 4, 5, 6], "20:00", "23:00") };
+  const limits = (graella: { start: string; end: string } | null) =>
+    graella && { start: graella.start, end: graella.end };
+
+  it("cas 1: 18:00–21:00 es veu de 17:30 a 21:30", () => {
+    expect(limits(configGraella(sala1.windows))).toEqual({ start: "17:30", end: "21:30" });
+  });
+
+  it("cas 2: 19:00–22:30 es veu de 18:30 a 23:00", () => {
+    expect(limits(configGraella(sala2.windows))).toEqual({ start: "18:30", end: "23:00" });
+  });
+
+  it("cas 3: dues sales es veuen de 17:30 a 23:00", () => {
+    expect(limits(configGraella(finestresDelsEspais([sala1, sala2])))).toEqual({ start: "17:30", end: "23:00" });
+  });
+
+  it("cas 4: tres sales es veuen de 17:30 a 23:30", () => {
+    expect(limits(configGraella(finestresDelsEspais([sala1, sala2, sala3])))).toEqual({
+      start: "17:30",
+      end: "23:30",
+    });
+  });
+
+  it("cas 5: un dia només compta les finestres d’aquell dia", () => {
+    const windows = [
+      { weekday: 0, start: "18:00", end: "21:00" },
+      { weekday: 5, start: "10:00", end: "12:00" },
+    ];
+    expect(limits(configGraella(windows, 0))).toEqual({ start: "17:30", end: "21:30" });
+    expect(limits(configGraella(windows, 5))).toEqual({ start: "09:30", end: "12:30" });
+    expect(configGraella(windows, 6)).toBeNull();
+    expect(limits(configGraella(windows))).toEqual({ start: "09:30", end: "21:30" });
+  });
+
+  it("cas 6: una obertura a mitja hora no s’arrodoneix", () => {
+    expect(limits(configGraella(franja([0], "18:30", "21:00")))).toEqual({ start: "18:00", end: "21:30" });
+    expect(limits(configGraella(franja([0], "18:15", "21:00")))).toEqual({ start: "17:45", end: "21:30" });
+  });
+
+  it("cas 7: un tancament a mitja hora no s’arrodoneix", () => {
+    expect(limits(configGraella(franja([0], "18:00", "21:30")))).toEqual({ start: "17:30", end: "22:00" });
+    expect(limits(configGraella(franja([0], "18:00", "22:45")))).toEqual({ start: "17:30", end: "23:15" });
+  });
+
+  it("cas 8: el marge no passa de la fi del dia ni de l’inici", () => {
+    expect(limits(configGraella(franja([2, 3, 4, 5, 6], "20:00", "23:59")))).toEqual({
+      start: "19:30",
+      end: "24:00",
+    });
+    expect(limits(configGraella(franja([0], "00:15", "02:00")))).toEqual({ start: "00:00", end: "02:30" });
+  });
+
+  it("l’alçada i el gris corresponen al rang exacte", () => {
+    expect(configGraella(finestresDelsEspais([sala1, sala2]))).toMatchObject({
+      gridHeight: 484,
+      minutsMargeInici: 30,
+      minutsMargeFi: 30,
+    });
+    expect(configGraella(franja([0], "20:00", "23:59"))).toMatchObject({
+      gridHeight: 396,
+      minutsMargeInici: 30,
+      minutsMargeFi: 1,
+    });
+  });
+
+  it("cas 9: el responsable veu l’envolupant de totes les sales actives", () => {
+    const espais = [sala1, sala2, sala3];
+    const finestres = finestresPerRol(true, sala1, espais);
+    expect(finestres).toEqual(finestresDelsEspais(espais));
+    expect(limits(graellaDeLaVista(finestres, false, 0))).toEqual({ start: "17:30", end: "23:30" });
+  });
+
+  it("cas 10: el coordinador veu la sala seleccionada, o totes si no n’ha triat cap", () => {
+    const espais = [sala1, sala2, sala3];
+    expect(limits(graellaDeLaVista(finestresPerRol(false, sala2, espais), false, 0))).toEqual({
+      start: "18:30",
+      end: "23:00",
+    });
+    expect(limits(graellaDeLaVista(finestresPerRol(false, null, espais), false, 0))).toEqual({
+      start: "17:30",
+      end: "23:30",
+    });
+  });
+
+  it("cas 11: canviar de sala canvia el rang", () => {
+    const espais = [sala1, sala2];
+    expect(limits(graellaDeLaVista(finestresPerRol(false, sala1, espais), false, 0))).toEqual({
+      start: "17:30",
+      end: "21:30",
+    });
+    expect(limits(graellaDeLaVista(finestresPerRol(false, sala2, espais), false, 0))).toEqual({
+      start: "18:30",
+      end: "23:00",
+    });
+  });
+
+  it("cas 12: la setmana usa tots els dies i el dia només el seu, per als dos rols", () => {
+    const finestres = finestresDelsEspais([sala1, sala2, sala3]);
+    for (const weekday of [0, 1, 2, 3, 4, 5, 6]) {
+      expect(limits(graellaDeLaVista(finestres, false, weekday))).toEqual({ start: "17:30", end: "23:30" });
+    }
+    expect(limits(graellaDeLaVista(finestres, true, 0))).toEqual({ start: "19:30", end: "23:30" });
+    expect(limits(graellaDeLaVista(finestres, true, 1))).toEqual({ start: "18:30", end: "23:30" });
+    expect(limits(graellaDeLaVista(finestres, true, 2))).toEqual({ start: "17:30", end: "23:30" });
+    expect(limits(graellaDeLaVista(sala1.windows, true, 0))).toEqual({ start: "17:30", end: "21:30" });
+  });
+
+  it("cas 13: sense finestres, la graella usa l’horari per defecte d’un espai nou", () => {
+    expect(limits(configGraella([]))).toEqual({ start: "07:30", end: "22:30" });
+    expect(limits(configGraella(undefined))).toEqual({ start: "07:30", end: "22:30" });
+  });
+
+  it("Schedule-X pinta l’eix i les reserves dins del mateix rang amb minuts", async () => {
+    vi.stubGlobal(
+      "ResizeObserver",
+      class {
+        observe() {}
+        unobserve() {}
+        disconnect() {}
+      },
+    );
+    const graella = configGraella(finestresDelsEspais([sala1, sala2]));
+    const arrel = document.createElement("div");
+    document.body.appendChild(arrel);
+    const app = createCalendar({
+      views: [createViewWeek()],
+      isResponsive: false,
+      locale: "ca-ES",
+      timezone: "Europe/Madrid",
+      selectedDate: Temporal.PlainDate.from("2026-10-07"),
+      dayBoundaries: { start: graella.start, end: graella.end },
+      weekOptions: {
+        gridStep: 30,
+        gridHeight: graella.gridHeight,
+        timeAxisFormatOptions: { hour: "2-digit", minute: "2-digit", hourCycle: "h23" },
+      },
+      events: [
+        {
+          id: "r1",
+          title: "Reserva",
+          start: Temporal.ZonedDateTime.from("2026-10-07T18:00:00+02:00[Europe/Madrid]"),
+          end: Temporal.ZonedDateTime.from("2026-10-07T21:00:00+02:00[Europe/Madrid]"),
+        },
+      ],
+    });
+    app.render(arrel);
+    await new Promise((resolt) => setTimeout(resolt, 50));
+    const hores = [...arrel.querySelectorAll(".sx__week-grid__hour-text")].map((node) => node.textContent);
+    expect(hores).toEqual([
+      "17:30", "18:00", "18:30", "19:00", "19:30", "20:00",
+      "20:30", "21:00", "21:30", "22:00", "22:30",
+    ]);
+    expect(document.documentElement.style.getPropertyValue("--sx-week-grid-hour-height")).toBe("44px");
+    const reserva = arrel.querySelector<HTMLElement>(".sx__time-grid-event");
+    expect(Number.parseFloat(reserva?.style.top ?? "")).toBeCloseTo((30 / 330) * 100, 5);
+    expect(Number.parseFloat(reserva?.style.height ?? "")).toBeCloseTo((180 / 330) * 100, 5);
+    app.destroy();
+    arrel.remove();
+    vi.unstubAllGlobals();
   });
 });

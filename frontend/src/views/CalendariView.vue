@@ -20,9 +20,8 @@ import {
   diaEnDireccio,
   diesOberts,
   finestresPerRol,
-  graellaDelRol,
+  graellaDeLaVista,
   minutsDeHora,
-  PIXELS_PER_HORA,
   weekdayDelModel,
 } from "../disponibilitat";
 
@@ -108,12 +107,7 @@ const finestresVisibles = computed(() =>
   finestresPerRol(esResponsable.value, espaiSeleccionat.value, espaisActius.value),
 );
 const graella = computed(() =>
-  graellaDelRol(
-    finestresVisibles.value,
-    esResponsable.value,
-    vistaUnDia.value,
-    weekdayDelModel(diaActiu.value),
-  ),
+  graellaDeLaVista(finestresVisibles.value, vistaUnDia.value, weekdayDelModel(diaActiu.value)),
 );
 const diesObertsAttr = computed(() => diesOberts(finestresVisibles.value).map((dia) => String(dia.weekday)).join(" "));
 
@@ -174,9 +168,6 @@ function slotsFi(minuts: number): number {
   return Math.floor(minuts / 30);
 }
 
-function pixelsRetall(minuts: number): string {
-  return `${(minuts * PIXELS_PER_HORA) / 60}px`;
-}
 const reservaArrossegada = computed(() => reservaCarregada(reservaArrossegadaId.value));
 const clauCalendari = computed(
   () =>
@@ -476,9 +467,6 @@ watch(calendarApp, (app) => {
         :style="{
           '--marge-inici': percentMarge(graella.minutsMargeInici),
           '--marge-fi': percentMarge(graella.minutsMargeFi),
-          '--retall-inici': pixelsRetall(graella.retallInici),
-          '--retall-fi': pixelsRetall(graella.retallFi),
-          '--retall-etiqueta': graella.retallInici > 0 ? '0.75em' : '0px',
         }"
         @click="clicarCapcaleraDia"
         @pointerdown="iniciarArrossegament"

@@ -13,6 +13,15 @@ describe("arrossegarReserva", () => {
     expect(tresQuarts.toString()).toBe("2026-09-08T19:30:00+02:00[Europe/Madrid]");
   });
 
+  it("amb una graella de 17:30 a 23:00, el punt cau a la mateixa hora que pinta Schedule-X", () => {
+    const dalt = zonedDesDePuntGraella("2026-10-07", 0, 484, "17:30", "23:00");
+    expect(dalt.toString()).toBe("2026-10-07T17:30:00+02:00[Europe/Madrid]");
+    const lesDinou = zonedDesDePuntGraella("2026-10-07", 132, 484, "17:30", "23:00");
+    expect(lesDinou.toString()).toBe("2026-10-07T19:00:00+02:00[Europe/Madrid]");
+    const lesVintIDues = zonedDesDePuntGraella("2026-10-07", 396, 484, "17:30", "23:00");
+    expect(lesVintIDues.toString()).toBe("2026-10-07T22:00:00+02:00[Europe/Madrid]");
+  });
+
   it("llegeix l’id de la reserva i el dia de la columna", () => {
     const dia = document.createElement("div");
     dia.setAttribute("data-time-grid-date", "2026-09-09");

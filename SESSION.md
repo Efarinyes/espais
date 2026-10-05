@@ -9,15 +9,23 @@ Actualitza aquest arxiu al final de cada sessió. És el punt d’arrencada del 
 
 ## Darrera feina
 
-Graella del calendari a `feat/docker-caddy-sqlite`, sense fusionar a `main`. L’eix que es veu va de mitja hora abans de l’obertura més d’hora a mitja hora després del tancament més tard. Schedule-X continua amb límits a hores senceres; el que en sobra no es mostra. El gris és només el que queda fora de la franja reservable. Un tancament a les 23:59 es talla a les 24:00. Una sola sala de 20:00 a 23:59, de dimecres a diumenge, es veu de 19:30 a 24:00. Les hores de l’eix van en cicle de 24 hores.
+Graella del calendari refeta a `feat/docker-caddy-sqlite`, commitejada i pujada a `origin`. La causa era que els límits s’arrodonien a hores senceres (Schedule-X 4.8.0 només n’accepta) i el sobrant es retallava amb CSS: la graella visible no era la de Schedule-X.
 
-El coordinador, amb sala seleccionada, al telèfon usa l’horari d’aquell dia i a l’ordinador l’obertura més d’hora i el tancament més tard d’aquesta sala. Sense sala a la ruta, usa totes les sales actives. El responsable, al telèfon i a l’ordinador, usa l’envolupant de totes les sales actives. Un dia es mostra si hi ha almenys una sala oberta (la seleccionada, si el coordinador n’ha triat una). No s’ha tocat el formulari de la sala ni el solapament. No s’ha desat cap espai a l’entitat local.
+- `configGraella`: inici més d’hora − 30 min i fi més tardana + 30 min, una vegada, sense arrodonir. Tall al dia (00:00–24:00). 18:00–21:00 + 19:00–22:30 → 17:30–23:00; tancament 23:59 → 24:00.
+- `graellaDeLaVista`: a la setmana, totes les finestres de les sales de la vista; en un dia, només les d’aquell dia, per als dos rols. Les sales de cada rol no canvien (`finestresPerRol`).
+- Pedaç de Schedule-X amb `patch-package` (ADR [0013](docs/adr/0013-pedac-schedule-x-limits-minuts.md)): `HH:mm` a la validació i eix al minut exacte. Versió fixada a 4.8.0. `docker/frontend.Dockerfile` copia `frontend/patches` abans de `npm ci`.
+- Fora el CSS de retall (`--retall-*`, `translateY`, alçada calculada). Es manté el gris dels marges i el `max-height` de la caixa.
+- `docs/14-ui-ux.md` actualitzat. FastAPI sense canvis.
 
-Vitest 171. `vue-tsc` net. Al navegador, amb la mateixa graella (19:00–24:00 retallada 30 minuts), la primera hora visible és 19:30, el gris arriba fins a les 20:00 i un clic a la línia de les 19:30, 20:00 i 23:30 cau en aquella hora. La sessió del navegador (Pau, Entitat paleta UI) ha quedat en «sessió invàlida» i segueix sense espais.
+Vitest 184, `vue-tsc` i `vite build` nets (el build cal fora del sandbox per workbox). `npm ci` en net aplica el pedaç. Docker no estava en marxa: la imatge no s’ha construït.
+
+Navegador local, entitat de prova «Entitat Graella» (`graella.resp@example.com` / `graella.coord@example.com`, contrasenya `graella123`): responsable 17:30–23:00, 17:30–23:30 amb tres sales i 17:30–24:00 amb un tancament a 23:59; coordinador Sala 1 17:30–21:30 i Sala 2 18:30–23:00; dia del dimarts 18:30–23:00. Crear, canviar l’horari i anul·lar funcionen. L’arrossegament real no s’ha pogut provar al navegador (cobert per test de la conversió). Còpia de la base local d’abans: `backups/espais-abans-graella-2026-10-05.sqlite3`.
+
+De la llista del desplegament anterior, en local el dijous 8 surt i la línia entre dies hi és. L’eix des de les 07:30 de Capgrossos apunta a una altra sala activa amb horari 08:00–22:00 a les dades del VPS (no comprovat).
 
 ## Següent tasca
 
-La branca `feat/docker-caddy-sqlite` és a `origin` a `a1f01b4`. El desplegament el fa qui opera el VPS: `git pull` i `docker compose up -d --build` a la carpeta del projecte. Fusionar a `main` només quan es demani. No esborrar `backup/pre-dockeritzacio`.
+Desplegar `feat/docker-caddy-sqlite` al VPS (`git pull` i `docker compose up -d --build`) i validar-hi la graella amb les sales reals. No es fusiona a `main`. No s’esborra `backup/pre-dockeritzacio`.
 
 No es reobre: el formulari d’aforament mínim, ni el backlog de producte (llista d’espais, estadístiques, invitacions, altres formularis). No és una fase nova.
 
@@ -39,6 +47,7 @@ Cap. API de desenvolupament `http://127.0.0.1:8000`; front de desenvolupament `h
 - [0010](docs/adr/0010-aparença-paleta-mode.md) — esmenat per 0011 (tokens i contrast)
 - [0011](docs/adr/0011-paleta-entitat-mode-personal.md) — acceptat (paleta d’entitat a BBDD; mode clar/fosc al navegador)
 - [0012](docs/adr/0012-docker-caddy-sqlite-alpha.md) — acceptat (Compose, Caddy, SQLite, prefix `/api`, un VPS)
+- [0013](docs/adr/0013-pedac-schedule-x-limits-minuts.md) — acceptat (pedaç local de Schedule-X 4.8.0 per a límits amb minuts)
 
 ## Notes
 
@@ -55,4 +64,4 @@ Cap. API de desenvolupament `http://127.0.0.1:8000`; front de desenvolupament `h
 - El coordinador reprograma la seva reserva sense avís; l’avís només el dispara el responsable.
 - Landing: sense CTAs al cos; sense «gratuït» ni «cobrament»; fotos a `frontend/public/landing/` (hero + opcions + captures).
 - Docker local: `.env` (no versionat) amb `ESPAIS_DOMAIN=http://localhost`. Al VPS, el domini real sense esquema. Operació a `docs/17-desplegament-docker.md`. `environment.yml` continua sent l’entorn local; `backend/requirements.txt` és només el runtime de la imatge.
-- Deute d’aquesta sessió: cap de nou, i cap ADR. L’eix visible (mitja hora abans i mitja hora després, tallat a les 24:00) és el comportament. La decisió d’infraestructura continua sent l’ADR 0012. Caddy corre com a root dins la imatge oficial per poder escoltar 80/443; el backend no.
+- Deute d’aquesta sessió: el pedaç de Schedule-X és deute arquitectònic conscient, a l’ADR 0013. Deute d’implementació: amb una finestra de 900 px d’alt, la caixa del calendari (`max-height: calc(100dvh - 16rem)`) encara deixa uns píxels de desplaçament intern (7 px amb 17:30–23:00, 51 px amb 17:30–23:30); no s’ha tocat. La decisió d’infraestructura continua sent l’ADR 0012. Caddy corre com a root dins la imatge oficial per poder escoltar 80/443; el backend no.
