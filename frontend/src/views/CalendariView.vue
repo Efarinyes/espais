@@ -22,6 +22,7 @@ import {
   finestresPerRol,
   graellaDelRol,
   minutsDeHora,
+  PIXELS_PER_HORA,
   weekdayDelModel,
 } from "../disponibilitat";
 
@@ -172,6 +173,10 @@ function slotsFi(minuts: number): number {
   }
   return Math.floor(minuts / 30);
 }
+
+function pixelsRetall(minuts: number): string {
+  return `${(minuts * PIXELS_PER_HORA) / 60}px`;
+}
 const reservaArrossegada = computed(() => reservaCarregada(reservaArrossegadaId.value));
 const clauCalendari = computed(
   () =>
@@ -289,7 +294,12 @@ function muntarCalendari() {
       defaultView: vistaUnDia.value ? vistaDia.name : vistaSetmana.name,
       selectedDate: diaActiu.value,
       dayBoundaries: { start, end },
-      weekOptions: { gridStep: 30, gridHeight, nDays: 7 },
+      weekOptions: {
+        gridStep: 30,
+        gridHeight,
+        nDays: 7,
+        timeAxisFormatOptions: { hour: "2-digit", minute: "2-digit", hourCycle: "h23" },
+      },
       isCalendarSmall: () => false,
       calendars: calendaris.value,
       callbacks: {
@@ -466,6 +476,9 @@ watch(calendarApp, (app) => {
         :style="{
           '--marge-inici': percentMarge(graella.minutsMargeInici),
           '--marge-fi': percentMarge(graella.minutsMargeFi),
+          '--retall-inici': pixelsRetall(graella.retallInici),
+          '--retall-fi': pixelsRetall(graella.retallFi),
+          '--retall-etiqueta': graella.retallInici > 0 ? '0.75em' : '0px',
         }"
         @click="clicarCapcaleraDia"
         @pointerdown="iniciarArrossegament"

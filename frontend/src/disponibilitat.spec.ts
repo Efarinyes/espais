@@ -99,6 +99,8 @@ describe("disponibilitat", () => {
       margeFi: true,
       minutsMargeInici: 60,
       minutsMargeFi: 60,
+      retallInici: 30,
+      retallFi: 30,
     });
   });
 
@@ -116,6 +118,8 @@ describe("disponibilitat", () => {
       margeFi: true,
       minutsMargeInici: 30,
       minutsMargeFi: 60,
+      retallInici: 0,
+      retallFi: 30,
     });
   });
 
@@ -130,6 +134,8 @@ describe("disponibilitat", () => {
       margeFi: true,
       minutsMargeInici: 30,
       minutsMargeFi: 60,
+      retallInici: 0,
+      retallFi: 30,
     });
     expect(configGraella([{ weekday: 0, start: "17:30", end: "22:30" }])).toEqual({
       start: "17:00",
@@ -139,6 +145,8 @@ describe("disponibilitat", () => {
       margeFi: true,
       minutsMargeInici: 30,
       minutsMargeFi: 30,
+      retallInici: 0,
+      retallFi: 0,
     });
     expect(configGraella([{ weekday: 0, start: "00:30", end: "02:00" }])).toEqual({
       start: "00:00",
@@ -148,6 +156,8 @@ describe("disponibilitat", () => {
       margeFi: true,
       minutsMargeInici: 30,
       minutsMargeFi: 60,
+      retallInici: 0,
+      retallFi: 30,
     });
     expect(configGraella([{ weekday: 0, start: "22:00", end: "24:00" }])).toEqual({
       start: "21:00",
@@ -157,6 +167,8 @@ describe("disponibilitat", () => {
       margeFi: false,
       minutsMargeInici: 60,
       minutsMargeFi: 0,
+      retallInici: 30,
+      retallFi: 0,
     });
     expect(
       configGraella([
@@ -171,6 +183,8 @@ describe("disponibilitat", () => {
       margeFi: true,
       minutsMargeInici: 30,
       minutsMargeFi: 1,
+      retallInici: 0,
+      retallFi: 0,
     });
     const graella = configGraella(salaTecnica);
     const app = createCalendar({
@@ -218,6 +232,21 @@ describe("disponibilitat", () => {
     expect(configGraella(windows, 5)).toMatchObject({ start: "09:00", end: "15:00" });
     expect(configGraella(windows, 6)).toBeNull();
     expect(configGraella(windows)).toMatchObject({ start: "09:00", end: "23:00" });
+  });
+
+  it("una sala de 20:00 a 23:59 es veu de 19:30 a 24:00", () => {
+    const windows = [2, 3, 4, 5, 6].map((weekday) => ({ weekday, start: "20:00", end: "23:59" }));
+    expect(graellaDelRol(windows, true, false, 0)).toEqual({
+      start: "19:00",
+      end: "24:00",
+      gridHeight: 440,
+      margeInici: true,
+      margeFi: true,
+      minutsMargeInici: 60,
+      minutsMargeFi: 1,
+      retallInici: 30,
+      retallFi: 0,
+    });
   });
 
   it("el coordinador usa la sala seleccionada i el responsable l’envolupant", () => {

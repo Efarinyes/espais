@@ -9,15 +9,15 @@ Actualitza aquest arxiu al final de cada sessió. És el punt d’arrencada del 
 
 ## Darrera feina
 
-Graella del calendari a `feat/docker-caddy-sqlite`, sense fusionar a `main`. El marge és de 30 minuts sobre l’hora real i després s’encaixa a `HH:00` (Schedule-X). El gris és només el que queda fora de la franja reservable. Un tancament a les 23:59 es talla a les 24:00 i no salta de dia. Exemple: sala 1 de 20:00 a 23:59 i sala 2 de 18:30 a 23:00 donen l’eix 18:00–24:00, amb 30 minuts grisos abans de les 18:30 i un minut després de les 23:59.
+Graella del calendari a `feat/docker-caddy-sqlite`, sense fusionar a `main`. L’eix que es veu va de mitja hora abans de l’obertura més d’hora a mitja hora després del tancament més tard. Schedule-X continua amb límits a hores senceres; el que en sobra no es mostra. El gris és només el que queda fora de la franja reservable. Un tancament a les 23:59 es talla a les 24:00. Una sola sala de 20:00 a 23:59, de dimecres a diumenge, es veu de 19:30 a 24:00. Les hores de l’eix van en cicle de 24 hores.
 
-El coordinador, amb sala seleccionada, al telèfon usa l’horari d’aquell dia i a l’ordinador l’obertura més d’hora i el tancament més tard d’aquesta sala. Sense sala a la ruta, usa totes les sales actives. El responsable, al telèfon i a l’ordinador, usa l’envolupant de totes les sales actives. Un dia es mostra si hi ha almenys una sala oberta (la seleccionada, si el coordinador n’ha triat una). No s’ha tocat el formulari de la sala ni el solapament.
+El coordinador, amb sala seleccionada, al telèfon usa l’horari d’aquell dia i a l’ordinador l’obertura més d’hora i el tancament més tard d’aquesta sala. Sense sala a la ruta, usa totes les sales actives. El responsable, al telèfon i a l’ordinador, usa l’envolupant de totes les sales actives. Un dia es mostra si hi ha almenys una sala oberta (la seleccionada, si el coordinador n’ha triat una). No s’ha tocat el formulari de la sala ni el solapament. No s’ha desat cap espai a l’entitat local.
 
-Vitest 169. `vue-tsc` net. Els tests de `disponibilitat.spec.ts` i `CalendariView.spec.ts` cobreixen el marge, els rols i el percentatge de gris. La graella pintada no s’ha vist al navegador: la sessió oberta (Pau, Entitat paleta UI) no té espais.
+Vitest 171. `vue-tsc` net. Al navegador, amb la mateixa graella (19:00–24:00 retallada 30 minuts), la primera hora visible és 19:30, el gris arriba fins a les 20:00 i un clic a la línia de les 19:30, 20:00 i 23:30 cau en aquella hora. La sessió del navegador (Pau, Entitat paleta UI) ha quedat en «sessió invàlida» i segueix sense espais.
 
 ## Següent tasca
 
-La branca `feat/docker-caddy-sqlite` és a `origin` a `6a05c0e`. El desplegament el fa qui opera el VPS: `docker compose up -d --build` a la carpeta del projecte. Fusionar a `main` només quan es demani. No esborrar `backup/pre-dockeritzacio`.
+El retall de l’eix visible és local, encara no a `origin`. Pujar-lo només quan es demani. El desplegament el fa qui opera el VPS: `git pull` i `docker compose up -d --build` a la carpeta del projecte. Fusionar a `main` només quan es demani. No esborrar `backup/pre-dockeritzacio`.
 
 No es reobre: el formulari d’aforament mínim, ni el backlog de producte (llista d’espais, estadístiques, invitacions, altres formularis). No és una fase nova.
 
@@ -55,4 +55,4 @@ Cap. API de desenvolupament `http://127.0.0.1:8000`; front de desenvolupament `h
 - El coordinador reprograma la seva reserva sense avís; l’avís només el dispara el responsable.
 - Landing: sense CTAs al cos; sense «gratuït» ni «cobrament»; fotos a `frontend/public/landing/` (hero + opcions + captures).
 - Docker local: `.env` (no versionat) amb `ESPAIS_DOMAIN=http://localhost`. Al VPS, el domini real sense esquema. Operació a `docs/17-desplegament-docker.md`. `environment.yml` continua sent l’entorn local; `backend/requirements.txt` és només el runtime de la imatge.
-- Deute d’aquesta sessió: cap de nou, i cap ADR. La graella (mitja hora sobre l’hora real, coordinador per sala, responsable per envolupant) ja és el comportament. La decisió d’infraestructura continua sent l’ADR 0012. Caddy corre com a root dins la imatge oficial per poder escoltar 80/443; el backend no.
+- Deute d’aquesta sessió: cap de nou, i cap ADR. L’eix visible (mitja hora abans i mitja hora després, tallat a les 24:00) és el comportament. La decisió d’infraestructura continua sent l’ADR 0012. Caddy corre com a root dins la imatge oficial per poder escoltar 80/443; el backend no.

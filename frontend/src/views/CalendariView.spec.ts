@@ -1,5 +1,12 @@
 import "temporal-polyfill/global";
 import { afterEach, describe, expect, it, vi } from "vitest";
+
+const crearCalendari = vi.hoisted(() => vi.fn(() => ({ destroy() {} })));
+
+vi.mock("@schedule-x/calendar", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@schedule-x/calendar")>();
+  return { ...actual, createCalendar: crearCalendari };
+});
 import { createPinia, setActivePinia } from "pinia";
 import { createMemoryHistory, createRouter } from "vue-router";
 import { flushPromises, mount } from "@vue/test-utils";
@@ -128,6 +135,40 @@ async function muntar(opts: {
 describe("CalendariView graella", () => {
   afterEach(() => {
     vi.restoreAllMocks();
+  });
+
+  it("una sala de 20:00 a 23:59 es veu de 19:30 a 24:00", async () => {
+    const sala = {
+      id: "s1",
+      entity_id: "e1",
+      name: "Sala pilars",
+      capacity: 40,
+      equipment: null,
+      active: true,
+      windows: [2, 3, 4, 5, 6].map((weekday) => ({ weekday, start: "20:00", end: "23:59" })),
+    };
+    const wrapper = await muntar({
+      role: "responsible",
+      espais: [sala],
+      estreta: false,
+    });
+    await flushPromises();
+    const config = crearCalendari.mock.calls.at(-1)?.[0] as {
+      dayBoundaries: { start: string; end: string };
+      weekOptions: { timeAxisFormatOptions: { hour: string; minute: string; hourCycle: string } };
+    };
+    expect(config.dayBoundaries).toEqual({ start: "19:00", end: "24:00" });
+    expect(config.weekOptions.timeAxisFormatOptions).toEqual({
+      hour: "2-digit",
+      minute: "2-digit",
+      hourCycle: "h23",
+    });
+    const graella = wrapper.get(".calendari-espais");
+    expect(graella.attributes("data-dies-oberts")).toBe("2 3 4 5 6");
+    expect(graella.attributes("style")).toContain("--retall-inici: 44px");
+    expect(graella.attributes("style")).toContain("--retall-fi: 0px");
+    expect(graella.attributes("style")).toContain("--marge-inici: 20%");
+    wrapper.unmount();
   });
 
   it("el responsable pinta l’envolupant de totes les sales, també en un dia", async () => {

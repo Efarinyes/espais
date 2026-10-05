@@ -209,6 +209,8 @@ export type Graella = {
   margeFi: boolean;
   minutsMargeInici: number;
   minutsMargeFi: number;
+  retallInici: number;
+  retallFi: number;
 };
 
 export function configGraella(windows: FinestraDto[] | null | undefined): Graella;
@@ -242,6 +244,8 @@ export function configGraella(
     margeFi: minutsMargeFi > 0,
     minutsMargeInici,
     minutsMargeFi,
+    retallInici: Math.max(0, minutsMargeInici - MARGE_HORARI_MINUTS),
+    retallFi: Math.max(0, minutsMargeFi - MARGE_HORARI_MINUTS),
   };
 }
 
