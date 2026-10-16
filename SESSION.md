@@ -9,7 +9,9 @@ Actualitza aquest arxiu al final de cada sessió. És el punt d’arrencada del 
 
 ## Darrera feina
 
-Graella del calendari refeta a `feat/docker-caddy-sqlite`, commitejada i pujada a `origin`. La causa era que els límits s’arrodonien a hores senceres (Schedule-X 4.8.0 només n’accepta) i el sobrant es retallava amb CSS: la graella visible no era la de Schedule-X.
+2026-10-06: auditoria SOLID i de deute de la graella (`6a05c0e`, `a1f01b4`, `6b455b9`), només de lectura, sense tocar codi. Veredicte: aprovat amb observacions; el codi es manté tal com està durant les proves de camp. L’informe és a `AUDITORIA-CALENDARI.md`, a la rel, sense seguiment a Git (exclòs a `.git/info/exclude`). S’esborra quan s’hagin aplicat les recomanacions.
+
+Abans d’aquesta auditoria: graella del calendari refeta a `feat/docker-caddy-sqlite`, commitejada i pujada a `origin`. La causa era que els límits s’arrodonien a hores senceres (Schedule-X 4.8.0 només n’accepta) i el sobrant es retallava amb CSS: la graella visible no era la de Schedule-X.
 
 - `configGraella`: inici més d’hora − 30 min i fi més tardana + 30 min, una vegada, sense arrodonir. Tall al dia (00:00–24:00). 18:00–21:00 + 19:00–22:30 → 17:30–23:00; tancament 23:59 → 24:00.
 - `graellaDeLaVista`: a la setmana, totes les finestres de les sales de la vista; en un dia, només les d’aquell dia, per als dos rols. Les sales de cada rol no canvien (`finestresPerRol`).
@@ -21,17 +23,23 @@ Vitest 184, `vue-tsc` i `vite build` nets (el build cal fora del sandbox per wor
 
 Navegador local, entitat de prova «Entitat Graella» (`graella.resp@example.com` / `graella.coord@example.com`, contrasenya `graella123`): responsable 17:30–23:00, 17:30–23:30 amb tres sales i 17:30–24:00 amb un tancament a 23:59; coordinador Sala 1 17:30–21:30 i Sala 2 18:30–23:00; dia del dimarts 18:30–23:00. Crear, canviar l’horari i anul·lar funcionen. L’arrossegament real no s’ha pogut provar al navegador (cobert per test de la conversió). Còpia de la base local d’abans: `backups/espais-abans-graella-2026-10-05.sqlite3`.
 
-De la llista del desplegament anterior, en local el dijous 8 surt i la línia entre dies hi és. L’eix des de les 07:30 de Capgrossos apunta a una altra sala activa amb horari 08:00–22:00 a les dades del VPS (no comprovat).
+Desplegat al VPS (`6b455b9`) i provat amb Capgrossos, «Sala pilars». La vista dia del divendres ja anava de 19:30 a 24:00. La setmana començava a les 07:30 perquè dissabte i diumenge tenien mal posada l’hora d’inici (les 08:00): era un error de dades, no de codi. Amb l’horari de la sala corregit, el calendari funciona com s’esperava, per al coordinador i per al responsable. La graella de la setmana fa servir l’obertura més d’hora de tots els dies: és el comportament volgut.
 
 ## Següent tasca
 
-Desplegar `feat/docker-caddy-sqlite` al VPS (`git pull` i `docker compose up -d --build`) i validar-hi la graella amb les sales reals. No es fusiona a `main`. No s’esborra `backup/pre-dockeritzacio`.
+Decisió de producte pendent, a partir de les proves de camp (punt D1 de l’informe): quan el coordinador té una sala seleccionada, el rang i els dies oberts surten només d’aquella sala, però el filtre continua mostrant les seves reserves de totes les sales. Una reserva pròpia en una altra sala fora d’aquell rang, o en un dia tancat per a la sala seleccionada, no es veu (sí sense sala seleccionada). Cal decidir si ha de sortir. No es canvia el codi fins que es decideixi.
+
+Després, només quan es demani: les recomanacions «Després» de l’informe (vegeu Notes). En acabar-les, esborrar `AUDITORIA-CALENDARI.md` i les dues línies de `.git/info/exclude`.
+
+Quan es demani: fusionar `feat/docker-caddy-sqlite` a `main` (`repo-github`). No s’esborra `backup/pre-dockeritzacio`.
+
+Possibles millores, només si es demanen: que el formulari de disponibilitat no ompli 08:00–22:00 en activar un dia (l’origen probable de l’error de dades), i enfosquir a la setmana les hores tancades de cada dia quan els horaris varien segons el dia.
 
 No es reobre: el formulari d’aforament mínim, ni el backlog de producte (llista d’espais, estadístiques, invitacions, altres formularis). No és una fase nova.
 
 ## Blockers
 
-Cap. API de desenvolupament `http://127.0.0.1:8000`; front de desenvolupament `http://127.0.0.1:5173`. La pila Docker, si segueix en marxa, ocupa els ports 80 i 443 (`http://localhost`).
+Cap. API de desenvolupament `http://127.0.0.1:8000`; front de desenvolupament `http://127.0.0.1:5173`. La base local conserva l’entitat de prova «Entitat Graella». La pila Docker, si segueix en marxa, ocupa els ports 80 i 443 (`http://localhost`).
 
 ## ADRs oberts / recents
 
@@ -57,7 +65,7 @@ Cap. API de desenvolupament `http://127.0.0.1:8000`; front de desenvolupament `h
 - Front: `cd frontend && npm test` / `npm run dev`. Vue no global. Paleta d’entitat ADR 0011 (defecte Mar i cel; Clar/Fosc al capçal; Tria els colors al lateral del responsable, a sobre de Surt); toc ≥ 44px (`min-h-11`). Amb sessió el capçal és compartit (logo i mode). El lateral és per rol. A mòbil és un `details` tancat, amb el nom de l’entitat i una fletxa. Lletra Montserrat local.
 - PWA: instal·lable; no desregistrar el SW en DEV. `navigateFallbackDenylist` és `/api`. Les rutes Vue ja no es deneguen pel nom.
 - Refactorització del frontend tancada (2026-09-28). El pla temporal del frontend s’esborra i no es rellegeix. El `.docx` `docs/auditoria_SOLID_pla_refactoritzacio_frontend.docx` tampoc es rellegeix ni es commiteja. La còpia doble dels colors no es fa. El calendari ja està partit. CSV d’anàlisi = backlog.
-- Branques: `main` segueix a `7d3f474`, igual que `backup/pre-dockeritzacio` i `origin/backup/pre-dockeritzacio`. `feat/docker-caddy-sqlite` és a `origin`. Política a `docs/16-repositori.md`.
+- Branques: `main` segueix a `7d3f474`, igual que `backup/pre-dockeritzacio` i `origin/backup/pre-dockeritzacio`. `feat/docker-caddy-sqlite` és a `origin` a `6b455b9`. Política a `docs/16-repositori.md`.
 - Pla temporal del backend esborrat (2026-09-29) i no es rellegeix. Fets, en ordre: normalitzar el nom al domini; una validació de nom, aforament i equipament; una comprovació d’interval reservable; el `save` en memòria de reserva i d’avís insereix si no hi ha fila; l’email del correu surt de `UserRepository.get_by_id`; test API d’intervals adjacents (201); una sola classe de repositori d’espais en memòria; `min_attendance` opcional al JSON, amb defecte `None`.
 - Fora d’aquell pla, i sense començar: formulari d’aforament mínim, `pending` / `rescheduled`, ports nous, un servei que agrupi casos d’ús. L’anul·lació de la pròpia reserva pel coordinador ja hi és, sense correu.
 - L’estat `rescheduled` no és una decisió oberta: en canviar l’horari, la reserva continua `confirmed` i l’avís porta l’interval antic i el nou. Un historial de canvis és backlog. L’assistència per nombre i l’avís suau d’aforament són el comportament volgut.
@@ -65,3 +73,4 @@ Cap. API de desenvolupament `http://127.0.0.1:8000`; front de desenvolupament `h
 - Landing: sense CTAs al cos; sense «gratuït» ni «cobrament»; fotos a `frontend/public/landing/` (hero + opcions + captures).
 - Docker local: `.env` (no versionat) amb `ESPAIS_DOMAIN=http://localhost`. Al VPS, el domini real sense esquema. Operació a `docs/17-desplegament-docker.md`. `environment.yml` continua sent l’entorn local; `backend/requirements.txt` és només el runtime de la imatge.
 - Deute d’aquesta sessió: el pedaç de Schedule-X és deute arquitectònic conscient, a l’ADR 0013. Deute d’implementació: amb una finestra de 900 px d’alt, la caixa del calendari (`max-height: calc(100dvh - 16rem)`) encara deixa uns píxels de desplaçament intern (7 px amb 17:30–23:00, 51 px amb 17:30–23:30); no s’ha tocat. La decisió d’infraestructura continua sent l’ADR 0012. Caddy corre com a root dins la imatge oficial per poder escoltar 80/443; el backend no.
+- Deute d’implementació de l’auditoria del 2026-10-06 (sense ADR, cap no és urgent): `patch-package` sense `--error-on-fail`, i per això un pedaç que no s’aplica no atura el `docker build`; selectors `data-slots` 2–4 morts a `styles.css` i camps `margeInici` / `margeFi` sense ús a `Graella`; el divisor 30 de `slotsInici` / `slotsFi` repeteix el `gridStep`; falten tests de renderitzat per a 19:30–24:00 i per a un rang no múltiple de 30 (l’última fila queda mig retallada); comprovacions amb decimals exactes a `CalendariView.spec.ts`. No fer: abstraure Schedule-X, un composable de graella, estratègies per rol, marge configurable.
