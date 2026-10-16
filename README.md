@@ -6,14 +6,14 @@ L’ús de l’app és **gratuït**: els membres no paguen per reservar ni per u
 
 ## Estat actual
 
-El projecte és a la **Fase 1 (esquelet)**. Punt de partida de cada sessió: [`SESSION.md`](SESSION.md). Pla: [`docs/PLA-TREBALL.md`](docs/PLA-TREBALL.md).
+La **v1** està tancada (fases 0 a 8). L’Alpha Docker és independent del pla de fases: [ADR 0012](docs/adr/0012-docker-caddy-sqlite-alpha.md) i [`docs/17-desplegament-docker.md`](docs/17-desplegament-docker.md).
 
 ## Com entrar al projecte
 
 1. Llegeix [`SESSION.md`](SESSION.md).
 2. Consulta [`docs/INDEX.md`](docs/INDEX.md).
-3. Obre la fase activa a [`docs/PLA-TREBALL.md`](docs/PLA-TREBALL.md).
-4. El model ha d’utilitzar els skills que apliquen a la feina ([`AGENTS.md`](AGENTS.md)). El protocol és a [`docs/15-protocol-sessio.md`](docs/15-protocol-sessio.md).
+3. Consulta [`docs/PLA-TREBALL.md`](docs/PLA-TREBALL.md) per conèixer l’estat de les fases.
+4. Segueix els skills i el protocol de sessió indicats a [`AGENTS.md`](AGENTS.md) i [`docs/15-protocol-sessio.md`](docs/15-protocol-sessio.md).
 
 ## Arrencada local
 
