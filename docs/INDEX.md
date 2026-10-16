@@ -44,6 +44,7 @@ Punt de mapa. Llegeix [`SESSION.md`](../SESSION.md) abans de qualsevol capítol.
 - [adr/0011-paleta-entitat-mode-personal.md](adr/0011-paleta-entitat-mode-personal.md)
 - [adr/0012-docker-caddy-sqlite-alpha.md](adr/0012-docker-caddy-sqlite-alpha.md)
 - [adr/0013-pedac-schedule-x-limits-minuts.md](adr/0013-pedac-schedule-x-limits-minuts.md)
+- [adr/0014-revocar-token-en-sortir.md](adr/0014-revocar-token-en-sortir.md)
 
 ## Skills i rules
 

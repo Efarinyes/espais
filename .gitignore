@@ -18,3 +18,7 @@ dist/
 frontend/dist/
 frontend/dev-dist/
 frontend/node_modules/
+
+# Documents de treball locals: docs-audit-espais
+
+docs-audit-espais/

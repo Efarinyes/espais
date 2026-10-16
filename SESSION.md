@@ -9,7 +9,14 @@ Actualitza aquest arxiu al final de cada sessió. És el punt d’arrencada del 
 
 ## Darrera feina
 
-2026-10-06: auditoria SOLID i de deute de la graella (`6a05c0e`, `a1f01b4`, `6b455b9`), només de lectura, sense tocar codi. Veredicte: aprovat amb observacions; el codi es manté tal com està durant les proves de camp. L’informe és a `AUDITORIA-CALENDARI.md`, a la rel, sense seguiment a Git (exclòs a `.git/info/exclude`). S’esborra quan s’hagin aplicat les recomanacions.
+2026-10-16: alineament de l’Alpha, sense codi d’aplicació i sense branca nova. Tot a `feat/docker-caddy-sqlite`.
+
+- Assistència: no és un defecte del commit desplegable. Des de `90b8462` el responsable registra assistència a qualsevol reserva de l’entitat; el coordinador, només a la seva. `6b455b9` ja ho conté. Els 17 tests de `test_record_attendance.py` i `test_attendance_api.py` van passar. La regla del 9 de setembre (`3874a6e`) ja no és la vigent. No s’ha tocat el codi ni la reserva real.
+- Docs desfasats respecte d’aquesta regla, sense corregir: `docs/02-glossari.md`, `docs/01-visio-producte.md` i el criteri de la fase 5 a `docs/PLA-TREBALL.md`. No hi ha ADR que la decideixi, a part del comportament ja escrit a `docs/04` i `docs/07`.
+- README: la v1 està tancada (fases 0–8) i l’Alpha Docker és independent del pla. Commit `e695b18`, a `origin`.
+- ADR [0014](docs/adr/0014-revocar-token-en-sortir.md) acceptat: Surt revoca el Bearer d’aquell navegador després de la resposta del servidor; la comprovació és a `require_session`. No implementat. La llista és una taula SQLite al volum `espais_data`, purga en caducar, no als 21 dies.
+
+Abans, 2026-10-06: auditoria SOLID i de deute de la graella (`6a05c0e`, `a1f01b4`, `6b455b9`), només de lectura. Veredicte: aprovat amb observacions. L’informe és a `AUDITORIA-CALENDARI.md`, a la rel, sense seguiment a Git (exclòs a `.git/info/exclude`). S’esborra quan s’hagin aplicat les recomanacions.
 
 Abans d’aquesta auditoria: graella del calendari refeta a `feat/docker-caddy-sqlite`, commitejada i pujada a `origin`. La causa era que els límits s’arrodonien a hores senceres (Schedule-X 4.8.0 només n’accepta) i el sobrant es retallava amb CSS: la graella visible no era la de Schedule-X.
 
@@ -27,7 +34,9 @@ Desplegat al VPS (`6b455b9`) i provat amb Capgrossos, «Sala pilars». La vista 
 
 ## Següent tasca
 
-Decisió de producte pendent, a partir de les proves de camp (punt D1 de l’informe): quan el coordinador té una sala seleccionada, el rang i els dies oberts surten només d’aquella sala, però el filtre continua mostrant les seves reserves de totes les sales. Una reserva pròpia en una altra sala fora d’aquell rang, o en un dia tancat per a la sala seleccionada, no es veu (sí sense sala seleccionada). Cal decidir si ha de sortir. No es canvia el codi fins que es decideixi.
+Quan es demani: implementar l’ADR 0014 a `feat/docker-caddy-sqlite`, sense branca nova. Migració després de `0008_entity_palette`, hash i `exp` a la SQLite del volum, purga al bucle de manteniment existent, rebuig a `require_session`, i el client només esborra el token si el servidor confirma el tancament.
+
+Més endavant, no ara: la decisió de producte D1 del calendari (sala seleccionada pel coordinador i reserves pròpies fora d’aquell rang). No es canvia el codi fins que es decideixi. Tampoc no s’alineen glossari, visió i criteri de la fase 5 fins que es confirmi que la regla d’assistència del 3 d’octubre es manté.
 
 Després, només quan es demani: les recomanacions «Després» de l’informe (vegeu Notes). En acabar-les, esborrar `AUDITORIA-CALENDARI.md` i les dues línies de `.git/info/exclude`.
 
@@ -56,6 +65,7 @@ Cap. API de desenvolupament `http://127.0.0.1:8000`; front de desenvolupament `h
 - [0011](docs/adr/0011-paleta-entitat-mode-personal.md) — acceptat (paleta d’entitat a BBDD; mode clar/fosc al navegador)
 - [0012](docs/adr/0012-docker-caddy-sqlite-alpha.md) — acceptat (Compose, Caddy, SQLite, prefix `/api`, un VPS)
 - [0013](docs/adr/0013-pedac-schedule-x-limits-minuts.md) — acceptat (pedaç local de Schedule-X 4.8.0 per a límits amb minuts)
+- [0014](docs/adr/0014-revocar-token-en-sortir.md) — acceptat (Surt revoca el Bearer; la comprovació és a `require_session`)
 
 ## Notes
 
@@ -65,7 +75,7 @@ Cap. API de desenvolupament `http://127.0.0.1:8000`; front de desenvolupament `h
 - Front: `cd frontend && npm test` / `npm run dev`. Vue no global. Paleta d’entitat ADR 0011 (defecte Mar i cel; Clar/Fosc al capçal; Tria els colors al lateral del responsable, a sobre de Surt); toc ≥ 44px (`min-h-11`). Amb sessió el capçal és compartit (logo i mode). El lateral és per rol. A mòbil és un `details` tancat, amb el nom de l’entitat i una fletxa. Lletra Montserrat local.
 - PWA: instal·lable; no desregistrar el SW en DEV. `navigateFallbackDenylist` és `/api`. Les rutes Vue ja no es deneguen pel nom.
 - Refactorització del frontend tancada (2026-09-28). El pla temporal del frontend s’esborra i no es rellegeix. El `.docx` `docs/auditoria_SOLID_pla_refactoritzacio_frontend.docx` tampoc es rellegeix ni es commiteja. La còpia doble dels colors no es fa. El calendari ja està partit. CSV d’anàlisi = backlog.
-- Branques: `main` segueix a `7d3f474`, igual que `backup/pre-dockeritzacio` i `origin/backup/pre-dockeritzacio`. `feat/docker-caddy-sqlite` és a `origin` a `6b455b9`. Política a `docs/16-repositori.md`.
+- Branques: `main` segueix a `7d3f474`, igual que `backup/pre-dockeritzacio` i `origin/backup/pre-dockeritzacio`. `feat/docker-caddy-sqlite` és la branca de treball; a `origin` el README és `e695b18` i el SESSION de la graella és `8a2e78e`. Política a `docs/16-repositori.md`. No s’obre una branca nova per l’ADR 0014.
 - Pla temporal del backend esborrat (2026-09-29) i no es rellegeix. Fets, en ordre: normalitzar el nom al domini; una validació de nom, aforament i equipament; una comprovació d’interval reservable; el `save` en memòria de reserva i d’avís insereix si no hi ha fila; l’email del correu surt de `UserRepository.get_by_id`; test API d’intervals adjacents (201); una sola classe de repositori d’espais en memòria; `min_attendance` opcional al JSON, amb defecte `None`.
 - Fora d’aquell pla, i sense començar: formulari d’aforament mínim, `pending` / `rescheduled`, ports nous, un servei que agrupi casos d’ús. L’anul·lació de la pròpia reserva pel coordinador ja hi és, sense correu.
 - L’estat `rescheduled` no és una decisió oberta: en canviar l’horari, la reserva continua `confirmed` i l’avís porta l’interval antic i el nou. Un historial de canvis és backlog. L’assistència per nombre i l’avís suau d’aforament són el comportament volgut.
@@ -73,4 +83,5 @@ Cap. API de desenvolupament `http://127.0.0.1:8000`; front de desenvolupament `h
 - Landing: sense CTAs al cos; sense «gratuït» ni «cobrament»; fotos a `frontend/public/landing/` (hero + opcions + captures).
 - Docker local: `.env` (no versionat) amb `ESPAIS_DOMAIN=http://localhost`. Al VPS, el domini real sense esquema. Operació a `docs/17-desplegament-docker.md`. `environment.yml` continua sent l’entorn local; `backend/requirements.txt` és només el runtime de la imatge.
 - Deute d’aquesta sessió: el pedaç de Schedule-X és deute arquitectònic conscient, a l’ADR 0013. Deute d’implementació: amb una finestra de 900 px d’alt, la caixa del calendari (`max-height: calc(100dvh - 16rem)`) encara deixa uns píxels de desplaçament intern (7 px amb 17:30–23:00, 51 px amb 17:30–23:30); no s’ha tocat. La decisió d’infraestructura continua sent l’ADR 0012. Caddy corre com a root dins la imatge oficial per poder escoltar 80/443; el backend no.
+- Deute d’aquesta sessió (2026-10-16): l’ADR 0014 és la decisió de revocació; implementar-lo és la tasca següent, no un deute a part. El desfasament de glossari, visió i criteri de la fase 5 queda pendent de confirmar la regla, sense ADR nou.
 - Deute d’implementació de l’auditoria del 2026-10-06 (sense ADR, cap no és urgent): `patch-package` sense `--error-on-fail`, i per això un pedaç que no s’aplica no atura el `docker build`; selectors `data-slots` 2–4 morts a `styles.css` i camps `margeInici` / `margeFi` sense ús a `Graella`; el divisor 30 de `slotsInici` / `slotsFi` repeteix el `gridStep`; falten tests de renderitzat per a 19:30–24:00 i per a un rang no múltiple de 30 (l’última fila queda mig retallada); comprovacions amb decimals exactes a `CalendariView.spec.ts`. No fer: abstraure Schedule-X, un composable de graella, estratègies per rol, marge configurable.
