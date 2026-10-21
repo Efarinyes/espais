@@ -43,9 +43,9 @@ Desplegat al VPS (`6b455b9`) i provat amb Capgrossos, «Sala pilars». La vista 
 
 ## Següent tasca
 
-2026-10-21, decisions del prompt 6 aplicades, sense fase nova: el registre continua obert i la verificació de correu segueix al backlog (`docs/05`), també a l’Alpha i sense SMTP. La invitació s’envia si hi ha `ESPAIS_SMTP_HOST`; si no n’hi ha o l’enviament falla, es conserva i el responsable veu l’enllaç (`docs/05`, `docs/08`). Port propi, no el `Notifier` d’anul·lació. Caducitat 14 dies. La resta del backlog d’invitacions (llista, revocació) no es reobre.
+La propera sessió, una sola peça i sense tocar producció: implementar l’ADR 0014 a `feat/docker-caddy-sqlite`, sense branca nova. Migració després de `0008_entity_palette`, hash i `exp` a la SQLite del volum, purga al bucle de manteniment existent, rebuig a `require_session`, i el client només esborra el token si el servidor confirma el tancament. L’assistència amb `mine: false`, el README i les capçaleres/OpenAPI ja estan resolts; no es refan. La verificació de correu segueix al backlog. La invitació per correu ja està feta (`docs/05` i `docs/08`). No es fusiona `main` tret que es demani en aquella sessió, i no s’esborra `backup/pre-dockeritzacio`.
 
-Quan es demani: implementar l’ADR 0014 a `feat/docker-caddy-sqlite`, sense branca nova. Migració després de `0008_entity_palette`, hash i `exp` a la SQLite del volum, purga al bucle de manteniment existent, rebuig a `require_session`, i el client només esborra el token si el servidor confirma el tancament.
+2026-10-21, decisions del prompt 6 aplicades, sense fase nova: el registre continua obert i la verificació de correu segueix al backlog (`docs/05`), també a l’Alpha i sense SMTP. La invitació s’envia si hi ha `ESPAIS_SMTP_HOST`; si no n’hi ha o l’enviament falla, es conserva i el responsable veu l’enllaç (`docs/05`, `docs/08`). Port propi, no el `Notifier` d’anul·lació. Caducitat 14 dies. La resta del backlog d’invitacions (llista, revocació) no es reobre.
 
 Més endavant, no ara: la decisió de producte D1 del calendari (sala seleccionada pel coordinador i reserves pròpies fora d’aquell rang). No es canvia el codi fins que es decideixi. Tampoc no s’alineen glossari, visió i criteri de la fase 5 fins que es confirmi que la regla d’assistència del 3 d’octubre es manté.
 
