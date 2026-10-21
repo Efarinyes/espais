@@ -51,7 +51,7 @@ El responsable no “entra buit” sense guia:
 
 | Cas | Comportament |
 |---|---|
-| Email ja registrat | Error: iniciar sessió o recuperar accés |
+| Email ja registrat | No es crea un segon compte. La resposta no diu que el correu existeix: cal revisar les dades o iniciar sessió. No hi ha recuperació de contrasenya. |
 | Doble submit del formulari | Idempotència: no dues entitats |
 | Registre a mitges (crash) | Transacció: zero o tot |
 | Responsable sense espais | App usable; empty state; no pot haver-hi reserves |

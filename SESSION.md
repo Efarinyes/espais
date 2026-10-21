@@ -9,6 +9,8 @@ Actualitza aquest arxiu al final de cada sessió. És el punt d’arrencada del 
 
 ## Darrera feina
 
+2026-10-21: `POST /registre` ja no confirma que un email existeix (ADR 0016). La longitud mínima de 8 es manté. La complexitat extra i el límit d’intents són l’ADR 0017, proposat i sense codi. La invitació continua dient si l’email ja està registrat.
+
 2026-10-21: vora pública de l’auditoria del 16 d’octubre, a `feat/docker-caddy-sqlite`, sense branca nova i sense tocar producció.
 
 - ADR [0015](docs/adr/0015-capcaleres-i-openapi-produccio.md) acceptat. Caddy envia HSTS (180 dies, sense subdominis ni preload), `nosniff`, `DENY`, `strict-origin-when-cross-origin` i una CSP del mateix origen. Els estils en línia es queden; els scripts en línia, no. El tema inicial és `frontend/public/tema-inicial.js`.
@@ -76,6 +78,8 @@ Cap. API de desenvolupament `http://127.0.0.1:8000`; front de desenvolupament `h
 - [0013](docs/adr/0013-pedac-schedule-x-limits-minuts.md) — acceptat (pedaç local de Schedule-X 4.8.0 per a límits amb minuts)
 - [0014](docs/adr/0014-revocar-token-en-sortir.md) — acceptat (Surt revoca el Bearer; la comprovació és a `require_session`)
 - [0015](docs/adr/0015-capcaleres-i-openapi-produccio.md) — acceptat (capçaleres a Caddy; OpenAPI tancat en producció)
+- [0016](docs/adr/0016-registre-no-confirma-email.md) — acceptat (`POST /registre` no diu que l’email existeix)
+- [0017](docs/adr/0017-contrasenya-i-intents-proposat.md) — proposat, no vigent (complexitat de contrasenya i límit d’intents; no implementat)
 
 ## Notes
 

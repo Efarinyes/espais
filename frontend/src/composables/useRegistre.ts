@@ -56,7 +56,7 @@ export function useRegistre() {
       await router.push(destiDespresSessio(dto.role));
     } catch (err) {
       if (err instanceof ApiError && err.status === 409) {
-        errorGlobal.value = "Aquest email ja està registrat. Inicia sessió o recupera l’accés.";
+        errorGlobal.value = "No s’ha pogut completar el registre. Revisa les dades o inicia la sessió.";
       } else if (err instanceof ApiError) {
         errorGlobal.value = err.message;
       } else {

@@ -13,6 +13,10 @@ from app.usecases.register_entity import RegisterEntityCommand
 
 router = APIRouter()
 
+DETALL_REGISTRE_NO_COMPLETAT = (
+    "No s’ha pogut completar el registre. Revisa les dades o inicia la sessió."
+)
+
 
 class RegisterEntityRequest(BaseModel):
     entity_name: str
@@ -43,7 +47,7 @@ def register(
             )
         )
     except DuplicateEmailError:
-        raise HTTPException(status_code=409, detail="aquest email ja està registrat") from None
+        raise HTTPException(status_code=400, detail=DETALL_REGISTRE_NO_COMPLETAT) from None
     except InvalidRegistrationError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from None
 

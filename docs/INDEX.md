@@ -46,6 +46,8 @@ Punt de mapa. Llegeix [`SESSION.md`](../SESSION.md) abans de qualsevol capítol.
 - [adr/0013-pedac-schedule-x-limits-minuts.md](adr/0013-pedac-schedule-x-limits-minuts.md)
 - [adr/0014-revocar-token-en-sortir.md](adr/0014-revocar-token-en-sortir.md)
 - [adr/0015-capcaleres-i-openapi-produccio.md](adr/0015-capcaleres-i-openapi-produccio.md)
+- [adr/0016-registre-no-confirma-email.md](adr/0016-registre-no-confirma-email.md)
+- [adr/0017-contrasenya-i-intents-proposat.md](adr/0017-contrasenya-i-intents-proposat.md)
 
 ## Skills i rules
 

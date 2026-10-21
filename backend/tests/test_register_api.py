@@ -28,15 +28,18 @@ def test_post_registre_returns_201_and_ids(sqlite_session_factory) -> None:
     assert body["role"] == "responsible"
 
 
-def test_post_registre_duplicate_email_returns_409(sqlite_session_factory) -> None:
+def test_post_registre_duplicate_email_does_not_confirm_it_exists(sqlite_session_factory) -> None:
     client = TestClient(create_app(session_factory=sqlite_session_factory))
     assert client.post("/registre", json=_payload()).status_code == 201
     response = client.post(
         "/registre",
         json=_payload(entity_name="AAVV Barri B", email="Anna@example.com"),
     )
-    assert response.status_code == 409
-    assert response.json()["detail"] == "aquest email ja està registrat"
+    assert response.status_code == 400
+    detail = response.json()["detail"]
+    assert detail == "No s’ha pogut completar el registre. Revisa les dades o inicia la sessió."
+    assert "registrat" not in detail
+    assert "existeix" not in detail
 
 
 def test_post_registre_short_password_returns_400(sqlite_session_factory) -> None:

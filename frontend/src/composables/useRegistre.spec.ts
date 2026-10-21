@@ -79,7 +79,27 @@ describe("useRegistre", () => {
     expect(router.currentRoute.value.name).toBe("espais");
   });
 
-  it("mostra error clar si l’email ja existeix", async () => {
+  it("no diu que l’email ja existeix si el registre no es completa", async () => {
+    const { wrapper } = muntar({
+      registrar: async () => {
+        throw new ApiError(
+          "No s’ha pogut completar el registre. Revisa les dades o inicia la sessió.",
+          400,
+        );
+      },
+    });
+    wrapper.vm.camps.entity_name = "AAVV";
+    wrapper.vm.camps.responsible_name = "Anna";
+    wrapper.vm.camps.email = "anna@example.com";
+    wrapper.vm.camps.password = "secret123";
+    await wrapper.vm.enviar();
+    await flushPromises();
+    expect(wrapper.vm.errorGlobal).toContain("Revisa les dades o inicia la sessió");
+    expect(wrapper.vm.errorGlobal).not.toContain("registrat");
+    expect(wrapper.vm.errorGlobal).not.toContain("recupera");
+  });
+
+  it("tampoc no revela un 409 antic de registre", async () => {
     const { wrapper } = muntar({
       registrar: async () => {
         throw new ApiError("aquest email ja està registrat", 409);
@@ -91,7 +111,7 @@ describe("useRegistre", () => {
     wrapper.vm.camps.password = "secret123";
     await wrapper.vm.enviar();
     await flushPromises();
-    expect(wrapper.vm.errorGlobal).toContain("ja està registrat");
-    expect(wrapper.vm.errorGlobal).toContain("Inicia sessió");
+    expect(wrapper.vm.errorGlobal).not.toContain("registrat");
+    expect(wrapper.vm.errorGlobal).toContain("inicia la sessió");
   });
 });
