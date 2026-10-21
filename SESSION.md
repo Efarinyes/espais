@@ -9,6 +9,13 @@ Actualitza aquest arxiu al final de cada sessió. És el punt d’arrencada del 
 
 ## Darrera feina
 
+2026-10-21: vora pública de l’auditoria del 16 d’octubre, a `feat/docker-caddy-sqlite`, sense branca nova i sense tocar producció.
+
+- ADR [0015](docs/adr/0015-capcaleres-i-openapi-produccio.md) acceptat. Caddy envia HSTS (180 dies, sense subdominis ni preload), `nosniff`, `DENY`, `strict-origin-when-cross-origin` i una CSP del mateix origen. Els estils en línia es queden; els scripts en línia, no. El tema inicial és `frontend/public/tema-inicial.js`.
+- Amb `ESPAIS_ENV=production`, `/docs`, `/redoc` i `/openapi.json` responen 404. `/salut` segueix obert. Fora de producció la documentació es manté.
+- `handle_path /api/*` i `reverse_proxy backend:8000` no han canviat. FastAPI continua sense el prefix.
+- Tests: `test_vora_publica.py`, `test_health.py` i `test_session_secret.py` (10) verds. No s’ha aixecat Docker ni s’ha cridat el VPS: les capçaleres no s’han vist en un navegador.
+
 2026-10-16: alineament de l’Alpha, sense codi d’aplicació i sense branca nova. Tot a `feat/docker-caddy-sqlite`.
 
 - Assistència: no és un defecte del commit desplegable. Des de `90b8462` el responsable registra assistència a qualsevol reserva de l’entitat; el coordinador, només a la seva. `6b455b9` ja ho conté. Els 17 tests de `test_record_attendance.py` i `test_attendance_api.py` van passar. La regla del 9 de setembre (`3874a6e`) ja no és la vigent. No s’ha tocat el codi ni la reserva real.
@@ -66,6 +73,7 @@ Cap. API de desenvolupament `http://127.0.0.1:8000`; front de desenvolupament `h
 - [0012](docs/adr/0012-docker-caddy-sqlite-alpha.md) — acceptat (Compose, Caddy, SQLite, prefix `/api`, un VPS)
 - [0013](docs/adr/0013-pedac-schedule-x-limits-minuts.md) — acceptat (pedaç local de Schedule-X 4.8.0 per a límits amb minuts)
 - [0014](docs/adr/0014-revocar-token-en-sortir.md) — acceptat (Surt revoca el Bearer; la comprovació és a `require_session`)
+- [0015](docs/adr/0015-capcaleres-i-openapi-produccio.md) — acceptat (capçaleres a Caddy; OpenAPI tancat en producció)
 
 ## Notes
 
@@ -84,4 +92,5 @@ Cap. API de desenvolupament `http://127.0.0.1:8000`; front de desenvolupament `h
 - Docker local: `.env` (no versionat) amb `ESPAIS_DOMAIN=http://localhost`. Al VPS, el domini real sense esquema. Operació a `docs/17-desplegament-docker.md`. `environment.yml` continua sent l’entorn local; `backend/requirements.txt` és només el runtime de la imatge.
 - Deute d’aquesta sessió: el pedaç de Schedule-X és deute arquitectònic conscient, a l’ADR 0013. Deute d’implementació: amb una finestra de 900 px d’alt, la caixa del calendari (`max-height: calc(100dvh - 16rem)`) encara deixa uns píxels de desplaçament intern (7 px amb 17:30–23:00, 51 px amb 17:30–23:30); no s’ha tocat. La decisió d’infraestructura continua sent l’ADR 0012. Caddy corre com a root dins la imatge oficial per poder escoltar 80/443; el backend no.
 - Deute d’aquesta sessió (2026-10-16): l’ADR 0014 és la decisió de revocació; implementar-lo és la tasca següent, no un deute a part. El desfasament de glossari, visió i criteri de la fase 5 queda pendent de confirmar la regla, sense ADR nou.
+- Deute d’aquesta sessió (2026-10-21): l’ADR 0015 és la decisió de capçaleres i d’OpenAPI. `style-src 'unsafe-inline'` és la decisió, perquè el calendari i la paleta posen atributs `style`. No s’ha desplegat: la imatge del VPS encara no porta aquest Caddyfile.
 - Deute d’implementació de l’auditoria del 2026-10-06 (sense ADR, cap no és urgent): `patch-package` sense `--error-on-fail`, i per això un pedaç que no s’aplica no atura el `docker build`; selectors `data-slots` 2–4 morts a `styles.css` i camps `margeInici` / `margeFi` sense ús a `Graella`; el divisor 30 de `slotsInici` / `slotsFi` repeteix el `gridStep`; falten tests de renderitzat per a 19:30–24:00 i per a un rang no múltiple de 30 (l’última fila queda mig retallada); comprovacions amb decimals exactes a `CalendariView.spec.ts`. No fer: abstraure Schedule-X, un composable de graella, estratègies per rol, marge configurable.

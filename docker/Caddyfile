@@ -1,6 +1,14 @@
 {$ESPAIS_DOMAIN} {
 	encode zstd gzip
 
+	header {
+		Strict-Transport-Security "max-age=15552000"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Content-Security-Policy "default-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self'; font-src 'self'; connect-src 'self'; manifest-src 'self'; worker-src 'self'"
+	}
+
 	handle_path /api/* {
 		reverse_proxy backend:8000
 	}

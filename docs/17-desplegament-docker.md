@@ -60,6 +60,8 @@ curl -i http://localhost/api/salut
 
 Ha de respondre `200` i `{"estat":"ok"}`. `http://localhost/iniciar-sessio` ha de tornar l’HTML de la SPA, no JSON.
 
+Caddy afegeix les capçaleres de la vora (ADR [0015](adr/0015-capcaleres-i-openapi-produccio.md)) tant a l’HTML com a l’API. Amb `ESPAIS_ENV=production`, que Compose ja fixa al backend, `/api/docs`, `/api/redoc` i `/api/openapi.json` responen 404. `/api/salut` no es tanca. El bloc `handle_path /api/*` continua enviant la petició a FastAPI sense el prefix.
+
 ## Logs, aturar, reiniciar
 
 ```bash

@@ -1,6 +1,7 @@
 """Fàbrica de l’app FastAPI. Els routers no calculen negoci."""
 
 import asyncio
+import os
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager, suppress
 
@@ -44,13 +45,24 @@ async def lifespan(application: FastAPI) -> AsyncIterator[None]:
                 await task
 
 
+def _documentacio_oberta() -> bool:
+    return os.environ.get("ESPAIS_ENV") != "production"
+
+
 def create_app(
     *,
     session_factory: sessionmaker | None = None,
     token_issuer: TokenIssuer | None = None,
     enable_maintenance: bool = False,
 ) -> FastAPI:
-    application = FastAPI(title="Espais", lifespan=lifespan)
+    documentacio = _documentacio_oberta()
+    application = FastAPI(
+        title="Espais",
+        lifespan=lifespan,
+        docs_url="/docs" if documentacio else None,
+        redoc_url="/redoc" if documentacio else None,
+        openapi_url="/openapi.json" if documentacio else None,
+    )
     application.state.session_factory = session_factory
     application.state.enable_maintenance = enable_maintenance
     application.state.token_issuer = token_issuer or HmacTokenIssuer(
