@@ -41,6 +41,8 @@ Desplegat al VPS (`6b455b9`) i provat amb Capgrossos, «Sala pilars». La vista 
 
 ## Següent tasca
 
+Pendent d’aprovació, sense implementar (proposta del 2026-10-21): al registre, mantenir l’alta sense verificació de correu (opció A); a la invitació, enviar l’enllaç quan hi ha SMTP i conservar l’enllaç copiable si no n’hi ha (opció B). Fins que no es triï, no s’esmenen `docs/05` ni `docs/08` i no es toca `InviteCoordinator`.
+
 Quan es demani: implementar l’ADR 0014 a `feat/docker-caddy-sqlite`, sense branca nova. Migració després de `0008_entity_palette`, hash i `exp` a la SQLite del volum, purga al bucle de manteniment existent, rebuig a `require_session`, i el client només esborra el token si el servidor confirma el tancament.
 
 Més endavant, no ara: la decisió de producte D1 del calendari (sala seleccionada pel coordinador i reserves pròpies fora d’aquell rang). No es canvia el codi fins que es decideixi. Tampoc no s’alineen glossari, visió i criteri de la fase 5 fins que es confirmi que la regla d’assistència del 3 d’octubre es manté.
