@@ -9,7 +9,15 @@ Actualitza aquest arxiu al final de cada sessió. És el punt d’arrencada del 
 
 ## Darrera feina
 
-2026-10-21: ADR 0014 implementat a `feat/docker-caddy-sqlite` i pujat a `origin` (`8667ff1`). `POST /sessio/tancament` desa el hash SHA-256 i l’`exp` a `revoked_tokens` (migració `0009_revoked_tokens`, després de `0008_entity_palette`). `require_session` rebutja aquell Bearer a qualsevol ruta autenticada. Un altre login del mateix usuari segueix sent vàlid. La purga, al bucle de manteniment existent, esborra només files amb `exp` ja vençuda. El client esborra `espais.sessio` i torna a `/` només si el servidor confirma el tancament; si no, conserva la sessió i ho diu. Pytest 215 i Vitest 188 verds. El VPS no s’ha tocat: la clau d’aquest Mac no entra per SSH com a `ubuntu` a l’amfitrió de `espais.duckdns.org`, i no hi ha cap altre usuari configurat. No s’ha esborrat cap volum.
+2026-10-21: l’Alpha de `https://espais.duckdns.org` serveix `feat/docker-caddy-sqlite`. El desplegament l’ha fet qui opera el VPS, amb `git pull` i `docker compose up -d --build`, sense `down -v`. Prova de camp:
+
+- `/api/docs`, `/api/redoc` i `/api/openapi.json` responen 404. `/api/salut` respon 200. La SPA i l’API envien HSTS, `nosniff`, `DENY`, `strict-origin-when-cross-origin` i la CSP de l’ADR 0015.
+- Sense SMTP, convidar un coordinador diu «Encara no enviem correu. Copia l’enllaç i envia’l tu. Caduca al cap de 14 dies.» Un email ja registrat continua dient «Aquest email ja està registrat.»
+- El registre d’una entitat amb un correu ja en ús diu «No s’ha pogut completar el registre. Revisa les dades o inicia la sessió.»
+- Surt en una finestra deixa oberta l’altra sessió del mateix usuari.
+- Dues reserves de dos coordinadors de la mateixa entitat han funcionat. El calendari no s’ha canviat en aquesta peça.
+
+2026-10-21: ADR 0014 implementat a `feat/docker-caddy-sqlite` i pujat a `origin` (`8667ff1`). `POST /sessio/tancament` desa el hash SHA-256 i l’`exp` a `revoked_tokens` (migració `0009_revoked_tokens`, després de `0008_entity_palette`). `require_session` rebutja aquell Bearer a qualsevol ruta autenticada. Un altre login del mateix usuari segueix sent vàlid. La purga, al bucle de manteniment existent, esborra només files amb `exp` ja vençuda. El client esborra `espais.sessio` i torna a `/` només si el servidor confirma el tancament; si no, conserva la sessió i ho diu. Pytest 215 i Vitest 188 verds.
 
 2026-10-21: `POST /registre` ja no confirma que un email existeix (ADR 0016). La longitud mínima de 8 es manté. La complexitat extra i el límit d’intents són l’ADR 0017, proposat i sense codi. La invitació continua dient si l’email ja està registrat.
 
@@ -45,19 +53,15 @@ Desplegat al VPS (`6b455b9`) i provat amb Capgrossos, «Sala pilars». La vista 
 
 ## Següent tasca
 
-Al VPS, al directori que ja serveix `https://espais.duckdns.org`, comprovar que el volum `espais_data` segueix muntat a `/data` i després actualitzar només els contenidors: `git pull` de `feat/docker-caddy-sqlite` i `docker compose up -d --build`. No `down -v`, no recrear la base. Després: `/api/salut` 200, capçaleres a la SPA i a l’API, OpenAPI en 404, el missatge de registre duplicat i el tancament de sessió. Cal l’usuari SSH que accepti la clau; `ubuntu` no l’accepta.
+Quan es demani: fusionar `feat/docker-caddy-sqlite` a `main` (`repo-github`). No s’esborra `backup/pre-dockeritzacio`.
 
-No es fusiona `main` tret que es demani, i no s’esborra `backup/pre-dockeritzacio`.
-
-L’assistència amb `mine: false`, el README, les capçaleres/OpenAPI, el registre (ADR 0016), la invitació per correu i la revocació en sortir (ADR 0014) ja són a `origin`. No es refan. La verificació de correu segueix al backlog. L’ADR 0017 continua proposat, sense codi.
+L’assistència amb `mine: false`, el README, les capçaleres/OpenAPI, el registre (ADR 0016), la invitació per correu i la revocació en sortir (ADR 0014) ja són a `origin` i s’han vist a l’Alpha. No es refan. La verificació de correu segueix al backlog. L’ADR 0017 continua proposat, sense codi. El correu d’invitació amb SMTP real no s’ha provat: al VPS no n’hi ha, i la prova ha estat el camí sense correu.
 
 2026-10-21, decisions del prompt 6 aplicades, sense fase nova: el registre continua obert i la verificació de correu segueix al backlog (`docs/05`), també a l’Alpha i sense SMTP. La invitació s’envia si hi ha `ESPAIS_SMTP_HOST`; si no n’hi ha o l’enviament falla, es conserva i el responsable veu l’enllaç (`docs/05`, `docs/08`). Port propi, no el `Notifier` d’anul·lació. Caducitat 14 dies. La resta del backlog d’invitacions (llista, revocació) no es reobre.
 
 Més endavant, no ara: la decisió de producte D1 del calendari (sala seleccionada pel coordinador i reserves pròpies fora d’aquell rang). No es canvia el codi fins que es decideixi. Tampoc no s’alineen glossari, visió i criteri de la fase 5 fins que es confirmi que la regla d’assistència del 3 d’octubre es manté.
 
 Després, només quan es demani: les recomanacions «Després» de l’informe (vegeu Notes). En acabar-les, esborrar `AUDITORIA-CALENDARI.md` i les dues línies de `.git/info/exclude`.
-
-Quan es demani: fusionar `feat/docker-caddy-sqlite` a `main` (`repo-github`). No s’esborra `backup/pre-dockeritzacio`.
 
 Possibles millores, només si es demanen: que el formulari de disponibilitat no ompli 08:00–22:00 en activar un dia (l’origen probable de l’error de dades), i enfosquir a la setmana les hores tancades de cada dia quan els horaris varien segons el dia.
 
@@ -95,7 +99,7 @@ Cap. API de desenvolupament `http://127.0.0.1:8000`; front de desenvolupament `h
 - Front: `cd frontend && npm test` / `npm run dev`. Vue no global. Paleta d’entitat ADR 0011 (defecte Mar i cel; Clar/Fosc al capçal; Tria els colors al lateral del responsable, a sobre de Surt); toc ≥ 44px (`min-h-11`). Amb sessió el capçal és compartit (logo i mode). El lateral és per rol. A mòbil és un `details` tancat, amb el nom de l’entitat i una fletxa. Lletra Montserrat local.
 - PWA: instal·lable; no desregistrar el SW en DEV. `navigateFallbackDenylist` és `/api`. Les rutes Vue ja no es deneguen pel nom.
 - Refactorització del frontend tancada (2026-09-28). El pla temporal del frontend s’esborra i no es rellegeix. El `.docx` `docs/auditoria_SOLID_pla_refactoritzacio_frontend.docx` tampoc es rellegeix ni es commiteja. La còpia doble dels colors no es fa. El calendari ja està partit. CSV d’anàlisi = backlog.
-- Branques: `main` segueix a `7d3f474`, igual que `backup/pre-dockeritzacio` i `origin/backup/pre-dockeritzacio`. `feat/docker-caddy-sqlite` és la branca de treball i a `origin` és `8667ff1`. Política a `docs/16-repositori.md`. No s’obre una branca nova per l’ADR 0014.
+- Branques: `main` segueix a `7d3f474`, igual que `backup/pre-dockeritzacio` i `origin/backup/pre-dockeritzacio`. `feat/docker-caddy-sqlite` és la branca de treball; a `origin` el codi de l’ADR 0014 és `8667ff1` i la nota prèvia al desplegament és `10fcbec`. Política a `docs/16-repositori.md`.
 - Pla temporal del backend esborrat (2026-09-29) i no es rellegeix. Fets, en ordre: normalitzar el nom al domini; una validació de nom, aforament i equipament; una comprovació d’interval reservable; el `save` en memòria de reserva i d’avís insereix si no hi ha fila; l’email del correu surt de `UserRepository.get_by_id`; test API d’intervals adjacents (201); una sola classe de repositori d’espais en memòria; `min_attendance` opcional al JSON, amb defecte `None`.
 - Fora d’aquell pla, i sense començar: formulari d’aforament mínim, `pending` / `rescheduled`, ports nous, un servei que agrupi casos d’ús. L’anul·lació de la pròpia reserva pel coordinador ja hi és, sense correu.
 - L’estat `rescheduled` no és una decisió oberta: en canviar l’horari, la reserva continua `confirmed` i l’avís porta l’interval antic i el nou. Un historial de canvis és backlog. L’assistència per nombre i l’avís suau d’aforament són el comportament volgut.
@@ -104,5 +108,5 @@ Cap. API de desenvolupament `http://127.0.0.1:8000`; front de desenvolupament `h
 - Docker local: `.env` (no versionat) amb `ESPAIS_DOMAIN=http://localhost`. Al VPS, el domini real sense esquema. Operació a `docs/17-desplegament-docker.md`. `environment.yml` continua sent l’entorn local; `backend/requirements.txt` és només el runtime de la imatge.
 - Deute d’aquesta sessió: el pedaç de Schedule-X és deute arquitectònic conscient, a l’ADR 0013. Deute d’implementació: amb una finestra de 900 px d’alt, la caixa del calendari (`max-height: calc(100dvh - 16rem)`) encara deixa uns píxels de desplaçament intern (7 px amb 17:30–23:00, 51 px amb 17:30–23:30); no s’ha tocat. La decisió d’infraestructura continua sent l’ADR 0012. Caddy corre com a root dins la imatge oficial per poder escoltar 80/443; el backend no.
 - Deute d’aquesta sessió (2026-10-16): el desfasament de glossari, visió i criteri de la fase 5 queda pendent de confirmar la regla, sense ADR nou. L’ADR 0014 ja està implementat.
-- Deute d’aquesta sessió (2026-10-21): l’ADR 0015 és la decisió de capçaleres i d’OpenAPI. `style-src 'unsafe-inline'` és la decisió, perquè el calendari i la paleta posen atributs `style`. No s’ha desplegat: la imatge del VPS encara no porta aquest Caddyfile. El correu d’invitació tampoc no s’ha provat contra un SMTP real: els tests fan servir un port fals.
+- Deute d’aquesta sessió (2026-10-21): l’ADR 0015 és la decisió de capçaleres i d’OpenAPI. `style-src 'unsafe-inline'` és la decisió, perquè el calendari i la paleta posen atributs `style`. Ja és al VPS. El correu d’invitació amb SMTP real no s’ha provat: al servidor no hi ha `ESPAIS_SMTP_HOST`, i la prova de camp ha estat el camí sense correu.
 - Deute d’implementació de l’auditoria del 2026-10-06 (sense ADR, cap no és urgent): `patch-package` sense `--error-on-fail`, i per això un pedaç que no s’aplica no atura el `docker build`; selectors `data-slots` 2–4 morts a `styles.css` i camps `margeInici` / `margeFi` sense ús a `Graella`; el divisor 30 de `slotsInici` / `slotsFi` repeteix el `gridStep`; falten tests de renderitzat per a 19:30–24:00 i per a un rang no múltiple de 30 (l’última fila queda mig retallada); comprovacions amb decimals exactes a `CalendariView.spec.ts`. No fer: abstraure Schedule-X, un composable de graella, estratègies per rol, marge configurable.
