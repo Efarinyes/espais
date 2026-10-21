@@ -32,6 +32,7 @@ class InviteCoordinatorResponse(BaseModel):
     email: str
     accept_url: str
     expires_at: datetime
+    delivery: str
 
 
 class InvitationPreviewResponse(BaseModel):
@@ -89,6 +90,7 @@ def invite_coordinator(
         email=result.email,
         accept_url=f"/invitar/{result.token}",
         expires_at=result.expires_at,
+        delivery=result.delivery,
     )
 
 

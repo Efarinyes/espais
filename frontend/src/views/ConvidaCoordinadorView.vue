@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useConvidaCoordinador } from "../composables/useConvidaCoordinador";
 
-const { camps, errorsCamp, errorGlobal, enviant, enllacComplet, copiat, enviar, copiarEnllac } =
+const { camps, errorsCamp, errorGlobal, enviant, enllacComplet, copiat, avis, enviar, copiarEnllac } =
   useConvidaCoordinador();
 </script>
 
@@ -9,8 +9,9 @@ const { camps, errorsCamp, errorGlobal, enviant, enllacComplet, copiat, enviar, 
   <main class="w-full max-w-md">
     <h1 class="text-3xl font-semibold">Convida un coordinador</h1>
     <p class="mt-2 text-base-content/80">
-      Crea un enllaç i envia’l tu. Encara no enviem correu. Caduca al cap de 14 dies.
+      El coordinador rep un enllaç que caduca al cap de 14 dies.
     </p>
+    <p v-if="avis" class="mt-4" role="status">{{ avis }}</p>
 
     <div v-if="errorGlobal" class="alert alert-error mt-6" role="alert">
       <span>{{ errorGlobal }}</span>

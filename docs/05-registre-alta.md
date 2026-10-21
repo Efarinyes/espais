@@ -43,7 +43,7 @@ El responsable no “entra buit” sense guia:
 
 ## Invitació de coordinadors (després de l’alta)
 
-- El responsable envia invitació per email (enllaç amb token).
+- El responsable convida per email. Si hi ha SMTP (`ESPAIS_SMTP_HOST`), l’enllaç s’envia per correu. Si no n’hi ha, o l’enviament falla, la invitació es conserva i el responsable veu l’enllaç per copiar-lo, amb el resultat explicat. Caduca al cap de 14 dies.
 - El coordinador accepta, crea compte si no en té, i obté membership `coordinator`.
 - v1: un email, una entitat. Si l’email ja existeix a una altra entitat, error clar (backlog: multi-entitat).
 
@@ -63,7 +63,7 @@ El responsable no “entra buit” sense guia:
 - Unió / fusió d’entitats.
 - Coordinador o responsable en més d’una entitat.
 - Alta d’entitat per un operador de plataforma.
-- Verificació d’email obligatòria abans d’usar l’app (v1 pot enviar correu però no bloquejar si no hi ha SMTP al dev).
+- Verificació d’email obligatòria abans d’usar l’app. Continua al backlog, també a l’Alpha pública. Sense SMTP no es bloqueja l’ús, ni en desenvolupament ni al VPS.
 
 ## Anti-patrons
 

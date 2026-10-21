@@ -1,7 +1,7 @@
 import { computed, reactive, ref } from "vue";
 
 import { ApiError } from "../services/http";
-import { requireIdentityApi } from "../services/identitat";
+import { requireIdentityApi, type LliuramentInvitacio } from "../services/identitat";
 import { useSessioStore } from "../stores/sessio";
 
 export function useConvidaCoordinador() {
@@ -14,6 +14,20 @@ export function useConvidaCoordinador() {
   const enviant = ref(false);
   const acceptUrl = ref("");
   const copiat = ref(false);
+  const delivery = ref<LliuramentInvitacio | "">("");
+
+  const avis = computed(() => {
+    if (delivery.value === "sent") {
+      return "Hem enviat l’enllaç per correu. Caduca al cap de 14 dies.";
+    }
+    if (delivery.value === "unavailable") {
+      return "Encara no enviem correu. Copia l’enllaç i envia’l tu. Caduca al cap de 14 dies.";
+    }
+    if (delivery.value === "failed") {
+      return "No s’ha pogut enviar el correu. La invitació és vàlida: copia l’enllaç i envia’l tu. Caduca al cap de 14 dies.";
+    }
+    return "";
+  });
 
   const enllacComplet = computed(() => {
     if (!acceptUrl.value) {
@@ -31,13 +45,15 @@ export function useConvidaCoordinador() {
     errorGlobal.value = "";
     copiat.value = false;
     acceptUrl.value = "";
+    delivery.value = "";
     if (!valida()) {
       return;
     }
     enviant.value = true;
     try {
       const dto = await api.convidarCoordinador(sessio.token, camps.email);
-      acceptUrl.value = dto.accept_url;
+      delivery.value = dto.delivery;
+      acceptUrl.value = dto.delivery === "sent" ? "" : dto.accept_url;
     } catch (err) {
       if (err instanceof ApiError && err.status === 403) {
         errorGlobal.value = "Només el responsable pot convidar coordinadors.";
@@ -65,5 +81,16 @@ export function useConvidaCoordinador() {
     }
   }
 
-  return { camps, errorsCamp, errorGlobal, enviant, acceptUrl, enllacComplet, copiat, enviar, copiarEnllac };
+  return {
+    camps,
+    errorsCamp,
+    errorGlobal,
+    enviant,
+    acceptUrl,
+    enllacComplet,
+    copiat,
+    avis,
+    enviar,
+    copiarEnllac,
+  };
 }

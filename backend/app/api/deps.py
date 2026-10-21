@@ -12,6 +12,7 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import sessionmaker
 
 from app.adapters.attendance import CountAttendance
+from app.adapters.invitation_mail import build_invitation_mailer
 from app.adapters.notifier import LoggingNotifier, SmtpNotifier, build_notifier
 from app.adapters.security import BcryptPasswordHasher
 from app.adapters.sqlalchemy.identity import SqlAlchemyIdentityUnitOfWork
@@ -117,7 +118,9 @@ def get_identity_http(request: Request) -> Iterator[IdentityHttp]:
             authenticate=AuthenticateUser(uow, hasher),
             resolve=ResolveSession(uow),
             tokens=get_token_issuer(request),
-            invite=InviteCoordinator(uow, clock, ids, SecretsInvitationTokenGenerator()),
+            invite=InviteCoordinator(
+                uow, clock, ids, SecretsInvitationTokenGenerator(), build_invitation_mailer()
+            ),
             preview=GetInvitation(uow, clock),
             accept=AcceptInvitation(uow, clock, ids, hasher),
             update_palette=UpdateEntityPalette(uow),

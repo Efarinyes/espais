@@ -46,6 +46,7 @@ function muntar(api: Partial<IdentityApi>) {
             email: "carla@example.com",
             accept_url: "/invitar/token-convidat",
             expires_at: "2026-09-22T12:00:00+00:00",
+            delivery: "unavailable" as const,
           }),
           obtenirInvitacio: async () => ({
             email: "carla@example.com",
@@ -68,7 +69,40 @@ describe("useConvidaCoordinador", () => {
     await flushPromises();
     expect(wrapper.vm.acceptUrl).toBe("/invitar/token-convidat");
     expect(wrapper.vm.enllacComplet).toContain("/invitar/token-convidat");
+    expect(wrapper.vm.avis).toContain("Encara no enviem correu");
     expect(wrapper.vm.errorGlobal).toBe("");
+  });
+
+  it("si el correu s’ha enviat, no mostra l’enllaç", async () => {
+    const wrapper = muntar({
+      convidarCoordinador: async () => ({
+        email: "carla@example.com",
+        accept_url: "/invitar/token-convidat",
+        expires_at: "2026-09-22T12:00:00+00:00",
+        delivery: "sent",
+      }),
+    });
+    wrapper.vm.camps.email = "carla@example.com";
+    await wrapper.vm.enviar();
+    await flushPromises();
+    expect(wrapper.vm.acceptUrl).toBe("");
+    expect(wrapper.vm.avis).toContain("Hem enviat l’enllaç");
+  });
+
+  it("si el correu falla, conserva l’enllaç i ho diu", async () => {
+    const wrapper = muntar({
+      convidarCoordinador: async () => ({
+        email: "carla@example.com",
+        accept_url: "/invitar/token-convidat",
+        expires_at: "2026-09-22T12:00:00+00:00",
+        delivery: "failed",
+      }),
+    });
+    wrapper.vm.camps.email = "carla@example.com";
+    await wrapper.vm.enviar();
+    await flushPromises();
+    expect(wrapper.vm.acceptUrl).toBe("/invitar/token-convidat");
+    expect(wrapper.vm.avis).toContain("No s’ha pogut enviar el correu");
   });
 
   it("mostra error si l’email ja existeix", async () => {

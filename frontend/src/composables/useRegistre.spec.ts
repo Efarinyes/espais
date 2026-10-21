@@ -49,6 +49,7 @@ function muntar(api: Partial<IdentityApi>) {
             email: "carla@example.com",
             accept_url: "/invitar/token-convidat",
             expires_at: "2026-09-22T12:00:00+00:00",
+            delivery: "unavailable",
           }),
           obtenirInvitacio: async () => ({
             email: "carla@example.com",

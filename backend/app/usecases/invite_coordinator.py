@@ -1,15 +1,22 @@
-"""El responsable convida un coordinador. Sense SMTP: torna un token copiable."""
+"""El responsable convida un coordinador. El correu és un port; la invitació no es desfa si falla."""
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
 from datetime import datetime, timedelta
+from typing import Literal
 from uuid import UUID
 
 from app.domain.errors import DuplicateEmailError, ForbiddenError, InvalidRegistrationError
 from app.domain.identity import MembershipRole
 from app.domain.invitation import Invitation
 from app.ports.identity import Clock, IdentityUnitOfWork, IdGenerator, InvitationTokenGenerator
+from app.ports.invitation_mail import InvitationMailer, InvitationMessage, NoInvitationMailer
+
+logger = logging.getLogger(__name__)
+
+Delivery = Literal["sent", "unavailable", "failed"]
 
 INVITATION_TTL_DAYS = 14
 
@@ -26,6 +33,7 @@ class InviteCoordinatorResult:
     email: str
     token: str
     expires_at: datetime
+    delivery: Delivery
 
 
 class InviteCoordinator:
@@ -35,11 +43,13 @@ class InviteCoordinator:
         clock: Clock,
         ids: IdGenerator,
         tokens: InvitationTokenGenerator,
+        mailer: InvitationMailer | None = None,
     ) -> None:
         self._uow = uow
         self._clock = clock
         self._ids = ids
         self._tokens = tokens
+        self._mailer = mailer if mailer is not None else NoInvitationMailer()
 
     def execute(self, command: InviteCoordinatorCommand) -> InviteCoordinatorResult:
         if command.actor_role != MembershipRole.RESPONSIBLE:
@@ -71,4 +81,22 @@ class InviteCoordinator:
             self._uow.rollback()
             raise
 
-        return InviteCoordinatorResult(email=email, token=token, expires_at=expires_at)
+        entity = self._uow.entities.get_by_id(command.entity_id)
+        entity_name = entity.name if entity is not None else "Espais"
+        delivery: Delivery = "unavailable"
+        if self._mailer.configured():
+            try:
+                self._mailer.send(
+                    InvitationMessage(to_email=email, entity_name=entity_name, token=token)
+                )
+                delivery = "sent"
+            except Exception:
+                logger.exception("no s’ha pogut enviar el correu d’invitació")
+                delivery = "failed"
+
+        return InviteCoordinatorResult(
+            email=email,
+            token=token,
+            expires_at=expires_at,
+            delivery=delivery,
+        )

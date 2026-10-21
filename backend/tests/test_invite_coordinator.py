@@ -18,6 +18,7 @@ from app.domain.errors import (
     InvalidRegistrationError,
 )
 from app.domain.identity import MembershipRole
+from app.ports.invitation_mail import InvitationMessage
 from app.usecases.accept_invitation import AcceptInvitation, AcceptInvitationCommand
 from app.usecases.get_invitation import GetInvitation
 from app.usecases.invite_coordinator import InviteCoordinator, InviteCoordinatorCommand
@@ -59,9 +60,61 @@ def test_responsible_creates_pending_invitation() -> None:
     assert result.email == "coord@example.com"
     assert result.token == "token-convidat"
     assert result.expires_at == clock.now() + timedelta(days=14)
+    assert result.delivery == "unavailable"
     invitation = uow.invitations.get_by_token("token-convidat")
     assert invitation is not None
     assert invitation.entity_id == entity_id
+    assert invitation.accepted_at is None
+
+
+class RecordingMailer:
+    def __init__(self, *, fail: bool = False) -> None:
+        self.fail = fail
+        self.sent: list[tuple[str, str, str]] = []
+
+    def configured(self) -> bool:
+        return True
+
+    def send(self, message: InvitationMessage) -> None:
+        if self.fail:
+            raise RuntimeError("smtp caigut")
+        self.sent.append((message.to_email, message.entity_name, message.token))
+
+
+def test_sends_invitation_when_mailer_is_configured() -> None:
+    uow = InMemoryIdentityUnitOfWork()
+    entity_id = _seed_responsible(uow)
+    mailer = RecordingMailer()
+    result = InviteCoordinator(
+        uow, FixedClock(), SequentialIdGenerator(), FixedTokenGenerator(), mailer
+    ).execute(
+        InviteCoordinatorCommand(
+            entity_id=entity_id,
+            actor_role=MembershipRole.RESPONSIBLE,
+            email="coord@example.com",
+        )
+    )
+    assert result.delivery == "sent"
+    assert mailer.sent == [("coord@example.com", "AAVV Barri A", "token-convidat")]
+    assert uow.invitations.get_by_token("token-convidat") is not None
+
+
+def test_keeps_invitation_when_mail_fails() -> None:
+    uow = InMemoryIdentityUnitOfWork()
+    entity_id = _seed_responsible(uow)
+    result = InviteCoordinator(
+        uow, FixedClock(), SequentialIdGenerator(), FixedTokenGenerator(), RecordingMailer(fail=True)
+    ).execute(
+        InviteCoordinatorCommand(
+            entity_id=entity_id,
+            actor_role=MembershipRole.RESPONSIBLE,
+            email="coord@example.com",
+        )
+    )
+    assert result.delivery == "failed"
+    assert result.token == "token-convidat"
+    invitation = uow.invitations.get_by_token("token-convidat")
+    assert invitation is not None
     assert invitation.accepted_at is None
 
 

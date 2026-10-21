@@ -38,7 +38,7 @@ Amb `ESPAIS_DOMAIN=http://localhost`, Caddy respon per HTTP al port 80. El nom `
 | `ESPAIS_DOMAIN` | `http://localhost` en local. Al VPS, el domini públic sense esquema. |
 | `ESPAIS_SECRET` | Secret HMAC de sessió. Obligatori: Compose posa `ESPAIS_ENV=production`. |
 | `DATABASE_URL` | Dins el contenidor: `sqlite:////data/espais.sqlite3`. Compose ja el fixa. |
-| `ESPAIS_SMTP_HOST` | Buit: els avisos queden al log. Si hi ha host, s’envia correu. |
+| `ESPAIS_SMTP_HOST` | Buit: els avisos queden al log i la invitació de coordinador es mostra com a enllaç. Si hi ha host, s’envia correu. L’enllaç d’invitació usa `ESPAIS_DOMAIN` com a origen. |
 | `ESPAIS_SMTP_PORT` | Per defecte `587`. |
 | `ESPAIS_SMTP_FROM` | Remitent. |
 

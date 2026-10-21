@@ -26,6 +26,7 @@ def test_responsible_invites_and_coordinator_accepts(sqlite_session_factory) -> 
     body = invited.json()
     assert body["email"] == "carla@example.com"
     assert body["accept_url"].startswith("/invitar/")
+    assert body["delivery"] == "unavailable"
     token = body["accept_url"].rsplit("/", 1)[-1]
 
     preview = client.get(f"/invitacions/{token}")

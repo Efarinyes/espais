@@ -24,10 +24,13 @@ export type RegistreInput = {
   password: string;
 };
 
+export type LliuramentInvitacio = "sent" | "unavailable" | "failed";
+
 export type InvitacioDto = {
   email: string;
   accept_url: string;
   expires_at: string;
+  delivery: LliuramentInvitacio;
 };
 
 export type InvitacioPreviewDto = {
