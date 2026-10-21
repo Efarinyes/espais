@@ -16,6 +16,7 @@ from app.adapters.invitation_mail import build_invitation_mailer
 from app.adapters.notifier import LoggingNotifier, SmtpNotifier, build_notifier
 from app.adapters.security import BcryptPasswordHasher
 from app.adapters.sqlalchemy.identity import SqlAlchemyIdentityUnitOfWork
+from app.adapters.sqlalchemy.revocation import SqlAlchemyRevocationUnitOfWork
 from app.adapters.sqlalchemy.reservations import SqlAlchemyReservationUnitOfWork
 from app.adapters.sqlalchemy.schema import bootstrap_session_factory
 from app.adapters.sqlalchemy.spaces import SqlAlchemySpaceUnitOfWork
@@ -135,9 +136,17 @@ def require_session(
 ) -> Iterator[SessionView]:
     if creds is None or creds.scheme.lower() != "bearer":
         raise HTTPException(status_code=401, detail="cal iniciar sessió")
-    user_id = get_token_issuer(request).parse(creds.credentials)
+    issuer = get_token_issuer(request)
+    user_id = issuer.parse(creds.credentials)
     if user_id is None:
         raise HTTPException(status_code=401, detail="sessió invàlida")
+
+    revocation = SqlAlchemyRevocationUnitOfWork(get_session_factory(request))
+    try:
+        if revocation.revoked_tokens.contains(issuer.fingerprint(creds.credentials)):
+            raise HTTPException(status_code=401, detail="sessió invàlida")
+    finally:
+        revocation.close()
 
     uow = SqlAlchemyIdentityUnitOfWork(get_session_factory(request))
     try:

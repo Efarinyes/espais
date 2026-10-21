@@ -34,6 +34,7 @@ const identityBuit: IdentityApi = {
     entity_name: "AAVV Barri A",
   }),
   acceptarInvitacio: async () => sessioAnna,
+  tancarSessio: async () => undefined,
 };
 
 function muntar() {

@@ -7,8 +7,8 @@ import { defineComponent } from "vue";
 import TaulerLayout from "./TaulerLayout.vue";
 import { disparadorCalendariKey } from "../calendariLive";
 import { avisosApiKey, type AvisDto, type AvisosApi } from "../services/avisos";
+import { identityApiKey, type IdentityApi, type SessioDto } from "../services/identitat";
 import { useSessioStore } from "../stores/sessio";
-import type { SessioDto } from "../services/identitat";
 
 const sessioAnna: SessioDto = {
   token: "t",
@@ -20,7 +20,12 @@ const sessioAnna: SessioDto = {
   typology: "associació de veïns",
 };
 
-async function muntar(path: string, dto: SessioDto | null = sessioAnna, avisos: AvisDto[] = []) {
+async function muntar(
+  path: string,
+  dto: SessioDto | null = sessioAnna,
+  avisos: AvisDto[] = [],
+  tancarSessio: IdentityApi["tancarSessio"] = async () => undefined,
+) {
   localStorage.clear();
   const pinia = createPinia();
   setActivePinia(pinia);
@@ -86,6 +91,7 @@ async function muntar(path: string, dto: SessioDto | null = sessioAnna, avisos: 
       plugins: [pinia, router],
       provide: {
         [avisosApiKey as symbol]: avisosApi,
+        [identityApiKey as symbol]: { tancarSessio } as IdentityApi,
         [disparadorCalendariKey as symbol]: { iniciar: () => () => undefined },
       },
     },
@@ -138,7 +144,21 @@ describe("TaulerLayout", () => {
     await wrapper.get("nav[aria-label='Administració']").get("button").trigger("click");
     await flushPromises();
     expect(useSessioStore().iniciada).toBe(false);
+    expect(localStorage.getItem("espais.sessio")).toBeNull();
     expect(router.currentRoute.value.name).toBe("inici");
+  });
+
+  it("conserva la sessió si el servidor no confirma el tancament", async () => {
+    const { wrapper, router } = await muntar("/espais", sessioAnna, [], async () => {
+      throw new Error("xarxa");
+    });
+    const desada = localStorage.getItem("espais.sessio");
+    await wrapper.get("nav[aria-label='Administració']").get("button").trigger("click");
+    await flushPromises();
+    expect(useSessioStore().iniciada).toBe(true);
+    expect(localStorage.getItem("espais.sessio")).toBe(desada);
+    expect(router.currentRoute.value.name).toBe("espais");
+    expect(wrapper.text()).toContain("No s’ha pogut confirmar el tancament de la sessió.");
   });
 
   it("marca Estadístiques com a pàgina activa", async () => {

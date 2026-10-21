@@ -9,6 +9,8 @@ Actualitza aquest arxiu al final de cada sessió. És el punt d’arrencada del 
 
 ## Darrera feina
 
+2026-10-21: ADR 0014 implementat a `feat/docker-caddy-sqlite`. `POST /sessio/tancament` desa el hash SHA-256 i l’`exp` a `revoked_tokens` (migració `0009_revoked_tokens`, després de `0008_entity_palette`). `require_session` rebutja aquell Bearer a qualsevol ruta autenticada. Un altre login del mateix usuari segueix sent vàlid. La purga, al bucle de manteniment existent, esborra només files amb `exp` ja vençuda. El client esborra `espais.sessio` i torna a `/` només si el servidor confirma el tancament; si no, conserva la sessió i ho diu. Pytest 215 i Vitest 188 verds. Encara no s’ha fet push ni s’ha desplegat.
+
 2026-10-21: `POST /registre` ja no confirma que un email existeix (ADR 0016). La longitud mínima de 8 es manté. La complexitat extra i el límit d’intents són l’ADR 0017, proposat i sense codi. La invitació continua dient si l’email ja està registrat.
 
 2026-10-21: vora pública de l’auditoria del 16 d’octubre, a `feat/docker-caddy-sqlite`, sense branca nova i sense tocar producció.
@@ -23,7 +25,7 @@ Actualitza aquest arxiu al final de cada sessió. És el punt d’arrencada del 
 - Assistència: no és un defecte del commit desplegable. Des de `90b8462` el responsable registra assistència a qualsevol reserva de l’entitat; el coordinador, només a la seva. `6b455b9` ja ho conté. Els 17 tests de `test_record_attendance.py` i `test_attendance_api.py` van passar. La regla del 9 de setembre (`3874a6e`) ja no és la vigent. No s’ha tocat el codi ni la reserva real.
 - Docs desfasats respecte d’aquesta regla, sense corregir: `docs/02-glossari.md`, `docs/01-visio-producte.md` i el criteri de la fase 5 a `docs/PLA-TREBALL.md`. No hi ha ADR que la decideixi, a part del comportament ja escrit a `docs/04` i `docs/07`.
 - README: la v1 està tancada (fases 0–8) i l’Alpha Docker és independent del pla. Commit `e695b18`, a `origin`.
-- ADR [0014](docs/adr/0014-revocar-token-en-sortir.md) acceptat: Surt revoca el Bearer d’aquell navegador després de la resposta del servidor; la comprovació és a `require_session`. No implementat. La llista és una taula SQLite al volum `espais_data`, purga en caducar, no als 21 dies.
+- ADR [0014](docs/adr/0014-revocar-token-en-sortir.md) acceptat el 16 d’octubre i implementat el 21: Surt revoca el Bearer d’aquell navegador després de la resposta del servidor; la comprovació és a `require_session`. La llista és la taula `revoked_tokens` a la SQLite del volum `espais_data`.
 
 Abans, 2026-10-06: auditoria SOLID i de deute de la graella (`6a05c0e`, `a1f01b4`, `6b455b9`), només de lectura. Veredicte: aprovat amb observacions. L’informe és a `AUDITORIA-CALENDARI.md`, a la rel, sense seguiment a Git (exclòs a `.git/info/exclude`). S’esborra quan s’hagin aplicat les recomanacions.
 
@@ -43,7 +45,9 @@ Desplegat al VPS (`6b455b9`) i provat amb Capgrossos, «Sala pilars». La vista 
 
 ## Següent tasca
 
-La propera sessió, una sola peça i sense tocar producció: implementar l’ADR 0014 a `feat/docker-caddy-sqlite`, sense branca nova. Migració després de `0008_entity_palette`, hash i `exp` a la SQLite del volum, purga al bucle de manteniment existent, rebuig a `require_session`, i el client només esborra el token si el servidor confirma el tancament. L’assistència amb `mine: false`, el README i les capçaleres/OpenAPI ja estan resolts; no es refan. La verificació de correu segueix al backlog. La invitació per correu ja està feta (`docs/05` i `docs/08`). No es fusiona `main` tret que es demani en aquella sessió, i no s’esborra `backup/pre-dockeritzacio`.
+Quan aquesta sessió ho confirmi, un sol desplegament de `feat/docker-caddy-sqlite`: push de la branca i reconstrucció dels contenidors de backend i web/Caddy al VPS, amb el volum `espais_data` existent. No es fusiona `main` tret que es demani, i no s’esborra `backup/pre-dockeritzacio`.
+
+L’assistència amb `mine: false`, el README, les capçaleres/OpenAPI, el registre (ADR 0016), la invitació per correu i la revocació en sortir (ADR 0014) ja estan a la branca. No es refan. La verificació de correu segueix al backlog. L’ADR 0017 continua proposat, sense codi.
 
 2026-10-21, decisions del prompt 6 aplicades, sense fase nova: el registre continua obert i la verificació de correu segueix al backlog (`docs/05`), també a l’Alpha i sense SMTP. La invitació s’envia si hi ha `ESPAIS_SMTP_HOST`; si no n’hi ha o l’enviament falla, es conserva i el responsable veu l’enllaç (`docs/05`, `docs/08`). Port propi, no el `Notifier` d’anul·lació. Caducitat 14 dies. La resta del backlog d’invitacions (llista, revocació) no es reobre.
 
@@ -97,6 +101,6 @@ Cap. API de desenvolupament `http://127.0.0.1:8000`; front de desenvolupament `h
 - Landing: sense CTAs al cos; sense «gratuït» ni «cobrament»; fotos a `frontend/public/landing/` (hero + opcions + captures).
 - Docker local: `.env` (no versionat) amb `ESPAIS_DOMAIN=http://localhost`. Al VPS, el domini real sense esquema. Operació a `docs/17-desplegament-docker.md`. `environment.yml` continua sent l’entorn local; `backend/requirements.txt` és només el runtime de la imatge.
 - Deute d’aquesta sessió: el pedaç de Schedule-X és deute arquitectònic conscient, a l’ADR 0013. Deute d’implementació: amb una finestra de 900 px d’alt, la caixa del calendari (`max-height: calc(100dvh - 16rem)`) encara deixa uns píxels de desplaçament intern (7 px amb 17:30–23:00, 51 px amb 17:30–23:30); no s’ha tocat. La decisió d’infraestructura continua sent l’ADR 0012. Caddy corre com a root dins la imatge oficial per poder escoltar 80/443; el backend no.
-- Deute d’aquesta sessió (2026-10-16): l’ADR 0014 és la decisió de revocació; implementar-lo és la tasca següent, no un deute a part. El desfasament de glossari, visió i criteri de la fase 5 queda pendent de confirmar la regla, sense ADR nou.
+- Deute d’aquesta sessió (2026-10-16): el desfasament de glossari, visió i criteri de la fase 5 queda pendent de confirmar la regla, sense ADR nou. L’ADR 0014 ja està implementat.
 - Deute d’aquesta sessió (2026-10-21): l’ADR 0015 és la decisió de capçaleres i d’OpenAPI. `style-src 'unsafe-inline'` és la decisió, perquè el calendari i la paleta posen atributs `style`. No s’ha desplegat: la imatge del VPS encara no porta aquest Caddyfile. El correu d’invitació tampoc no s’ha provat contra un SMTP real: els tests fan servir un port fals.
 - Deute d’implementació de l’auditoria del 2026-10-06 (sense ADR, cap no és urgent): `patch-package` sense `--error-on-fail`, i per això un pedaç que no s’aplica no atura el `docker build`; selectors `data-slots` 2–4 morts a `styles.css` i camps `margeInici` / `margeFi` sense ús a `Graella`; el divisor 30 de `slotsInici` / `slotsFi` repeteix el `gridStep`; falten tests de renderitzat per a 19:30–24:00 i per a un rang no múltiple de 30 (l’última fila queda mig retallada); comprovacions amb decimals exactes a `CalendariView.spec.ts`. No fer: abstraure Schedule-X, un composable de graella, estratègies per rol, marge configurable.

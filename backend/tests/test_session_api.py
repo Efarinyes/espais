@@ -62,3 +62,42 @@ def test_get_sessio_returns_only_the_callers_entity(sqlite_session_factory) -> N
 def test_get_sessio_without_token_returns_401(sqlite_session_factory) -> None:
     client = TestClient(create_app(session_factory=sqlite_session_factory))
     assert client.get("/sessio").status_code == 401
+
+
+def test_tancament_revoca_nomes_aquell_token(sqlite_session_factory) -> None:
+    from datetime import UTC, datetime, timedelta
+
+    from app.adapters.tokens import HmacTokenIssuer
+
+    class Rellotge:
+        def __init__(self) -> None:
+            self._moment = datetime(2026, 10, 21, 12, 0, tzinfo=UTC)
+
+        def now(self) -> datetime:
+            moment = self._moment
+            self._moment += timedelta(seconds=1)
+            return moment
+
+    client = TestClient(
+        create_app(
+            session_factory=sqlite_session_factory,
+            token_issuer=HmacTokenIssuer("secret-de-prova", Rellotge()),
+        )
+    )
+    creat = client.post("/registre", json=_payload()).json()
+    primer = creat["token"]
+    segon = client.post(
+        "/sessio",
+        json={"email": "anna@example.com", "password": "secret123"},
+    ).json()["token"]
+    assert primer != segon
+
+    tancament = client.post("/sessio/tancament", headers={"Authorization": f"Bearer {primer}"})
+    assert tancament.status_code == 204
+
+    assert client.get("/sessio", headers={"Authorization": f"Bearer {primer}"}).status_code == 401
+    assert client.get("/espais", headers={"Authorization": f"Bearer {primer}"}).status_code == 401
+    assert client.get("/sessio", headers={"Authorization": f"Bearer {segon}"}).status_code == 200
+    assert client.get("/espais", headers={"Authorization": f"Bearer {segon}"}).status_code == 200
+    assert client.post("/sessio/tancament", headers={"Authorization": f"Bearer {primer}"}).status_code == 401
+    assert client.get("/sessio").status_code == 401

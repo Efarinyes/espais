@@ -32,6 +32,7 @@ const api: IdentityApi = {
     entity_name: "AAVV Barri A",
   }),
   acceptarInvitacio: async () => sessioBuida,
+  tancarSessio: async () => undefined,
 };
 
 describe("RegistreView", () => {

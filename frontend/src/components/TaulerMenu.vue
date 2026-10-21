@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import { RouterLink, useRoute, useRouter } from "vue-router";
 
 import { useComptadorAvisos } from "../composables/useAvisos";
+import { requireIdentityApi } from "../services/identitat";
 import { useSessioStore } from "../stores/sessio";
 
 defineProps<{
@@ -10,9 +11,12 @@ defineProps<{
 }>();
 
 const sessio = useSessioStore();
+const identitat = requireIdentityApi();
 const ruta = useRoute();
 const router = useRouter();
 const { noLlegits } = useComptadorAvisos();
+const tancant = ref(false);
+const errorTancament = ref("");
 
 const esResponsable = computed(() => sessio.role === "responsible");
 const esEspais = computed(() => ruta.path.startsWith("/espais"));
@@ -22,9 +26,22 @@ const esEstadistiques = computed(() => ruta.path.startsWith("/analisi"));
 const esCalendari = computed(() => ruta.path.startsWith("/calendari"));
 const esAvisos = computed(() => ruta.path.startsWith("/avisos"));
 
-function sortir() {
+async function sortir() {
+  if (tancant.value) {
+    return;
+  }
+  errorTancament.value = "";
+  tancant.value = true;
+  try {
+    await identitat.tancarSessio(sessio.token);
+  } catch {
+    errorTancament.value = "No s’ha pogut confirmar el tancament de la sessió.";
+    tancant.value = false;
+    return;
+  }
   sessio.sortir();
-  void router.push({ name: "inici" });
+  tancant.value = false;
+  await router.push({ name: "inici" });
 }
 </script>
 
@@ -96,7 +113,8 @@ function sortir() {
           </RouterLink>
         </li>
         <li :class="esResponsable ? '' : 'border-t border-base-content/20'">
-          <button class="min-h-11 text-error" type="button" @click="sortir">Surt</button>
+          <button class="min-h-11 text-error" type="button" :disabled="tancant" @click="sortir">Surt</button>
+          <p v-if="errorTancament" class="px-4 py-2 text-sm text-error" role="status">{{ errorTancament }}</p>
         </li>
       </ul>
     </nav>

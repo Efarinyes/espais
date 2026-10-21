@@ -87,7 +87,7 @@ Amb el backend en marxa:
 tools/backup-sqlite.sh
 ```
 
-Escriu `backups/espais-AAAAMMDD-HHMMSS.sqlite3` amb l’API de backup de SQLite (no una còpia a cegues del fitxer). El directori `backups/` no es versiona. Pots passar un altre directori com a argument.
+Escriu `backups/espais-AAAAMMDD-HHMMSS.sqlite3` amb l’API de backup de SQLite (no una còpia a cegues del fitxer). El directori `backups/` no es versiona. Pots passar un altre directori com a argument. La taula `revoked_tokens` ([ADR 0014](adr/0014-revocar-token-en-sortir.md)) és dins el mateix fitxer: la còpia i la restauració la tracten com la resta de la base.
 
 ## Restauració
 

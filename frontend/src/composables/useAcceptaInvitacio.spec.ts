@@ -37,6 +37,7 @@ function identityBase(api: Partial<IdentityApi>): IdentityApi {
       entity_name: "AAVV Barri A",
     }),
     acceptarInvitacio: async () => sessioCoord,
+    tancarSessio: async () => undefined,
     ...api,
   };
 }

@@ -7,6 +7,7 @@ import hmac
 import json
 import os
 from base64 import urlsafe_b64decode, urlsafe_b64encode
+from datetime import UTC, datetime
 from uuid import UUID
 
 from app.ports.identity import Clock
@@ -53,6 +54,27 @@ class HmacTokenIssuer:
         return f"{body}.{signature}"
 
     def parse(self, token: str) -> UUID | None:
+        payload = self._payload(token)
+        if payload is None:
+            return None
+        try:
+            return UUID(str(payload["sub"]))
+        except (KeyError, ValueError):
+            return None
+
+    def expires_at(self, token: str) -> datetime | None:
+        payload = self._payload(token)
+        if payload is None:
+            return None
+        try:
+            return datetime.fromtimestamp(int(payload["exp"]), tz=UTC)
+        except (KeyError, ValueError, OSError):
+            return None
+
+    def fingerprint(self, token: str) -> str:
+        return hashlib.sha256(token.encode("utf-8")).hexdigest()
+
+    def _payload(self, token: str) -> dict[str, object] | None:
         try:
             body, signature = token.split(".")
         except ValueError:
@@ -64,6 +86,8 @@ class HmacTokenIssuer:
             payload = json.loads(_b64url_decode(body).decode("utf-8"))
             if int(payload["exp"]) < int(self._clock.now().timestamp()):
                 return None
-            return UUID(payload["sub"])
-        except (KeyError, ValueError, json.JSONDecodeError):
+        except (KeyError, TypeError, ValueError, json.JSONDecodeError):
             return None
+        if not isinstance(payload, dict):
+            return None
+        return payload

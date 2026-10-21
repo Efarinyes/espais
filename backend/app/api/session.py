@@ -1,15 +1,25 @@
-"""Sessió: login i lectura del principal. L’entity_id ve de la membership."""
+"""Sessió: login, lectura del principal i tancament d’un Bearer. L’entity_id ve de la membership."""
 
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi.security import HTTPAuthorizationCredentials
 from pydantic import BaseModel, Field
 
-from app.api.deps import IdentityHttp, get_identity_http, require_session
-from app.domain.errors import InvalidCredentialsError
+from app.adapters.sqlalchemy.revocation import SqlAlchemyRevocationUnitOfWork
+from app.api.deps import (
+    IdentityHttp,
+    bearer_scheme,
+    get_identity_http,
+    get_session_factory,
+    get_token_issuer,
+    require_session,
+)
+from app.domain.errors import InvalidCredentialsError, SessionNotFoundError
 from app.domain.identity import MembershipRole
 from app.usecases.authenticate_user import AuthenticateUserCommand
+from app.usecases.close_session import CloseSession
 from app.usecases.resolve_session import SessionView
 
 router = APIRouter()
@@ -63,3 +73,20 @@ def current_session(
     view: Annotated[SessionView, Depends(require_session)],
 ) -> SessionResponse:
     return session_response(view)
+
+
+@router.post("/sessio/tancament", status_code=204)
+def close_session(
+    request: Request,
+    creds: Annotated[HTTPAuthorizationCredentials | None, Depends(bearer_scheme)],
+    _view: Annotated[SessionView, Depends(require_session)],
+) -> None:
+    if creds is None or creds.scheme.lower() != "bearer":
+        raise HTTPException(status_code=401, detail="cal iniciar sessió")
+    uow = SqlAlchemyRevocationUnitOfWork(get_session_factory(request))
+    try:
+        CloseSession(uow, get_token_issuer(request)).execute(creds.credentials)
+    except SessionNotFoundError:
+        raise HTTPException(status_code=401, detail="sessió invàlida") from None
+    finally:
+        uow.close()

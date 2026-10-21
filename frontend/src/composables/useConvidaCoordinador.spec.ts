@@ -53,6 +53,7 @@ function muntar(api: Partial<IdentityApi>) {
             entity_name: "AAVV Barri A",
           }),
           acceptarInvitacio: async () => sessioOk,
+          tancarSessio: async () => undefined,
           ...api,
         } satisfies IdentityApi,
       },
