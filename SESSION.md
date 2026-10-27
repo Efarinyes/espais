@@ -9,6 +9,8 @@ Actualitza aquest arxiu al final de cada sessió. És el punt d’arrencada del 
 
 ## Darrera feina
 
+2026-10-27: aquest punt de retorn inclou l’apagada del gra de DaisyUI (`8d6bd9a`). La CSP de l’ADR 0015 no canvia. El navegador deixa de demanar la textura `data:` que `img-src 'self'` bloquejava a cada botó. El mateix correctiu és a `feat/docker-caddy-sqlite` (`d044a44`). La prova es fa a la versió servida per Caddy, després de `git pull` i de regenerar els contenidors.
+
 2026-10-21: l’Alpha de `https://espais.duckdns.org` serveix `feat/docker-caddy-sqlite`. El desplegament l’ha fet qui opera el VPS, amb `git pull` i `docker compose up -d --build`, sense `down -v`. Prova de camp:
 
 - `/api/docs`, `/api/redoc` i `/api/openapi.json` responen 404. `/api/salut` respon 200. La SPA i l’API envien HSTS, `nosniff`, `DENY`, `strict-origin-when-cross-origin` i la CSP de l’ADR 0015.
