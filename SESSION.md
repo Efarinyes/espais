@@ -9,7 +9,9 @@ Actualitza aquest arxiu al final de cada sessió. És el punt d’arrencada del 
 
 ## Darrera feina
 
-2026-10-25: `backup/alpha-funcional` apunta a `d1a36fa`, en local i a `origin`. És el punt de retorn de l’Alpha que ja funciona. La feina i el desplegament segueixen a `feat/docker-caddy-sqlite`. La fusió a `main` queda per a la Beta, quan es canviï la configuració del servidor. No s’han esborrat `backup/pre-dockeritzacio` ni `backup/alpha-funcional`.
+2026-10-27: el gra de DaisyUI deixa de demanar-se (`--fx-noise: none` a `frontend/src/styles.css`). La CSP de l’ADR 0015 no canvia. El test `test_el_gra_de_daisyui_no_es_demana_sota_la_csp` passa, amb els altres quatre de `test_vora_publica.py`. L’editor deixa de marcar `@plugin` (`.vscode/settings.json` i la recomanació de Tailwind CSS IntelliSense). El correctiu és a `feat/docker-caddy-sqlite` (`d044a44`) i a `backup/alpha-funcional` (`8d6bd9a`; la punta, amb aquesta nota, és `9178e98`). Les dues branques es pugen a `origin`. La prova visual és a la versió servida per Caddy, després de `git pull` i `docker compose up -d --build`, sense `down -v`.
+
+2026-10-25: `backup/alpha-funcional` apuntava a `d1a36fa`. Des del 27 d’octubre el punt de retorn és `9178e98`. La feina i el desplegament segueixen a `feat/docker-caddy-sqlite`. La fusió a `main` queda per a la Beta, quan es canviï la configuració del servidor. No s’han esborrat `backup/pre-dockeritzacio` ni `backup/alpha-funcional`.
 
 2026-10-21: l’Alpha de `https://espais.duckdns.org` serveix `feat/docker-caddy-sqlite`. El desplegament l’ha fet qui opera el VPS, amb `git pull` i `docker compose up -d --build`, sense `down -v`. Prova de camp:
 
@@ -55,7 +57,7 @@ Desplegat al VPS (`6b455b9`) i provat amb Capgrossos, «Sala pilars». La vista 
 
 ## Següent tasca
 
-La feina continua a `feat/docker-caddy-sqlite`: és la branca que el servidor desplega després del `git pull` i de regenerar els contenidors. `backup/alpha-funcional` (`d1a36fa`, també a `origin`) és el punt de retorn. No es fusiona a `main` fins a la Beta, quan es canviï la configuració del servidor. No s’esborren `backup/alpha-funcional` ni `backup/pre-dockeritzacio`.
+La feina continua a `feat/docker-caddy-sqlite`: és la branca que el servidor desplega després del `git pull` i de regenerar els contenidors. `backup/alpha-funcional` (`9178e98`, també a `origin`) és el punt de retorn. No es fusiona a `main` fins a la Beta, quan es canviï la configuració del servidor. No s’esborren `backup/alpha-funcional` ni `backup/pre-dockeritzacio`.
 
 L’assistència amb `mine: false`, el README, les capçaleres/OpenAPI, el registre (ADR 0016), la invitació per correu i la revocació en sortir (ADR 0014) ja són a `origin` i s’han vist a l’Alpha. No es refan. La verificació de correu segueix al backlog. L’ADR 0017 continua proposat, sense codi. El correu d’invitació amb SMTP real no s’ha provat: al VPS no n’hi ha, i la prova ha estat el camí sense correu.
 
