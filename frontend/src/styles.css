@@ -15,6 +15,12 @@ html {
   font-family: var(--font-sans);
 }
 
+/* El gra de DaisyUI és un SVG en data:. La CSP només admet imatges del mateix origen
+   i el navegador el bloqueja a cada botó. El gra ja està apagat; aquí es deixa de demanar. */
+:root {
+  --fx-noise: none;
+}
+
 @plugin "daisyui/theme" {
   name: "mar-cel";
   default: true;
