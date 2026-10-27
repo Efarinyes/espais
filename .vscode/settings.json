@@ -1,0 +1,6 @@
+{
+  "css.lint.unknownAtRules": "ignore",
+  "tailwindCSS.experimental.configFile": {
+    "frontend/src/styles.css": "frontend"
+  }
+}

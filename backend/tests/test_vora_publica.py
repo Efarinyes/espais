@@ -57,3 +57,11 @@ def test_el_tema_inicial_no_és_un_script_en_línia() -> None:
     assert "script-src 'self' 'unsafe-inline'" not in (
         repo_root() / "docker" / "Caddyfile"
     ).read_text(encoding="utf-8")
+
+
+def test_el_gra_de_daisyui_no_es_demana_sota_la_csp() -> None:
+    caddy = (repo_root() / "docker" / "Caddyfile").read_text(encoding="utf-8")
+    css = (repo_root() / "frontend" / "src" / "styles.css").read_text(encoding="utf-8")
+    assert "img-src 'self'" in caddy
+    assert "img-src 'self' data:" not in caddy
+    assert "--fx-noise: none" in css
