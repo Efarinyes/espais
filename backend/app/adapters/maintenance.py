@@ -5,9 +5,11 @@ from __future__ import annotations
 import asyncio
 import logging
 from collections.abc import Callable
+from datetime import timedelta
 
 from sqlalchemy.orm import sessionmaker
 
+from app.adapters.sqlalchemy.identity import SqlAlchemyIdentityUnitOfWork
 from app.adapters.sqlalchemy.reservations import SqlAlchemyReservationUnitOfWork
 from app.adapters.sqlalchemy.revocation import SqlAlchemyRevocationUnitOfWork
 from app.adapters.system import SystemClock
@@ -54,10 +56,31 @@ def purge_expired_revocations_once(
         uow.close()
 
 
+def purge_old_recovery_attempts_once(
+    session_factory: sessionmaker,
+    clock: Clock | None = None,
+) -> int:
+    moment = (clock or SystemClock()).now() - timedelta(hours=24)
+    uow = SqlAlchemyIdentityUnitOfWork(session_factory)
+    try:
+        deleted = uow.recovery_attempts.purge_before(moment)
+        uow.commit()
+        if deleted:
+            logger.info("eliminats %s intents de recuperació de fa més d’un dia", deleted)
+        return deleted
+    except Exception:
+        uow.rollback()
+        logger.exception("no s’han pogut eliminar els intents de recuperació antics")
+        return 0
+    finally:
+        uow.close()
+
+
 def run_maintenance_once(session_factory: sessionmaker) -> int:
     notifications = purge_archived_notifications_once(session_factory)
     revocations = purge_expired_revocations_once(session_factory)
-    return notifications + revocations
+    attempts = purge_old_recovery_attempts_once(session_factory)
+    return notifications + revocations + attempts
 
 
 async def run_archived_notification_purge_loop(

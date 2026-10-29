@@ -3,12 +3,10 @@
 from __future__ import annotations
 
 import logging
-import os
-import smtplib
 from collections.abc import Callable
-from email.message import EmailMessage
 from uuid import UUID
 
+from app.adapters.smtp_transport import SmtpConfig, SmtpTransport, smtp_config_from_env
 from app.domain.notification import Notification, NotificationType
 
 logger = logging.getLogger("espais.notifier")
@@ -59,35 +57,40 @@ class SmtpNotifier:
         port: int,
         from_addr: str,
         lookup_email: Callable[[UUID], str | None],
+        starttls: bool = False,
+        username: str = "",
+        password: str = "",
     ) -> None:
-        self._host = host
-        self._port = port
-        self._from_addr = from_addr
         self._lookup_email = lookup_email
+        self._transport = SmtpTransport(
+            SmtpConfig(
+                host=host,
+                port=port,
+                from_addr=from_addr,
+                starttls=starttls,
+                username=username,
+                password=password,
+            )
+        )
 
     def send(self, notification: Notification) -> None:
         to_email = self._lookup_email(notification.user_id)
         if not to_email:
             raise RuntimeError("sense email del coordinador")
         subject, body = text_correu(notification)
-        message = EmailMessage()
-        message["From"] = self._from_addr
-        message["To"] = to_email
-        message["Subject"] = subject
-        message.set_content(body)
-        with smtplib.SMTP(self._host, self._port, timeout=10) as smtp:
-            smtp.send_message(message)
+        self._transport.send(to_addr=to_email, subject=subject, body=body)
 
 
 def build_notifier(lookup_email: Callable[[UUID], str | None] | None = None) -> LoggingNotifier | SmtpNotifier:
-    host = os.environ.get("ESPAIS_SMTP_HOST", "").strip()
-    if not host:
-        return LoggingNotifier()
-    if lookup_email is None:
+    config = smtp_config_from_env()
+    if config is None or lookup_email is None:
         return LoggingNotifier()
     return SmtpNotifier(
-        host=host,
-        port=int(os.environ.get("ESPAIS_SMTP_PORT", "587")),
-        from_addr=os.environ.get("ESPAIS_SMTP_FROM", "espais@localhost"),
+        host=config.host,
+        port=config.port,
+        from_addr=config.from_addr,
         lookup_email=lookup_email,
+        starttls=config.starttls,
+        username=config.username,
+        password=config.password,
     )

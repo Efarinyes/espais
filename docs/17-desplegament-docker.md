@@ -38,9 +38,11 @@ Amb `ESPAIS_DOMAIN=http://localhost`, Caddy respon per HTTP al port 80. El nom `
 | `ESPAIS_DOMAIN` | `http://localhost` en local. Al VPS, el domini públic sense esquema. |
 | `ESPAIS_SECRET` | Secret HMAC de sessió. Obligatori: Compose posa `ESPAIS_ENV=production`. |
 | `DATABASE_URL` | Dins el contenidor: `sqlite:////data/espais.sqlite3`. Compose ja el fixa. |
-| `ESPAIS_SMTP_HOST` | Buit: els avisos queden al log i la invitació de coordinador es mostra com a enllaç. Si hi ha host, s’envia correu. L’enllaç d’invitació usa `ESPAIS_DOMAIN` com a origen. |
-| `ESPAIS_SMTP_PORT` | Per defecte `587`. |
-| `ESPAIS_SMTP_FROM` | Remitent. |
+| `ESPAIS_SMTP_HOST` | Buit: els avisos queden al log i la invitació es mostra com a enllaç. A l’Alpha amb Mailpit: `mailpit`. Un valor ja escrit no es canvia sol. |
+| `ESPAIS_SMTP_PORT` | Mailpit: `1025`. Un relay futur: el port del proveïdor, sovint `587`. Un `587` ja escrit al `.env` no passa a `1025` sol. |
+| `ESPAIS_SMTP_FROM` | Remitent. El domini de l’app i el del remitent poden ser diferents. |
+| `ESPAIS_SMTP_STARTTLS` | Buit amb Mailpit. `1` quan el relay ho demani. |
+| `ESPAIS_SMTP_USER` / `ESPAIS_SMTP_PASSWORD` | Buits amb Mailpit. Credencials del relay, quan n’hi hagi. |
 
 `.env` no entra a Git ni a la imatge. `.env.example` sí.
 
@@ -116,9 +118,14 @@ tools/restore-sqlite.sh --confirmo ./espais.sqlite3
 
 1. Un Linux amb Docker Engine i el plugin Compose.
 2. DNS: un registre A (o AAAA) del domini cap a la IP del VPS.
-3. Obre només **80** i **443**. No obris **8000**.
-4. Clona el repositori, crea `.env` amb el domini real i un `ESPAIS_SECRET` nou.
-5. `docker compose up -d --build`.
+3. Obre només **80** i **443**. No obris **8000** ni el SMTP de Mailpit (**1025**).
+4. Clona el repositori, crea `.env` amb el domini real i un `ESPAIS_SECRET` nou. Per capturar el correu a l’Alpha: `ESPAIS_SMTP_HOST=mailpit` i `ESPAIS_SMTP_PORT=1025`.
+5. Còpia de la base (`tools/backup-sqlite.sh`) abans d’actualitzar un servidor que ja té dades.
+6. `git pull` a `feat/docker-caddy-sqlite` i `docker compose up -d --build`. No facis `down -v`.
+
+Mailpit és a la xarxa interna. La interfície només escolta a `127.0.0.1:8025` del VPS. Per veure els missatges, un túnel SSH cap a aquest port i el navegador a `http://127.0.0.1:8025`. No es publica a Caddy. No té volum: recrear el contenidor buida la bústia.
+
+Els enllaços de recuperació i d’invitació surten de `ESPAIS_DOMAIN`. No hi van `localhost`, `mailpit` ni noms de contenidor.
 
 Caddy obté i renova el certificat. Els certificats queden als volums `caddy_data` i `caddy_config`, no al disc efímer del contenidor.
 

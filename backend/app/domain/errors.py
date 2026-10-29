@@ -49,6 +49,10 @@ class InvitationAcceptedError(Exception):
     """El token d’invitació ja s’ha fet servir."""
 
 
+class InvalidPasswordResetError(Exception):
+    """L’enllaç de recuperació no existeix, ha caducat o ja s’ha fet servir."""
+
+
 class InvalidReservationError(Exception):
     """Interval, disponibilitat o espai invàlids per a la reserva."""
 

@@ -32,6 +32,7 @@ class User:
     email: str
     password_hash: str
     created_at: datetime
+    session_version: int = 0
 
 
 @dataclass(frozen=True)

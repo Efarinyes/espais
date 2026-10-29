@@ -38,6 +38,8 @@ function identityBase(api: Partial<IdentityApi>): IdentityApi {
     }),
     acceptarInvitacio: async () => sessioCoord,
     tancarSessio: async () => undefined,
+    demanarRecuperacio: async () => ({ detall: "Si aquest correu té un compte, rebràs un enllaç." }),
+    confirmarRecuperacio: async () => sessioCoord,
     ...api,
   };
 }

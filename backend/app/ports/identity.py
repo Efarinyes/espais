@@ -8,6 +8,7 @@ from uuid import UUID
 
 from app.domain.identity import Entity, Membership, User
 from app.domain.invitation import Invitation
+from app.domain.password_reset import PasswordReset, RecoveryAttempt
 
 
 class Clock(Protocol):
@@ -25,9 +26,11 @@ class PasswordHasher(Protocol):
 
 
 class TokenIssuer(Protocol):
-    def issue(self, user_id: UUID) -> str: ...
+    def issue(self, user_id: UUID, session_version: int = 0) -> str: ...
 
     def parse(self, token: str) -> UUID | None: ...
+
+    def session_version(self, token: str) -> int | None: ...
 
     def expires_at(self, token: str) -> datetime | None: ...
 
@@ -51,6 +54,8 @@ class EntityRepository(Protocol):
 class UserRepository(Protocol):
     def add(self, user: User) -> None: ...
 
+    def save(self, user: User) -> None: ...
+
     def get_by_id(self, user_id: UUID) -> User | None: ...
 
     def get_by_email(self, email: str) -> User | None: ...
@@ -72,11 +77,33 @@ class InvitationRepository(Protocol):
     def get_by_token(self, token: str) -> Invitation | None: ...
 
 
+class PasswordResetRepository(Protocol):
+    def add(self, reset: PasswordReset) -> None: ...
+
+    def save(self, reset: PasswordReset) -> None: ...
+
+    def get_by_token_hash(self, token_hash: str) -> PasswordReset | None: ...
+
+    def invalidate_unused(self, user_id: UUID, now: datetime) -> None: ...
+
+
+class RecoveryAttemptRepository(Protocol):
+    def add(self, attempt: RecoveryAttempt) -> None: ...
+
+    def count_subject_since(self, subject_hash: str, since: datetime) -> int: ...
+
+    def count_ip_since(self, ip_hash: str, since: datetime) -> int: ...
+
+    def purge_before(self, moment: datetime) -> int: ...
+
+
 class IdentityUnitOfWork(Protocol):
     entities: EntityRepository
     users: UserRepository
     memberships: MembershipRepository
     invitations: InvitationRepository
+    password_resets: PasswordResetRepository
+    recovery_attempts: RecoveryAttemptRepository
 
     def commit(self) -> None: ...
 

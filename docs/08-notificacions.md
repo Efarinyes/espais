@@ -17,15 +17,18 @@ Canals v1: **in-app + correu**. No push, no WhatsApp. Una notificació clara al 
 | Anul·lació pel mateix coordinador | — | no |
 | Reprogramació pel mateix coordinador | — | no |
 | Invitació de coordinador | Email convidat | sí, si hi ha SMTP. Sense SMTP o si l’enviament falla, l’enllaç queda per al responsable (14 dies) i la invitació no es desfa |
+| Recuperació de compte | El correu demanat | sí, si el compte existeix i l’SMTP respon. Si no existeix, hi ha límit o l’enviament falla, la resposta és la mateixa i no queda cap token viu (ADR [0018](adr/0018-recuperacio-de-compte.md)) |
 | Alta / benvinguda | Responsable | opcional al dev |
 
 ## Model
 
 `Notification`: `entity_id`, `user_id` (coordinador), `reservation_id`, `type` (`reservation_cancelled` \| `reservation_rescheduled`), `payload` (espai, interval antic/nou, motiu opcional), `read_at`, `archived_at`, `created_at`.
 
-Enviar correu és un **port** (`Notifier`). Implementació v1: SMTP configurable; en tests, fake in-memory. El cas d’ús no parla d’SMTP.
+Enviar correu és un **port** (`Notifier`). Implementació v1: un transport SMTP compartit (host, port, remitent, STARTTLS i credencials opcionals); en tests, fake in-memory. El cas d’ús no parla d’SMTP ni de Mailpit.
 
-La invitació de coordinador no passa per aquest `Notifier`: el convidat encara no és usuari. Té un port propi. Si `ESPAIS_SMTP_HOST` està definit, l’enllaç surt per correu. Si no hi ha SMTP o l’enviament falla, la invitació ja desada es conserva i el responsable copia l’enllaç. Caducitat: 14 dies.
+La invitació de coordinador no passa per aquest `Notifier`: el convidat encara no és usuari. Té un port propi i el mateix transport. Si `ESPAIS_SMTP_HOST` està definit, l’enllaç surt per correu. Si no hi ha SMTP o l’enviament falla, la invitació ja desada es conserva i el responsable copia l’enllaç. Caducitat: 14 dies.
+
+La recuperació de compte té un tercer port. L’enllaç usa `ESPAIS_DOMAIN` i el token va al fragment (`/recuperar#…`). Si l’enviament falla, el token es consumeix: a diferència de la invitació, no es mostra cap enllaç.
 
 ## Contingut mínim del correu / avís
 

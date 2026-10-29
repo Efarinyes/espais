@@ -18,6 +18,7 @@ from app.api.avisos import router as avisos_router
 from app.api.entity import router as entity_router
 from app.api.health import router as health_router
 from app.api.invitations import router as invitations_router
+from app.api.recovery import router as recovery_router
 from app.api.register import router as register_router
 from app.api.reserves import router as reserves_router
 from app.api.session import router as session_router
@@ -81,6 +82,7 @@ def create_app(
     )
     application.include_router(health_router)
     application.include_router(register_router)
+    application.include_router(recovery_router)
     application.include_router(session_router)
     application.include_router(entity_router)
     application.include_router(invitations_router)

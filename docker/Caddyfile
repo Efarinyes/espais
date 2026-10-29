@@ -10,7 +10,9 @@
 	}
 
 	handle_path /api/* {
-		reverse_proxy backend:8000
+		reverse_proxy backend:8000 {
+			header_up X-Forwarded-For {http.request.remote.host}
+		}
 	}
 
 	handle {

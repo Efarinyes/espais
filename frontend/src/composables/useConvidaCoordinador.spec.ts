@@ -54,6 +54,8 @@ function muntar(api: Partial<IdentityApi>) {
           }),
           acceptarInvitacio: async () => sessioOk,
           tancarSessio: async () => undefined,
+          demanarRecuperacio: async () => ({ detall: "Si aquest correu té un compte, rebràs un enllaç." }),
+          confirmarRecuperacio: async () => sessioOk,
           ...api,
         } satisfies IdentityApi,
       },

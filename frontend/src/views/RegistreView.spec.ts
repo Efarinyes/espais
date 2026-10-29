@@ -33,6 +33,8 @@ const api: IdentityApi = {
   }),
   acceptarInvitacio: async () => sessioBuida,
   tancarSessio: async () => undefined,
+  demanarRecuperacio: async () => ({ detall: "Si aquest correu té un compte, rebràs un enllaç." }),
+  confirmarRecuperacio: async () => sessioBuida,
 };
 
 describe("RegistreView", () => {

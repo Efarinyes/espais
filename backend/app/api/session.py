@@ -65,7 +65,9 @@ def login(
         )
     except InvalidCredentialsError:
         raise HTTPException(status_code=401, detail="email o contrasenya incorrectes") from None
-    return session_response(view, token=identity.tokens.issue(view.user_id))
+    return session_response(
+        view, token=identity.tokens.issue(view.user_id, view.session_version)
+    )
 
 
 @router.get("/sessio", response_model=SessionResponse)

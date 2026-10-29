@@ -54,6 +54,9 @@ const { camps, errorsCamp, errorGlobal, enviant, enviar } = useIniciSessio();
     </form>
 
     <p class="mt-6">
+      <RouterLink class="link link-primary" to="/recuperar">Has oblidat la contrasenya?</RouterLink>
+    </p>
+    <p class="mt-3">
       <RouterLink class="link link-primary" to="/registre">Registra una entitat nova</RouterLink>
     </p>
   </main>

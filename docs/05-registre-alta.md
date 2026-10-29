@@ -51,7 +51,7 @@ El responsable no “entra buit” sense guia:
 
 | Cas | Comportament |
 |---|---|
-| Email ja registrat | No es crea un segon compte. La resposta no diu que el correu existeix: cal revisar les dades o iniciar sessió. No hi ha recuperació de contrasenya. |
+| Email ja registrat | No es crea un segon compte. La resposta no diu que el correu existeix: cal revisar les dades o iniciar sessió. La recuperació no s’ofereix aquí (ADR [0016](adr/0016-registre-no-confirma-email.md)); l’enllaç és a «Inicia sessió» (ADR [0018](adr/0018-recuperacio-de-compte.md)). |
 | Doble submit del formulari | Idempotència: no dues entitats |
 | Registre a mitges (crash) | Transacció: zero o tot |
 | Responsable sense espais | App usable; empty state; no pot haver-hi reserves |

@@ -5,14 +5,22 @@ from __future__ import annotations
 from datetime import UTC, datetime
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import delete, func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, sessionmaker
 
-from app.adapters.sqlalchemy.models import EntityRow, InvitationRow, MembershipRow, UserRow
+from app.adapters.sqlalchemy.models import (
+    EntityRow,
+    InvitationRow,
+    MembershipRow,
+    PasswordResetRow,
+    RecoveryAttemptRow,
+    UserRow,
+)
 from app.domain.errors import DuplicateEmailError
 from app.domain.identity import Entity, Membership, MembershipRole, User
 from app.domain.invitation import Invitation
+from app.domain.password_reset import PasswordReset, RecoveryAttempt
 
 
 def _aware(moment: datetime) -> datetime:
@@ -38,6 +46,7 @@ def _user_from_row(row: UserRow) -> User:
         email=row.email,
         password_hash=row.password_hash,
         created_at=_aware(row.created_at),
+        session_version=row.session_version,
     )
 
 
@@ -109,6 +118,7 @@ class SqlAlchemyUserRepository:
                 name=user.name,
                 email=user.email,
                 password_hash=user.password_hash,
+                session_version=user.session_version,
                 created_at=user.created_at,
             )
         )
@@ -129,6 +139,17 @@ class SqlAlchemyUserRepository:
         if row is None:
             return None
         return _user_from_row(row)
+
+    def save(self, user: User) -> None:
+        row = self._session.get(UserRow, user.id)
+        if row is None:
+            self.add(user)
+            return
+        row.name = user.name
+        row.email = user.email
+        row.password_hash = user.password_hash
+        row.session_version = user.session_version
+        self._session.flush()
 
 
 class SqlAlchemyMembershipRepository:
@@ -193,6 +214,108 @@ class SqlAlchemyInvitationRepository:
         return _invitation_from_row(row)
 
 
+def _reset_from_row(row: PasswordResetRow) -> PasswordReset:
+    return PasswordReset(
+        id=row.id,
+        user_id=row.user_id,
+        token_hash=row.token_hash,
+        expires_at=_aware(row.expires_at),
+        used_at=_aware(row.used_at) if row.used_at is not None else None,
+        created_at=_aware(row.created_at),
+    )
+
+
+class SqlAlchemyPasswordResetRepository:
+    def __init__(self, session: Session) -> None:
+        self._session = session
+
+    def add(self, reset: PasswordReset) -> None:
+        self._session.add(
+            PasswordResetRow(
+                id=reset.id,
+                user_id=reset.user_id,
+                token_hash=reset.token_hash,
+                expires_at=reset.expires_at,
+                used_at=reset.used_at,
+                created_at=reset.created_at,
+            )
+        )
+        self._session.flush()
+
+    def save(self, reset: PasswordReset) -> None:
+        row = self._session.get(PasswordResetRow, reset.id)
+        if row is None:
+            self.add(reset)
+            return
+        row.used_at = reset.used_at
+        row.expires_at = reset.expires_at
+        self._session.flush()
+
+    def get_by_token_hash(self, token_hash: str) -> PasswordReset | None:
+        row = self._session.scalar(
+            select(PasswordResetRow).where(PasswordResetRow.token_hash == token_hash)
+        )
+        if row is None:
+            return None
+        return _reset_from_row(row)
+
+    def invalidate_unused(self, user_id: UUID, now: datetime) -> None:
+        rows = self._session.scalars(
+            select(PasswordResetRow).where(
+                PasswordResetRow.user_id == user_id,
+                PasswordResetRow.used_at.is_(None),
+            )
+        ).all()
+        for row in rows:
+            row.used_at = now
+        self._session.flush()
+
+
+class SqlAlchemyRecoveryAttemptRepository:
+    def __init__(self, session: Session) -> None:
+        self._session = session
+
+    def add(self, attempt: RecoveryAttempt) -> None:
+        self._session.add(
+            RecoveryAttemptRow(
+                id=attempt.id,
+                subject_hash=attempt.subject_hash,
+                ip_hash=attempt.ip_hash,
+                created_at=attempt.created_at,
+            )
+        )
+        self._session.flush()
+
+    def count_subject_since(self, subject_hash: str, since: datetime) -> int:
+        total = self._session.scalar(
+            select(func.count())
+            .select_from(RecoveryAttemptRow)
+            .where(
+                RecoveryAttemptRow.subject_hash == subject_hash,
+                RecoveryAttemptRow.created_at >= since,
+            )
+        )
+        return int(total or 0)
+
+    def count_ip_since(self, ip_hash: str, since: datetime) -> int:
+        total = self._session.scalar(
+            select(func.count())
+            .select_from(RecoveryAttemptRow)
+            .where(
+                RecoveryAttemptRow.ip_hash == ip_hash,
+                RecoveryAttemptRow.created_at >= since,
+            )
+        )
+        return int(total or 0)
+
+    def purge_before(self, moment: datetime) -> int:
+        result = self._session.execute(
+            delete(RecoveryAttemptRow).where(RecoveryAttemptRow.created_at < moment)
+        )
+        self._session.flush()
+        return int(result.rowcount or 0)
+
+
 class FailingSqlAlchemyMembershipRepository(SqlAlchemyMembershipRepository):
     def add(self, membership: Membership) -> None:
         raise RuntimeError("fallada en desar membership")
@@ -205,6 +328,8 @@ class SqlAlchemyIdentityUnitOfWork:
         self.users = SqlAlchemyUserRepository(self._session)
         self.memberships = SqlAlchemyMembershipRepository(self._session)
         self.invitations = SqlAlchemyInvitationRepository(self._session)
+        self.password_resets = SqlAlchemyPasswordResetRepository(self._session)
+        self.recovery_attempts = SqlAlchemyRecoveryAttemptRepository(self._session)
 
     def commit(self) -> None:
         self._session.commit()

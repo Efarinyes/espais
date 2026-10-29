@@ -47,6 +47,8 @@ export type IdentityApi = {
   obtenirInvitacio(inviteToken: string): Promise<InvitacioPreviewDto>;
   acceptarInvitacio(inviteToken: string, name: string, password: string): Promise<SessioDto>;
   tancarSessio(token: string): Promise<void>;
+  demanarRecuperacio(email: string): Promise<{ detall: string }>;
+  confirmarRecuperacio(token: string, password: string): Promise<SessioDto>;
 };
 
 export const identityApiKey: InjectionKey<IdentityApi> = Symbol("identityApi");
@@ -114,6 +116,20 @@ export function createIdentityApi(baseUrl = ""): IdentityApi {
 
     async tancarSessio(token) {
       await fetchApi<void>(`${baseUrl}/sessio/tancament`, { method: "POST", token });
+    },
+
+    async demanarRecuperacio(email) {
+      return fetchApi<{ detall: string }>(`${baseUrl}/recuperacio`, {
+        method: "POST",
+        body: JSON.stringify({ email }),
+      });
+    },
+
+    async confirmarRecuperacio(token, password) {
+      return fetchApi<SessioDto>(`${baseUrl}/recuperacio/confirmacio`, {
+        method: "POST",
+        body: JSON.stringify({ token, password }),
+      });
     },
   };
 }

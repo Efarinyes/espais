@@ -44,10 +44,11 @@ class HmacTokenIssuer:
         self._clock = clock
         self._ttl_seconds = ttl_seconds
 
-    def issue(self, user_id: UUID) -> str:
+    def issue(self, user_id: UUID, session_version: int = 0) -> str:
         payload = {
             "sub": str(user_id),
             "exp": int(self._clock.now().timestamp()) + self._ttl_seconds,
+            "ver": session_version,
         }
         body = _b64url_encode(json.dumps(payload, separators=(",", ":")).encode("utf-8"))
         signature = _b64url_encode(hmac.new(self._secret, body.encode("ascii"), hashlib.sha256).digest())
@@ -73,6 +74,17 @@ class HmacTokenIssuer:
 
     def fingerprint(self, token: str) -> str:
         return hashlib.sha256(token.encode("utf-8")).hexdigest()
+
+    def session_version(self, token: str) -> int | None:
+        payload = self._payload(token)
+        if payload is None:
+            return None
+        if "ver" not in payload:
+            return 0
+        try:
+            return int(payload["ver"])  # type: ignore[arg-type]
+        except (TypeError, ValueError):
+            return None
 
     def _payload(self, token: str) -> dict[str, object] | None:
         try:

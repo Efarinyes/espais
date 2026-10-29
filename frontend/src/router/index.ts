@@ -14,6 +14,7 @@ import EspaiNouView from "../views/EspaiNouView.vue";
 import EspaisView from "../views/EspaisView.vue";
 import IniciSessioView from "../views/IniciSessioView.vue";
 import IniciView from "../views/IniciView.vue";
+import RecuperarAccesView from "../views/RecuperarAccesView.vue";
 import RegistreView from "../views/RegistreView.vue";
 
 const metaAuth = { requiresAuth: true };
@@ -29,6 +30,11 @@ export const router = createRouter({
       name: "iniciar-sessio",
       component: IniciSessioView,
       meta: { guestOnly: true },
+    },
+    {
+      path: "/recuperar",
+      name: "recuperar-acces",
+      component: RecuperarAccesView,
     },
     {
       path: "/espais",

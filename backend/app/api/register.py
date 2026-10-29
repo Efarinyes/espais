@@ -52,6 +52,6 @@ def register(
         raise HTTPException(status_code=400, detail=str(exc)) from None
 
     view = identity.resolve.execute(result.user_id)
-    token = identity.tokens.issue(result.user_id)
+    token = identity.tokens.issue(result.user_id, view.session_version)
     base = session_response(view, token=token)
     return RegisterEntityResponse(membership_id=result.membership_id, **base.model_dump())

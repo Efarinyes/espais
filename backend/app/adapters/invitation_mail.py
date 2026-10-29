@@ -2,20 +2,9 @@
 
 from __future__ import annotations
 
-import os
-import smtplib
-from email.message import EmailMessage
-
+from app.adapters.public_origin import origen_public
+from app.adapters.smtp_transport import SmtpConfig, SmtpTransport, smtp_config_from_env
 from app.ports.invitation_mail import InvitationMessage, NoInvitationMailer
-
-
-def origen_public() -> str:
-    raw = os.environ.get("ESPAIS_DOMAIN", "").strip().rstrip("/")
-    if not raw:
-        return ""
-    if "://" in raw:
-        return raw
-    return f"https://{raw}"
 
 
 def text_invitacio(message: InvitationMessage, origin: str) -> tuple[str, str]:
@@ -29,11 +18,28 @@ def text_invitacio(message: InvitationMessage, origin: str) -> tuple[str, str]:
 
 
 class SmtpInvitationMailer:
-    def __init__(self, *, host: str, port: int, from_addr: str, origin: str) -> None:
-        self._host = host
-        self._port = port
-        self._from_addr = from_addr
+    def __init__(
+        self,
+        *,
+        host: str,
+        port: int,
+        from_addr: str,
+        origin: str,
+        starttls: bool = False,
+        username: str = "",
+        password: str = "",
+    ) -> None:
         self._origin = origin
+        self._transport = SmtpTransport(
+            SmtpConfig(
+                host=host,
+                port=port,
+                from_addr=from_addr,
+                starttls=starttls,
+                username=username,
+                password=password,
+            )
+        )
 
     def configured(self) -> bool:
         return True
@@ -42,22 +48,19 @@ class SmtpInvitationMailer:
         if not self._origin:
             raise RuntimeError("sense origen públic per a l’enllaç d’invitació")
         subject, body = text_invitacio(message, self._origin)
-        email = EmailMessage()
-        email["From"] = self._from_addr
-        email["To"] = message.to_email
-        email["Subject"] = subject
-        email.set_content(body)
-        with smtplib.SMTP(self._host, self._port, timeout=10) as smtp:
-            smtp.send_message(email)
+        self._transport.send(to_addr=message.to_email, subject=subject, body=body)
 
 
 def build_invitation_mailer() -> NoInvitationMailer | SmtpInvitationMailer:
-    host = os.environ.get("ESPAIS_SMTP_HOST", "").strip()
-    if not host:
+    config = smtp_config_from_env()
+    if config is None:
         return NoInvitationMailer()
     return SmtpInvitationMailer(
-        host=host,
-        port=int(os.environ.get("ESPAIS_SMTP_PORT", "587")),
-        from_addr=os.environ.get("ESPAIS_SMTP_FROM", "espais@localhost"),
+        host=config.host,
+        port=config.port,
+        from_addr=config.from_addr,
         origin=origen_public(),
+        starttls=config.starttls,
+        username=config.username,
+        password=config.password,
     )
