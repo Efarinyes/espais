@@ -9,6 +9,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import sessionmaker
 
+from app.adapters.access_log import protegeix_log_acces
 from app.adapters.maintenance import run_archived_notification_purge_loop
 from app.adapters.sqlalchemy.schema import bootstrap_session_factory
 from app.adapters.system import SystemClock
@@ -56,6 +57,7 @@ def create_app(
     token_issuer: TokenIssuer | None = None,
     enable_maintenance: bool = False,
 ) -> FastAPI:
+    protegeix_log_acces()
     documentacio = _documentacio_oberta()
     application = FastAPI(
         title="Espais",
