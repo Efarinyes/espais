@@ -1,3 +1,5 @@
+import logging
+import smtplib
 from datetime import datetime, timedelta
 from uuid import UUID
 from zoneinfo import ZoneInfo
@@ -182,6 +184,27 @@ def test_notifier_failure_does_not_rollback_cancel() -> None:
     assert stored.status == ReservationStatus.CANCELLED
     avisos = uow.notifications.list_for_user(ENTITY_A, USER_A)
     assert len(avisos) == 1
+
+
+def test_un_error_smtp_no_escriu_l_adreca_al_log(caplog: pytest.LogCaptureFixture) -> None:
+    email = "coord.fictici@example.com"
+
+    class RefusesRecipient:
+        def send(self, notification: object) -> None:
+            raise smtplib.SMTPRecipientsRefused(
+                {email: (550, b"5.1.1 <" + email.encode() + b">: Recipient address rejected")}
+            )
+
+    canceller, uow, _mail, reservation_id = _setup(RefusesRecipient())  # type: ignore[arg-type]
+    with caplog.at_level(logging.ERROR):
+        result = canceller.execute(_command(reservation_id))
+    assert result.reservation.status == ReservationStatus.CANCELLED
+    assert len(uow.notifications.list_for_user(ENTITY_A, USER_A)) == 1
+    assert email not in caplog.text
+    assert "Recipient address rejected" not in caplog.text
+    assert "SMTPRecipientsRefused" in caplog.text
+    assert "smtp 550" in caplog.text
+    assert "correu d’anul·lació" in caplog.text
 
 
 def test_coordinator_lists_own_notifications() -> None:

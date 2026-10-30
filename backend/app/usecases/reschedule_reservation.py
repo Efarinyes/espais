@@ -26,6 +26,7 @@ from app.domain.reservation import (
 from app.ports.identity import Clock, IdGenerator
 from app.ports.notifications import Notifier
 from app.ports.reservations import ReservationUnitOfWork
+from app.usecases.mail_failure import log_mail_failure
 
 logger = logging.getLogger("espais.notifier")
 
@@ -143,8 +144,8 @@ class RescheduleReservation:
         if notification is not None:
             try:
                 self._notifier.send(notification)
-            except Exception:
-                logger.exception("no s’ha pogut enviar el correu de reprogramació")
+            except Exception as exc:  # noqa: BLE001
+                log_mail_failure(logger, "de reprogramació", exc)
         return RescheduleReservationResult(
             reservation=moved,
             notification=notification,

@@ -1,3 +1,5 @@
+import logging
+import smtplib
 from datetime import timedelta
 from uuid import UUID
 
@@ -116,6 +118,39 @@ def test_keeps_invitation_when_mail_fails() -> None:
     invitation = uow.invitations.get_by_token("token-convidat")
     assert invitation is not None
     assert invitation.accepted_at is None
+
+
+def test_un_error_smtp_no_escriu_l_adreca_al_log(caplog: pytest.LogCaptureFixture) -> None:
+    email = "coord.fictici@example.com"
+
+    class RefusesRecipient:
+        def configured(self) -> bool:
+            return True
+
+        def send(self, message: InvitationMessage) -> None:
+            raise smtplib.SMTPRecipientsRefused(
+                {email: (550, b"5.1.1 <" + email.encode() + b">: Recipient address rejected")}
+            )
+
+    uow = InMemoryIdentityUnitOfWork()
+    entity_id = _seed_responsible(uow)
+    with caplog.at_level(logging.ERROR):
+        result = InviteCoordinator(
+            uow, FixedClock(), SequentialIdGenerator(), FixedTokenGenerator(), RefusesRecipient()
+        ).execute(
+            InviteCoordinatorCommand(
+                entity_id=entity_id,
+                actor_role=MembershipRole.RESPONSIBLE,
+                email=email,
+            )
+        )
+    assert result.delivery == "failed"
+    assert uow.invitations.get_by_token("token-convidat") is not None
+    assert email not in caplog.text
+    assert "Recipient address rejected" not in caplog.text
+    assert "SMTPRecipientsRefused" in caplog.text
+    assert "smtp 550" in caplog.text
+    assert "correu d’invitació" in caplog.text
 
 
 def test_coordinator_cannot_invite() -> None:

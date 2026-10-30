@@ -31,7 +31,7 @@ def _enable_sqlite_foreign_keys(engine: Engine) -> None:
 
 def make_engine(url: str | None = None) -> Engine:
     resolved = url or database_url()
-    kwargs: dict[str, object] = {"future": True}
+    kwargs: dict[str, object] = {"future": True, "hide_parameters": True}
     if resolved.startswith("sqlite"):
         kwargs["connect_args"] = {"check_same_thread": False}
         if resolved in {"sqlite://", "sqlite:///:memory:"}:

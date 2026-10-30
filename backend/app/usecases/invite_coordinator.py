@@ -13,6 +13,7 @@ from app.domain.identity import MembershipRole
 from app.domain.invitation import Invitation
 from app.ports.identity import Clock, IdentityUnitOfWork, IdGenerator, InvitationTokenGenerator
 from app.ports.invitation_mail import InvitationMailer, InvitationMessage, NoInvitationMailer
+from app.usecases.mail_failure import log_mail_failure
 
 logger = logging.getLogger(__name__)
 
@@ -90,8 +91,8 @@ class InviteCoordinator:
                     InvitationMessage(to_email=email, entity_name=entity_name, token=token)
                 )
                 delivery = "sent"
-            except Exception:
-                logger.exception("no s’ha pogut enviar el correu d’invitació")
+            except Exception as exc:  # noqa: BLE001
+                log_mail_failure(logger, "d’invitació", exc)
                 delivery = "failed"
 
         return InviteCoordinatorResult(

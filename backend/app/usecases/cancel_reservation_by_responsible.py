@@ -18,6 +18,7 @@ from app.domain.reservation import Reservation, ReservationStatus
 from app.ports.identity import Clock, IdGenerator
 from app.ports.notifications import Notifier
 from app.ports.reservations import ReservationUnitOfWork
+from app.usecases.mail_failure import log_mail_failure
 
 logger = logging.getLogger("espais.notifier")
 
@@ -102,8 +103,8 @@ class CancelReservationByResponsible:
             raise
         try:
             self._notifier.send(notification)
-        except Exception:
-            logger.exception("no s’ha pogut enviar el correu d’anul·lació")
+        except Exception as exc:  # noqa: BLE001
+            log_mail_failure(logger, "d’anul·lació", exc)
         return CancelReservationByResponsibleResult(
             reservation=cancelled,
             notification=notification,

@@ -9,6 +9,8 @@ Actualitza aquest arxiu al final de cada sessió. És el punt d’arrencada del 
 
 ## Darrera feina
 
+2026-10-30: els logs ja no escriuen paràmetres SQL ni adreces de correu, a `feat/docker-caddy-sqlite`. El motor SQLAlchemy amaga els valors de les consultes a les excepcions. Si falla el correu d’una invitació, d’una anul·lació o d’una reprogramació, el log guarda el tipus d’excepció i, si n’hi ha, el codi SMTP, sense el traceback, l’adreça ni el missatge del servidor. La recuperació ja registrava només el tipus. Pytest 269 verds. No s’ha tocat el VPS ni s’ha desplegat. Qui opera el servidor ho publica amb `git pull` i `docker compose up -d --build`, sense `down -v`.
+
 2026-10-30: la nota de sessió que faltava a `origin` s’ha pujat. `feat/docker-caddy-sqlite` local i `origin` coincideixen. El canvi és només `SESSION.md`; les imatges no el copien, així que l’app desplegada no canvia. No s’ha demanat un desplegament nou ni moure `backup/alpha-funcional` ni fusionar a `main`.
 
 2026-10-30: qui opera l’app confirma que la recuperació funciona. No s’ha demanat moure `backup/alpha-funcional` ni fusionar a `main`. La punta de l’app, abans d’aquesta nota, era `5c44a88`.
@@ -78,7 +80,7 @@ La feina continua a `feat/docker-caddy-sqlite`: és la branca que el servidor de
 
 L’assistència amb `mine: false`, el README, les capçaleres/OpenAPI, el registre (ADR 0016), la invitació per correu i la revocació en sortir (ADR 0014) ja són a `origin` i s’han vist a l’Alpha. No es refan. La verificació de correu segueix al backlog. L’ADR 0017 continua proposat, sense codi.
 
-No hi ha feina oberta. La branca local i `origin/feat/docker-caddy-sqlite` coincideixen. La propera sessió llegeix aquest fitxer i espera què es demani. No es comença sola la decisió D1 del calendari, ni l’alineació de glossari, visió i fase 5, ni l’ADR 0017, ni les recomanacions «Després» de l’auditoria. `backup/alpha-funcional` no es mou fins que es demani.
+No hi ha feina de codi oberta. La correcció dels logs queda a `feat/docker-caddy-sqlite`; el desplegament al VPS el fa qui opera el servidor. La propera sessió llegeix aquest fitxer i espera què es demani. No es comença sola la decisió D1 del calendari, ni l’alineació de glossari, visió i fase 5, ni l’ADR 0017, ni les recomanacions «Després» de l’auditoria. `backup/alpha-funcional` no es mou fins que es demani.
 
 2026-10-21, decisions del prompt 6 aplicades, sense fase nova: el registre continua obert i la verificació de correu segueix al backlog (`docs/05`), també a l’Alpha i sense SMTP. La invitació s’envia si hi ha `ESPAIS_SMTP_HOST`; si no n’hi ha o l’enviament falla, es conserva i el responsable veu l’enllaç (`docs/05`, `docs/08`). Port propi, no el `Notifier` d’anul·lació. Caducitat 14 dies. La resta del backlog d’invitacions (llista, revocació) no es reobre.
 
