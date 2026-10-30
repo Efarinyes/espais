@@ -9,7 +9,9 @@ Actualitza aquest arxiu al final de cada sessió. És el punt d’arrencada del 
 
 ## Darrera feina
 
-2026-10-30: qui opera l’app confirma que la recuperació funciona. No s’ha demanat moure `backup/alpha-funcional` ni fusionar a `main`. La punta de `feat/docker-caddy-sqlite`, també a `origin`, és `5c44a88`.
+2026-10-30: la nota de sessió que faltava a `origin` s’ha pujat. `feat/docker-caddy-sqlite` local i `origin` coincideixen. El canvi és només `SESSION.md`; les imatges no el copien, així que l’app desplegada no canvia. No s’ha demanat un desplegament nou ni moure `backup/alpha-funcional` ni fusionar a `main`.
+
+2026-10-30: qui opera l’app confirma que la recuperació funciona. No s’ha demanat moure `backup/alpha-funcional` ni fusionar a `main`. La punta de l’app, abans d’aquesta nota, era `5c44a88`.
 
 2026-10-30: la recuperació de compte ja no obre sessió (ADR [0019](docs/adr/0019-recuperacio-sense-sessio.md), que esmena l’0018), a `feat/docker-caddy-sqlite`. La confirmació respon «La contrasenya s’ha actualitzat correctament. Ara pots iniciar sessió.», l’SPA esborra la sessió del navegador i ofereix «Inicia sessió». Correccions trobades en revisar el flux sencer:
 
@@ -76,7 +78,7 @@ La feina continua a `feat/docker-caddy-sqlite`: és la branca que el servidor de
 
 L’assistència amb `mine: false`, el README, les capçaleres/OpenAPI, el registre (ADR 0016), la invitació per correu i la revocació en sortir (ADR 0014) ja són a `origin` i s’han vist a l’Alpha. No es refan. La verificació de correu segueix al backlog. L’ADR 0017 continua proposat, sense codi.
 
-No hi ha feina oberta. La propera sessió llegeix aquest fitxer i espera què es demani. No es comença sola la decisió D1 del calendari, ni l’alineació de glossari, visió i fase 5, ni l’ADR 0017, ni les recomanacions «Després» de l’auditoria. `backup/alpha-funcional` no es mou fins que es demani.
+No hi ha feina oberta. La branca local i `origin/feat/docker-caddy-sqlite` coincideixen. La propera sessió llegeix aquest fitxer i espera què es demani. No es comença sola la decisió D1 del calendari, ni l’alineació de glossari, visió i fase 5, ni l’ADR 0017, ni les recomanacions «Després» de l’auditoria. `backup/alpha-funcional` no es mou fins que es demani.
 
 2026-10-21, decisions del prompt 6 aplicades, sense fase nova: el registre continua obert i la verificació de correu segueix al backlog (`docs/05`), també a l’Alpha i sense SMTP. La invitació s’envia si hi ha `ESPAIS_SMTP_HOST`; si no n’hi ha o l’enviament falla, es conserva i el responsable veu l’enllaç (`docs/05`, `docs/08`). Port propi, no el `Notifier` d’anul·lació. Caducitat 14 dies. La resta del backlog d’invitacions (llista, revocació) no es reobre.
 
