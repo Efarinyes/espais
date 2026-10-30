@@ -9,6 +9,8 @@ Actualitza aquest arxiu al final de cada sessió. És el punt d’arrencada del 
 
 ## Darrera feina
 
+2026-10-30: qui opera l’app confirma que la recuperació funciona. No s’ha demanat moure `backup/alpha-funcional` ni fusionar a `main`. La punta de `feat/docker-caddy-sqlite`, també a `origin`, és `5c44a88`.
+
 2026-10-30: la recuperació de compte ja no obre sessió (ADR [0019](docs/adr/0019-recuperacio-sense-sessio.md), que esmena l’0018), a `feat/docker-caddy-sqlite`. La confirmació respon «La contrasenya s’ha actualitzat correctament. Ara pots iniciar sessió.», l’SPA esborra la sessió del navegador i ofereix «Inicia sessió». Correccions trobades en revisar el flux sencer:
 
 - El token es consumeix amb un `UPDATE` condicional dins la transacció del canvi: de dues confirmacions alhora, només en guanya una. Enllaç inventat, caducat o usat: 410 amb el mateix text i «Demana un enllaç nou». Contrasenya rebutjada: 400 sense gastar el token.
@@ -74,7 +76,7 @@ La feina continua a `feat/docker-caddy-sqlite`: és la branca que el servidor de
 
 L’assistència amb `mine: false`, el README, les capçaleres/OpenAPI, el registre (ADR 0016), la invitació per correu i la revocació en sortir (ADR 0014) ja són a `origin` i s’han vist a l’Alpha. No es refan. La verificació de correu segueix al backlog. L’ADR 0017 continua proposat, sense codi.
 
-El pas següent el fa qui opera el VPS, sense que l’agent hi entri. Còpia de la base, al `.env` del servidor `ESPAIS_SMTP_HOST=mailpit` i `ESPAIS_SMTP_PORT=1025` (un 587 ja escrit no canvia sol), `git pull` de `feat/docker-caddy-sqlite` i `docker compose up -d --build`, sense `down -v`. La bústia es mira amb un túnel SSH a `127.0.0.1:8025`. La prova és a `https://espais.duckdns.org`, en escriptori i en el telèfon: demanar l’enllaç, obrir-lo, desar la contrasenya nova, veure la confirmació sense entrar sol, iniciar sessió amb la nova i comprovar que la sessió anterior ja no val. La PWA pot servir el paquet anterior la primera vegada: cal recarregar fins que «Inicia sessió» mostri «Has oblidat la contrasenya?». Comprovacions a `docs/17`. `backup/alpha-funcional` no es mou fins que aquesta prova surti bé i es demani.
+No hi ha feina oberta. La propera sessió llegeix aquest fitxer i espera què es demani. No es comença sola la decisió D1 del calendari, ni l’alineació de glossari, visió i fase 5, ni l’ADR 0017, ni les recomanacions «Després» de l’auditoria. `backup/alpha-funcional` no es mou fins que es demani.
 
 2026-10-21, decisions del prompt 6 aplicades, sense fase nova: el registre continua obert i la verificació de correu segueix al backlog (`docs/05`), també a l’Alpha i sense SMTP. La invitació s’envia si hi ha `ESPAIS_SMTP_HOST`; si no n’hi ha o l’enviament falla, es conserva i el responsable veu l’enllaç (`docs/05`, `docs/08`). Port propi, no el `Notifier` d’anul·lació. Caducitat 14 dies. La resta del backlog d’invitacions (llista, revocació) no es reobre.
 
