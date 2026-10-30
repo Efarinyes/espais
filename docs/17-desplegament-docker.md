@@ -77,6 +77,8 @@ docker compose up -d
 
 `docker compose down` atura i esborra contenidors. No esborra els volums. `down -v` esborra també la base: no ho facis en un servidor amb dades reals.
 
+Si un correu no surt (recuperació, invitació o avís), `docker compose logs backend` en mostra una línia `ERROR` amb el tipus d’error, sense l’adreça, el token ni la contrasenya. El log d’accés del backend escriu `/invitacions/<token>` en lloc del token d’invitació. Caddy no escriu log d’accés.
+
 ## Persistència
 
 El volum `espais_data` es munta a `/data`. El primer arrencada, amb el volum buit, Alembic crea l’esquema. Un reinici no recrea la base.
@@ -126,6 +128,13 @@ tools/restore-sqlite.sh --confirmo ./espais.sqlite3
 Mailpit és a la xarxa interna. La interfície només escolta a `127.0.0.1:8025` del VPS. Per veure els missatges, un túnel SSH cap a aquest port i el navegador a `http://127.0.0.1:8025`. No es publica a Caddy. No té volum: recrear el contenidor buida la bústia.
 
 Els enllaços de recuperació i d’invitació surten de `ESPAIS_DOMAIN`. No hi van `localhost`, `mailpit` ni noms de contenidor.
+
+Les migracions s’apliquen soles en arrencar el backend (la de la recuperació és `0010_password_resets`: afegeix `users.session_version` amb valor 0 i dues taules, sense tocar dades). Després d’actualitzar:
+
+1. `curl -i https://<domini>/api/salut` respon 200, i `docker compose logs backend` mostra la migració fins a `0010_password_resets`.
+2. La PWA pot servir el paquet anterior la primera vegada. Recarrega la pàgina fins que «Inicia sessió» mostri «Has oblidat la contrasenya?».
+3. Una demanda de recuperació apareix a Mailpit (túnel a `127.0.0.1:8025`) amb l’enllaç `https://<domini>/recuperar#…`.
+4. Després de canviar la contrasenya, la pantalla diu «La contrasenya s’ha actualitzat correctament. Ara pots iniciar sessió.» i no entra sola. El login amb la contrasenya nova porta a Espais amb el rol de sempre. Un altre navegador amb la sessió d’abans torna a «Inicia sessió».
 
 Caddy obté i renova el certificat. Els certificats queden als volums `caddy_data` i `caddy_config`, no al disc efímer del contenidor.
 

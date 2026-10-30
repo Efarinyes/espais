@@ -6,10 +6,9 @@ from dataclasses import dataclass, replace
 from uuid import UUID
 
 from app.domain.errors import DuplicateEmailError, InvalidRegistrationError
-from app.domain.identity import Membership, MembershipRole, User
+from app.domain.identity import Membership, MembershipRole, User, require_valid_password
 from app.domain.invitation import require_pending
 from app.ports.identity import Clock, IdentityUnitOfWork, IdGenerator, PasswordHasher
-from app.usecases.register_entity import MIN_PASSWORD_LENGTH
 
 
 @dataclass(frozen=True)
@@ -43,8 +42,7 @@ class AcceptInvitation:
         name = command.name.strip()
         if not name:
             raise InvalidRegistrationError("el nom del coordinador és obligatori")
-        if len(command.password) < MIN_PASSWORD_LENGTH:
-            raise InvalidRegistrationError("la contrasenya és massa curta")
+        require_valid_password(command.password)
 
         invitation = require_pending(
             self._uow.invitations.get_by_token(command.token.strip()),

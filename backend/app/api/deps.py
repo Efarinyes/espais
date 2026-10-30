@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterator
+import logging
+from collections.abc import Callable, Iterator
 from dataclasses import dataclass
 from typing import Annotated
 from uuid import UUID
@@ -13,12 +14,12 @@ from sqlalchemy.orm import sessionmaker
 
 from app.adapters.attendance import CountAttendance
 from app.adapters.invitation_mail import build_invitation_mailer
-from app.adapters.password_reset_mail import build_password_reset_mailer
 from app.adapters.notifier import LoggingNotifier, SmtpNotifier, build_notifier
+from app.adapters.password_reset_mail import build_password_reset_mailer
 from app.adapters.security import BcryptPasswordHasher
 from app.adapters.sqlalchemy.identity import SqlAlchemyIdentityUnitOfWork
-from app.adapters.sqlalchemy.revocation import SqlAlchemyRevocationUnitOfWork
 from app.adapters.sqlalchemy.reservations import SqlAlchemyReservationUnitOfWork
+from app.adapters.sqlalchemy.revocation import SqlAlchemyRevocationUnitOfWork
 from app.adapters.sqlalchemy.schema import bootstrap_session_factory
 from app.adapters.sqlalchemy.spaces import SqlAlchemySpaceUnitOfWork
 from app.adapters.system import SecretsInvitationTokenGenerator, SystemClock, UuidIdGenerator
@@ -31,6 +32,7 @@ from app.usecases.archive_notification import ArchiveNotification
 from app.usecases.authenticate_user import AuthenticateUser
 from app.usecases.cancel_own_reservation import CancelOwnReservation
 from app.usecases.cancel_reservation_by_responsible import CancelReservationByResponsible
+from app.usecases.confirm_password_reset import ConfirmPasswordReset
 from app.usecases.create_reservation import CreateReservation
 from app.usecases.create_space import CreateSpace
 from app.usecases.get_invitation import GetInvitation
@@ -42,13 +44,14 @@ from app.usecases.list_reservations import ListReservations
 from app.usecases.list_spaces import ListSpaces
 from app.usecases.mark_notification_read import MarkNotificationRead
 from app.usecases.record_attendance import RecordAttendance
-from app.usecases.confirm_password_reset import ConfirmPasswordReset
 from app.usecases.register_entity import RegisterEntity
-from app.usecases.request_password_reset import RequestPasswordReset
+from app.usecases.request_password_reset import RequestPasswordReset, RequestPasswordResetCommand
 from app.usecases.reschedule_reservation import RescheduleReservation
 from app.usecases.resolve_session import ResolveSession, SessionView
 from app.usecases.update_entity_palette import UpdateEntityPalette
 from app.usecases.update_space import UpdateSpace
+
+logger = logging.getLogger(__name__)
 
 bearer_scheme = HTTPBearer(auto_error=False)
 
@@ -63,7 +66,6 @@ class IdentityHttp:
     preview: GetInvitation
     accept: AcceptInvitation
     update_palette: UpdateEntityPalette
-    request_reset: RequestPasswordReset
     confirm_reset: ConfirmPasswordReset
 
 
@@ -130,17 +132,28 @@ def get_identity_http(request: Request) -> Iterator[IdentityHttp]:
             preview=GetInvitation(uow, clock),
             accept=AcceptInvitation(uow, clock, ids, hasher),
             update_palette=UpdateEntityPalette(uow),
-            request_reset=RequestPasswordReset(
-                uow,
-                clock,
-                ids,
-                SecretsInvitationTokenGenerator(),
-                getattr(request.app.state, "password_reset_mailer", None) or build_password_reset_mailer(),
-            ),
             confirm_reset=ConfirmPasswordReset(uow, clock, hasher),
         )
     finally:
         uow.close()
+
+
+def get_password_reset_request(request: Request) -> Callable[[RequestPasswordResetCommand], None]:
+    factory = get_session_factory(request)
+    mailer = getattr(request.app.state, "password_reset_mailer", None) or build_password_reset_mailer()
+
+    def run(command: RequestPasswordResetCommand) -> None:
+        uow = SqlAlchemyIdentityUnitOfWork(factory)
+        try:
+            RequestPasswordReset(
+                uow, SystemClock(), UuidIdGenerator(), SecretsInvitationTokenGenerator(), mailer
+            ).execute(command)
+        except Exception as exc:  # noqa: BLE001
+            logger.error("no s’ha pogut processar la demanda de recuperació (%s)", type(exc).__name__)
+        finally:
+            uow.close()
+
+    return run
 
 
 def require_session(

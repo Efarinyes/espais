@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import UTC, datetime
 from uuid import UUID
 
-from sqlalchemy import delete, func, select
+from sqlalchemy import delete, func, select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, sessionmaker
 
@@ -258,6 +258,26 @@ class SqlAlchemyPasswordResetRepository:
         if row is None:
             return None
         return _reset_from_row(row)
+
+    def consume(self, token_hash: str, now: datetime) -> PasswordReset | None:
+        result = self._session.execute(
+            update(PasswordResetRow)
+            .where(
+                PasswordResetRow.token_hash == token_hash,
+                PasswordResetRow.used_at.is_(None),
+                PasswordResetRow.expires_at > now,
+            )
+            .values(used_at=now)
+            .execution_options(synchronize_session=False)
+        )
+        if result.rowcount != 1:
+            return None
+        row = self._session.scalar(
+            select(PasswordResetRow)
+            .where(PasswordResetRow.token_hash == token_hash)
+            .execution_options(populate_existing=True)
+        )
+        return _reset_from_row(row) if row is not None else None
 
     def invalidate_unused(self, user_id: UUID, now: datetime) -> None:
         rows = self._session.scalars(

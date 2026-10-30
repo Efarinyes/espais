@@ -1,6 +1,6 @@
 # ADR 0018 — Recuperació de compte per correu
 
-- **Estat:** acceptat
+- **Estat:** acceptat; esmenat per [0019](0019-recuperacio-sense-sessio.md)
 - **Data:** 2026-10-29
 - **Relacionat:** [0014](0014-revocar-token-en-sortir.md), [0016](0016-registre-no-confirma-email.md), [0012](0012-docker-caddy-sqlite-alpha.md)
 
@@ -13,6 +13,8 @@ El mateix compte serveix per al responsable i per al coordinador. No cal un flux
 A l’Alpha el correu el captura Mailpit al VPS. No surt cap missatge a destinataris externs. El transport SMTP és el mateix que podrà fer servir un relay més endavant, sense canviar el cas d’ús.
 
 ## Decisió
+
+Esmenat per l’ADR [0019](0019-recuperacio-sense-sessio.md): la confirmació no obre cap sessió i la persona entra pel login. La resta d’aquest apartat continua vigent.
 
 - `POST /recuperacio` respon sempre el mateix text, tant si el compte existeix com si s’ha passat el límit o el correu no ha sortit.
 - El token és `secrets.token_urlsafe(32)`. A la base només hi ha el SHA-256. Caduca al cap d’una hora, es fa servir un sol cop i una demanda nova invalida les anteriors d’aquell compte que encara no s’han usat.

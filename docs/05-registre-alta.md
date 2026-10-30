@@ -30,7 +30,7 @@ Formulari unique
 
 - Email únic a la plataforma (v1: un compte = una persona).
 - Nom d’entitat obligatori; unicitat global del nom **no** és invariant (dues AAVV poden dir-se igual a barris diferents). Opcional: avís suau, no bloqueig.
-- Contrasenya amb política mínima (longitud); hash al servidor.
+- Contrasenya amb política mínima (longitud): de 8 caràcters a 72 bytes, el límit de bcrypt. La mateixa regla a l’alta, a la invitació i a la recuperació (ADR [0019](adr/0019-recuperacio-sense-sessio.md)). Hash al servidor.
 - Tipologia opcional però recomanada (empty state millor amb context).
 
 ## Empty state post-registre

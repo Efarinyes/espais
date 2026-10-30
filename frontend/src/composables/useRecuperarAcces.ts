@@ -1,26 +1,26 @@
-import { reactive, ref } from "vue";
-import { useRouter } from "vue-router";
+import { reactive, ref, watch } from "vue";
+import { useRoute, useRouter } from "vue-router";
 
-import { destiDespresSessio } from "../navegacio";
 import { ApiError } from "../services/http";
 import { requireIdentityApi } from "../services/identitat";
 import { useSessioStore } from "../stores/sessio";
 
-function tokenDelFragment(): string {
-  const cru = window.location.hash.startsWith("#") ? window.location.hash.slice(1) : "";
-  const token = decodeURIComponent(cru).trim();
-  if (window.location.hash) {
-    const net = `${window.location.pathname}${window.location.search}`;
-    window.history.replaceState(window.history.state, "", net);
+export type PasRecuperacio = "demanar" | "contrasenya" | "fet";
+
+function decodifica(cru: string): string {
+  try {
+    return decodeURIComponent(cru).trim();
+  } catch {
+    return "";
   }
-  return token;
 }
 
 export function useRecuperarAcces() {
   const api = requireIdentityApi();
   const sessio = useSessioStore();
+  const route = useRoute();
   const router = useRouter();
-  const token = tokenDelFragment();
+  let token = "";
 
   const camps = reactive({
     email: "",
@@ -30,10 +30,39 @@ export function useRecuperarAcces() {
     email: "",
     password: "",
   });
+  const pas = ref<PasRecuperacio>("demanar");
   const missatge = ref("");
   const errorGlobal = ref("");
+  const enllacInvalid = ref(false);
   const enviant = ref(false);
-  const calContrasenya = ref(Boolean(token));
+
+  function prenTokenDelFragment(hash: string) {
+    const cru = hash.startsWith("#") ? hash.slice(1) : "";
+    if (!cru) {
+      return;
+    }
+    if (window.location.hash) {
+      window.history.replaceState(window.history.state, "", `${window.location.pathname}${window.location.search}`);
+    }
+    void router.replace({ path: route.path, query: route.query, hash: "" });
+    const nou = decodifica(cru);
+    if (!nou) {
+      return;
+    }
+    token = nou;
+    camps.password = "";
+    errorsCamp.password = "";
+    missatge.value = "";
+    errorGlobal.value = "";
+    enllacInvalid.value = false;
+    pas.value = "contrasenya";
+  }
+
+  prenTokenDelFragment(window.location.hash || route.hash);
+  watch(
+    () => route.hash,
+    (hash) => prenTokenDelFragment(hash),
+  );
 
   function validaEmail(): boolean {
     errorsCamp.email = camps.email.trim() ? "" : "L’email és obligatori.";
@@ -70,11 +99,19 @@ export function useRecuperarAcces() {
     }
     enviant.value = true;
     try {
-      const dto = await api.confirmarRecuperacio(token, camps.password);
-      sessio.iniciar(dto);
-      await router.push(destiDespresSessio(dto.role));
+      const resposta = await api.confirmarRecuperacio(token, camps.password);
+      token = "";
+      camps.password = "";
+      sessio.sortir();
+      missatge.value = resposta.detall;
+      pas.value = "fet";
     } catch (err) {
-      if (err instanceof ApiError) {
+      if (err instanceof ApiError && err.status === 410) {
+        token = "";
+        camps.password = "";
+        enllacInvalid.value = true;
+        errorGlobal.value = err.message;
+      } else if (err instanceof ApiError) {
         errorGlobal.value = err.message;
       } else {
         errorGlobal.value = "No s’ha pogut desar la contrasenya.";
@@ -84,14 +121,23 @@ export function useRecuperarAcces() {
     }
   }
 
+  function demanarEnllacNou() {
+    errorGlobal.value = "";
+    missatge.value = "";
+    enllacInvalid.value = false;
+    pas.value = "demanar";
+  }
+
   return {
     camps,
     errorsCamp,
+    pas,
     missatge,
     errorGlobal,
+    enllacInvalid,
     enviant,
-    calContrasenya,
     demanar,
     confirmar,
+    demanarEnllacNou,
   };
 }

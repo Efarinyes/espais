@@ -54,6 +54,12 @@ No pot:
 
 Sessió per compte (email + contrasenya a v1). Totes les rutes de negoci exigeixen membership a l’entitat del recurs.
 
+- Un sol login per als dos rols (`POST /sessio`). El rol no el tria ningú: surt de la membership a la base, a cada petició (`ResolveSession`). No el porta el token ni el decideix el navegador.
+- Cada cas d’ús restringit comprova el rol i respon 403. La guarda del router de l’SPA només amaga pantalles: canviar la ruta o el `localStorage` no dona cap permís.
+- El token de sessió és un HMAC amb `sub`, `exp` i `ver`. `require_session` el rebutja si està revocat (ADR [0014](adr/0014-revocar-token-en-sortir.md)) o si `ver` no és el `session_version` de l’usuari.
+- Recuperar la contrasenya (responsable o coordinador) puja `session_version`: totes les sessions anteriors cauen i no se n’obre cap de nova (ADR [0018](adr/0018-recuperacio-de-compte.md), [0019](adr/0019-recuperacio-sense-sessio.md)). El rol i els permisos no canvien.
+- Si el servidor respon 401 a `GET /sessio`, l’SPA esborra la sessió del navegador i porta a «Inicia sessió».
+
 ## Backlog de rols
 
 - Diversos responsables.

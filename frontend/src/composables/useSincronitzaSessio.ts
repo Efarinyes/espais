@@ -1,6 +1,8 @@
 import { inject, onMounted, onUnmounted, watch } from "vue";
+import { useRouter } from "vue-router";
 
 import { PALETA_PER_DEFECTE } from "../aparenca";
+import { ApiError } from "../services/http";
 import { identityApiKey } from "../services/identitat";
 import { useAparencaStore } from "../stores/aparenca";
 import { useSessioStore } from "../stores/sessio";
@@ -9,6 +11,7 @@ export function useSincronitzaSessio() {
   const api = inject(identityApiKey, null);
   const sessio = useSessioStore();
   const aparenca = useAparencaStore();
+  const router = useRouter();
 
   async function refrescar() {
     if (!api || !sessio.iniciada) {
@@ -20,8 +23,14 @@ export function useSincronitzaSessio() {
     try {
       const view = await api.obtenirSessio(sessio.token);
       sessio.aplicarVista(view);
-    } catch {
-      /* sessió caducada: no tanquem aquí */
+    } catch (err) {
+      if (!(err instanceof ApiError) || err.status !== 401) {
+        return;
+      }
+      sessio.sortir();
+      if (router.currentRoute.value.meta.requiresAuth) {
+        await router.replace({ name: "iniciar-sessio" });
+      }
     }
   }
 

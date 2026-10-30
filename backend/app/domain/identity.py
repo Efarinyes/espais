@@ -7,8 +7,20 @@ from datetime import datetime
 from enum import StrEnum
 from uuid import UUID
 
+from app.domain.errors import InvalidRegistrationError
+
 DEFAULT_ENTITY_PALETTE = "mar-cel"
 ENTITY_PALETTES = frozenset({"mar-cel", "camps", "citrics", "vinyes"})
+
+MIN_PASSWORD_LENGTH = 8
+MAX_PASSWORD_BYTES = 72
+
+
+def require_valid_password(raw: str) -> None:
+    if len(raw) < MIN_PASSWORD_LENGTH:
+        raise InvalidRegistrationError("la contrasenya és massa curta")
+    if len(raw.encode("utf-8")) > MAX_PASSWORD_BYTES:
+        raise InvalidRegistrationError("la contrasenya és massa llarga")
 
 
 class MembershipRole(StrEnum):

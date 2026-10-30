@@ -84,6 +84,10 @@ class PasswordResetRepository(Protocol):
 
     def get_by_token_hash(self, token_hash: str) -> PasswordReset | None: ...
 
+    def consume(self, token_hash: str, now: datetime) -> PasswordReset | None:
+        """Marca el token com a usat només si encara no ho estava i no ha caducat."""
+        ...
+
     def invalidate_unused(self, user_id: UUID, now: datetime) -> None: ...
 
 

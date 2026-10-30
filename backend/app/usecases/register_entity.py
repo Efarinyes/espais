@@ -12,10 +12,9 @@ from app.domain.identity import (
     Membership,
     MembershipRole,
     User,
+    require_valid_password,
 )
 from app.ports.identity import Clock, IdentityUnitOfWork, IdGenerator, PasswordHasher
-
-MIN_PASSWORD_LENGTH = 8
 
 
 @dataclass(frozen=True)
@@ -61,8 +60,7 @@ class RegisterEntity:
             raise InvalidRegistrationError("el nom del responsable és obligatori")
         if not email:
             raise InvalidRegistrationError("l’email és obligatori")
-        if len(command.password) < MIN_PASSWORD_LENGTH:
-            raise InvalidRegistrationError("la contrasenya és massa curta")
+        require_valid_password(command.password)
 
         if self._uow.users.get_by_email(email) is not None:
             raise DuplicateEmailError(email)

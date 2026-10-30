@@ -50,8 +50,6 @@ class RequestPasswordReset:
         since = now - ATTEMPT_WINDOW
         subject_hash = blind_hash(email)
         ip_hash = blind_hash(command.ip.strip() or "desconeguda")
-        subject_count = self._uow.recovery_attempts.count_subject_since(subject_hash, since)
-        ip_count = self._uow.recovery_attempts.count_ip_since(ip_hash, since)
         self._uow.recovery_attempts.add(
             RecoveryAttempt(
                 id=self._ids.new(),
@@ -60,7 +58,9 @@ class RequestPasswordReset:
                 created_at=now,
             )
         )
-        if subject_count >= MAX_PER_ACCOUNT or ip_count >= MAX_PER_IP:
+        subject_count = self._uow.recovery_attempts.count_subject_since(subject_hash, since)
+        ip_count = self._uow.recovery_attempts.count_ip_since(ip_hash, since)
+        if subject_count > MAX_PER_ACCOUNT or ip_count > MAX_PER_IP:
             self._commit()
             return
 
@@ -87,8 +87,8 @@ class RequestPasswordReset:
             return
         try:
             self._mailer.send(PasswordResetMessage(to_email=email, token=raw))
-        except Exception:
-            logger.exception("no s’ha pogut enviar el correu de recuperació")
+        except Exception as exc:  # noqa: BLE001
+            logger.error("no s’ha pogut enviar el correu de recuperació (%s)", type(exc).__name__)
             self._consume(reset, now)
 
     def _consume(self, reset: PasswordReset, now: datetime) -> None:

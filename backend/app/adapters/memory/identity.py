@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import UTC, datetime
 from hmac import compare_digest
 from uuid import UUID
@@ -144,6 +144,15 @@ class InMemoryPasswordResetRepository:
         for reset in self._uow._working.password_resets:
             if reset.token_hash == token_hash:
                 return reset
+        return None
+
+    def consume(self, token_hash: str, now: datetime) -> PasswordReset | None:
+        working = self._uow._working.password_resets
+        for index, reset in enumerate(working):
+            if reset.token_hash == token_hash and reset.used_at is None and now < reset.expires_at:
+                consumed = replace(reset, used_at=now)
+                working[index] = consumed
+                return consumed
         return None
 
     def invalidate_unused(self, user_id: UUID, now: datetime) -> None:
