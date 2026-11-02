@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, shallowRef, watch } from "vue";
-import { RouterLink } from "vue-router";
+import { computed, nextTick, onMounted, onUnmounted, ref, shallowRef, watch } from "vue";
+import { RouterLink, useRouter } from "vue-router";
 import { ScheduleXCalendar } from "@schedule-x/vue";
 import { createCalendar, createViewDay, createViewWeek } from "@schedule-x/calendar";
 import { createEventsServicePlugin } from "@schedule-x/events-service";
@@ -8,6 +8,7 @@ import "@schedule-x/theme-default/dist/index.css";
 import "temporal-polyfill/global";
 
 import CalendariModal from "../components/CalendariModal.vue";
+import { nomAccessibleReserva } from "../calendari";
 import { useAparencaStore } from "../stores/aparenca";
 import { useCalendariReserves } from "../composables/useCalendariReserves";
 import { useRefrescCalendari } from "../composables/useRefrescCalendari";
@@ -42,9 +43,14 @@ const {
   esResponsable,
   potReservar,
   espaisActius,
+  espaiId,
   espaiSeleccionat,
+  espaisDeLlegenda,
+  espaiDeRutaInvalid,
   calendaris,
   llegendaCoordinadors,
+  estatLectura,
+  avisRefresc,
   carregant,
   error,
   modal,
@@ -92,6 +98,45 @@ const {
 } = useCalendariReserves();
 
 const aparenca = useAparencaStore();
+const router = useRouter();
+const caixaCalendari = ref<HTMLElement | null>(null);
+let observadorEvents: MutationObserver | null = null;
+
+function etiquetarEvents() {
+  const arrel = caixaCalendari.value;
+  if (!arrel) {
+    return;
+  }
+  const rol = esResponsable.value ? "responsible" : "coordinator";
+  for (const el of arrel.querySelectorAll<HTMLElement>("[data-event-id]")) {
+    const id = el.dataset.eventId;
+    if (!id) {
+      continue;
+    }
+    const item = reservaCarregada(id);
+    if (!item) {
+      continue;
+    }
+    el.setAttribute("aria-label", nomAccessibleReserva(item, rol));
+  }
+}
+
+function observarEvents() {
+  observadorEvents?.disconnect();
+  const arrel = caixaCalendari.value;
+  if (!arrel) {
+    observadorEvents = null;
+    return;
+  }
+  etiquetarEvents();
+  observadorEvents = new MutationObserver(() => etiquetarEvents());
+  observadorEvents.observe(arrel, { childList: true, subtree: true });
+}
+
+function canviarEspai(event: Event) {
+  const id = (event.target as HTMLSelectElement).value;
+  void router.replace({ name: "calendari", query: id ? { espai: id } : {} });
+}
 
 const eventsServiceHolder = { current: createEventsServicePlugin() };
 const calendarApp = shallowRef<ReturnType<typeof createCalendar> | null>(null);
@@ -380,6 +425,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   netejaArrossegament?.();
+  observadorEvents?.disconnect();
   calendarApp.value?.destroy();
 });
 
@@ -395,10 +441,18 @@ watch([carregant, clauCalendari], () => {
 watch(calendarApp, (app) => {
   if (app) {
     engegar();
+    void nextTick(() => observarEvents());
   } else {
     aturarRefresc();
+    observadorEvents?.disconnect();
+    observadorEvents = null;
   }
 });
+
+async function reintentar() {
+  await aplicarAvisCalendari();
+  etiquetarEvents();
+}
 </script>
 
 <template>
@@ -415,6 +469,28 @@ watch(calendarApp, (app) => {
     <p v-else-if="espaisActius.length > 0" class="mt-2 text-base-content/80">
       Les teves reserves de tots els espais. Arrossega-ne una per canviar l’horari.
     </p>
+
+    <label v-if="!esResponsable && espaisActius.length > 0" class="mt-4 block max-w-sm font-medium" for="espai-calendari">
+      Espai
+      <select
+        id="espai-calendari"
+        class="select mt-1 w-full min-h-11 border border-base-300 bg-base-100"
+        :value="espaiId"
+        @change="canviarEspai"
+      >
+        <option value="">Tots els espais</option>
+        <option v-for="espai in espaisActius" :key="espai.id" :value="espai.id">{{ espai.name }}</option>
+      </select>
+    </label>
+    <p v-if="espaiDeRutaInvalid" class="mt-2 text-error" role="alert">Aquest espai no està disponible.</p>
+
+    <div v-if="avisRefresc" class="alert alert-warning mt-6" role="alert">
+      <span>
+        {{ avisRefresc }}
+        <template v-if="estatLectura === 'antic'"> Les dades poden estar desactualitzades.</template>
+      </span>
+      <button class="btn min-h-11" type="button" @click="reintentar">Reintenta</button>
+    </div>
 
     <div v-if="error" class="alert alert-error mt-6" role="alert">
       <span>{{ error }}</span>
@@ -445,7 +521,7 @@ watch(calendarApp, (app) => {
 
     <template v-else>
       <ul class="llegenda-calendari mt-4" aria-label="Sales">
-        <li v-for="espai in espaisActius" :key="espai.id">
+        <li v-for="espai in espaisDeLlegenda" :key="espai.id">
           <span class="llegenda-calendari__mostra" :style="{ backgroundColor: colorSala(espai.id) }" />
           <span>{{ espai.name }}</span>
         </li>
@@ -458,6 +534,7 @@ watch(calendarApp, (app) => {
       </ul>
       <div
         v-if="calendarApp"
+        ref="caixaCalendari"
         :key="clauCalendari"
         class="calendari-espais mt-4"
         :class="{ 'calendari-espais--arrossegant': arrossegant }"

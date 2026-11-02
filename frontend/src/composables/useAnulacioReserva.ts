@@ -50,7 +50,7 @@ export function useAnulacioReserva(deps: AnulacioReservaDeps) {
 
   async function confirmarAnulacio(): Promise<ReservaDto | null> {
     const reserva = !sessio.token ? null : deps.reservaEnConfirmacio();
-    if (!reserva) {
+    if (!reserva || enviantAnulacio.value) {
       return null;
     }
     enviantAnulacio.value = true;

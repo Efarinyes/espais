@@ -92,7 +92,7 @@ describe("IniciView", () => {
     expect(wrapper.text()).toContain("Defineix els espais");
     expect(wrapper.text()).toContain("Reserva al calendari");
     expect(wrapper.text()).toContain("Governa i avisa");
-    expect(wrapper.text()).toContain("Mira l’ús de cada espai");
+    expect(wrapper.text()).toContain("Mira les estadístiques de cada espai");
     expect(wrapper.find("a[href='/registre']").exists()).toBe(false);
     expect(wrapper.find("a[href='/iniciar-sessio']").exists()).toBe(false);
     expect(wrapper.text()).not.toContain("Registra l’entitat");

@@ -15,7 +15,16 @@ const llistaAmpla = computed(() => !error.value && !carregant.value && espais.va
 
 <template>
   <main class="w-full" :class="llistaAmpla ? '' : 'max-w-xl'">
-    <h1 class="text-3xl font-semibold">Espais de {{ sessio.entityName }}</h1>
+    <div class="flex flex-wrap items-center justify-between gap-3">
+      <h1 class="text-3xl font-semibold">Espais de {{ sessio.entityName }}</h1>
+      <RouterLink
+        v-if="esResponsable && espais.length > 0 && !carregant && !error"
+        class="btn btn-primary min-h-11"
+        to="/espais/nou"
+      >
+        Afegeix un espai
+      </RouterLink>
+    </div>
 
     <div v-if="error" class="alert alert-error mt-6" role="alert">
       <span>{{ error }}</span>
@@ -46,9 +55,5 @@ const llistaAmpla = computed(() => !error.value && !carregant.value && espais.va
         :calendari-global="esResponsable"
       />
     </ul>
-
-    <div v-if="espais.length > 0 && esResponsable" class="mt-6">
-      <RouterLink class="btn btn-primary min-h-11" to="/espais/nou">Afegeix un espai</RouterLink>
-    </div>
   </main>
 </template>

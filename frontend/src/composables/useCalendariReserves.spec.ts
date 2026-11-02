@@ -306,6 +306,7 @@ describe("useCalendariReserves", () => {
     expect(vistes).toHaveLength(2);
     expect(vistes.every((event) => event._options === undefined)).toBe(true);
     expect(vistes.map((event) => event.title)).toEqual(["Sala 1", "Ocupat"]);
+    expect(vistes.find((event) => event.title === "Ocupat")?.people).toBeUndefined();
     expect(wrapperCoord.vm.llegendaCoordinadors).toEqual([]);
   });
 
@@ -677,5 +678,107 @@ describe("useCalendariReserves", () => {
     vi.advanceTimersByTime(6000);
     expect(wrapper.vm.error).toBe("");
     wrapper.unmount();
+  });
+
+  it("un error de refresc conserva les reserves del mateix rang i es pot reintentar", async () => {
+    let fallar = false;
+    const wrapper = await muntar({
+      llistar: async () => {
+        if (fallar) {
+          throw new ApiError("servei no disponible", 503);
+        }
+        return [reserva({ id: "r1" }), reserva({ id: "r2" })];
+      },
+    });
+    const primer = await wrapper.vm.carregarReserves("2026-09-07T22:00:00Z", "2026-09-14T22:00:00Z");
+    expect(primer).toHaveLength(2);
+    fallar = true;
+    expect(await wrapper.vm.carregarReserves("2026-09-07T22:00:00Z", "2026-09-14T22:00:00Z")).toBeNull();
+    expect(wrapper.vm.estatLectura).toBe("antic");
+    expect(wrapper.vm.avisRefresc).toBe("No s’ha pogut actualitzar el calendari");
+    expect(wrapper.vm.reservesCarregades).toHaveLength(2);
+    fallar = false;
+    expect(await wrapper.vm.refrescarReserves()).toHaveLength(2);
+    expect(wrapper.vm.estatLectura).toBe("actual");
+    expect(wrapper.vm.avisRefresc).toBe("");
+  });
+
+  it("una llista buida correcta buida el calendari", async () => {
+    let buida = false;
+    const wrapper = await muntar({
+      llistar: async () => (buida ? [] : [reserva()]),
+    });
+    await wrapper.vm.carregarReserves("2026-09-07T22:00:00Z", "2026-09-14T22:00:00Z");
+    buida = true;
+    expect(await wrapper.vm.carregarReserves("2026-09-07T22:00:00Z", "2026-09-14T22:00:00Z")).toEqual([]);
+    expect(wrapper.vm.estatLectura).toBe("actual");
+    expect(wrapper.vm.avisRefresc).toBe("");
+  });
+
+  it("la primera càrrega fallida no confirma disponibilitat", async () => {
+    const wrapper = await muntar({
+      llistar: async () => {
+        throw new ApiError("servei no disponible", 503);
+      },
+    });
+    await wrapper.vm.carregarEspais();
+    expect(await wrapper.vm.carregarReserves("2026-09-07T22:00:00Z", "2026-09-14T22:00:00Z")).toBeNull();
+    expect(wrapper.vm.estatLectura).toBe("error");
+    expect(wrapper.vm.reservesCarregades).toEqual([]);
+    wrapper.vm.clicarFranja(Temporal.ZonedDateTime.from("2026-09-08T10:00:00+02:00[Europe/Madrid]"));
+    expect(wrapper.vm.pendent).toBeNull();
+  });
+
+  it("una resposta lenta no pisa el rang més nou", async () => {
+    const pendents: Array<(valor: ReturnType<typeof reserva>[]) => void> = [];
+    const wrapper = await muntar({
+      llistar: () =>
+        new Promise((resolve) => {
+          pendents.push(resolve);
+        }),
+    });
+    const antic = wrapper.vm.carregarReserves("2026-09-07T22:00:00Z", "2026-09-14T22:00:00Z");
+    const nou = wrapper.vm.carregarReserves("2026-09-14T22:00:00Z", "2026-09-21T22:00:00Z");
+    pendents[1]([reserva({ id: "nou" })]);
+    expect(await nou).toHaveLength(1);
+    pendents[0]([reserva({ id: "antic" })]);
+    expect(await antic).toBeNull();
+    expect(wrapper.vm.reservesCarregades.map((item) => item.id)).toEqual(["nou"]);
+  });
+
+  it("canviar d’entitat esborra la lectura anterior", async () => {
+    const wrapper = await muntar({
+      llistar: async () => [reserva()],
+    });
+    await wrapper.vm.carregarReserves("2026-09-07T22:00:00Z", "2026-09-14T22:00:00Z");
+    expect(wrapper.vm.reservesCarregades).toHaveLength(1);
+    useSessioStore().iniciar({ ...sessioCoord, entity_id: "e2", token: "altre" });
+    await flushPromises();
+    expect(wrapper.vm.reservesCarregades).toEqual([]);
+    expect(wrapper.vm.estatLectura).toBe("inicial");
+    expect(wrapper.vm.avisRefresc).toBe("");
+  });
+
+  it("un espai inexistent a la ruta no es selecciona", async () => {
+    const wrapper = await muntar({}, { espai: "fora" });
+    await wrapper.vm.carregarEspais();
+    expect(wrapper.vm.espaiId).toBe("");
+    expect(wrapper.vm.espaiDeRutaInvalid).toBe(true);
+    expect(wrapper.vm.potReservar).toBe(false);
+  });
+
+  it("la llegenda del coordinador només inclou la sala seleccionada i les de les reserves visibles", async () => {
+    const sales = [espai, { ...espai, id: "s2", name: "Sala 2" }, { ...espai, id: "s3", name: "Sala 3" }];
+    const wrapper = await muntar(
+      {
+        llistar: async () => [reserva({ id: "r1", mine: true, space_id: "s2", space_name: "Sala 2" })],
+      },
+      { espai: "s1" },
+      sessioCoord,
+      sales,
+    );
+    await wrapper.vm.carregarEspais();
+    await wrapper.vm.carregarReserves("2026-09-07T22:00:00Z", "2026-09-14T22:00:00Z");
+    expect(wrapper.vm.espaisDeLlegenda.map((item) => item.id)).toEqual(["s1", "s2"]);
   });
 });

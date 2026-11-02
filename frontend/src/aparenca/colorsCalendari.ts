@@ -9,15 +9,21 @@ const PALETA = [
   { main: "#8B5CF6", container: "#EDE9FE", onContainer: "#202A2E", darkContainer: "#2E1A5C", darkOn: "#F5EDE6" },
 ] as const;
 
-function colorNom(index: number): string {
-  let n = index + 1;
-  let nom = "";
-  while (n > 0) {
-    n -= 1;
-    nom = String.fromCharCode(97 + (n % 26)) + nom;
-    n = Math.floor(n / 26);
+function indexEstable(id: string): number {
+  let hash = 2166136261;
+  for (let i = 0; i < id.length; i += 1) {
+    hash ^= id.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
   }
-  return `espai${nom}`;
+  return (hash >>> 0) % PALETA.length;
+}
+
+function colorNom(id: string): string {
+  let nom = "";
+  for (const char of id) {
+    nom += String.fromCharCode(97 + (char.charCodeAt(0) % 26));
+  }
+  return `espai${nom || "a"}`;
 }
 
 export type ColorCalendari = {
@@ -28,12 +34,12 @@ export type ColorCalendari = {
 
 export function calendarisPerEspais(espais: { id: string }[]): Record<string, ColorCalendari> {
   return Object.fromEntries(
-    espais.map((espai, index) => {
-      const to = PALETA[index % PALETA.length];
+    espais.map((espai) => {
+      const to = PALETA[indexEstable(espai.id)];
       return [
         espai.id,
         {
-          colorName: colorNom(index),
+          colorName: colorNom(espai.id),
           lightColors: { main: to.main, container: to.container, onContainer: to.onContainer },
           darkColors: { main: to.main, container: to.darkContainer, onContainer: to.darkOn },
         },

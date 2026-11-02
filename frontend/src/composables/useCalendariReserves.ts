@@ -12,7 +12,7 @@ import {
   valorRangAIso,
   type FranjaReserva,
 } from "../calendari";
-import { horaMadrid } from "../utils/formatData";
+import { intervalMadrid } from "../utils/formatData";
 import { type FinestraDto } from "../disponibilitat";
 import { useAnulacioReserva } from "./useAnulacioReserva";
 import { useAssistenciaReserva } from "./useAssistenciaReserva";
@@ -22,6 +22,8 @@ import { ApiError } from "../services/http";
 import { requireEspaisApi, type EspaiDto } from "../services/espais";
 import { requireReservesApi, type ReservaDto } from "../services/reserves";
 import { useSessioStore } from "../stores/sessio";
+
+export type EstatLecturaCalendari = "inicial" | "carregant" | "actual" | "antic" | "error";
 
 export type ModalCalendari =
   | { tipus: "crear"; franja: FranjaReserva }
@@ -43,6 +45,10 @@ export function useCalendariReserves() {
   const enviant = ref(false);
   const darrerRang = ref<{ des: unknown; fins: unknown } | null>(null);
   const reservesCarregades = ref<ReservaDto[]>([]);
+  const estatLectura = ref<EstatLecturaCalendari>("inicial");
+  const avisRefresc = ref("");
+  const contextVigent = ref("");
+  let seqLectura = 0;
   const errorDetall = ref("");
   const okDetall = ref("");
   const okReprogramacio = ref("");
@@ -99,14 +105,38 @@ export function useCalendariReserves() {
     if (!pendent.value || !espaiSeleccionat.value) {
       return "";
     }
-    return `Reservar ${espaiSeleccionat.value.name} de ${horaMadrid(pendent.value.starts_at)} a ${horaMadrid(pendent.value.ends_at)}?`;
+    return `Reservar ${espaiSeleccionat.value.name}, ${intervalMadrid(pendent.value.starts_at, pendent.value.ends_at)}?`;
   });
 
   const resumDetall = computed(() => {
     if (!detall.value) {
       return "";
     }
-    return `${detall.value.space_name}: ${horaMadrid(detall.value.starts_at)}–${horaMadrid(detall.value.ends_at)}`;
+    return `${detall.value.space_name}: ${intervalMadrid(detall.value.starts_at, detall.value.ends_at)}`;
+  });
+
+  const espaiDeRutaInvalid = computed(() => {
+    if (esResponsable.value || espais.value.length === 0) {
+      return false;
+    }
+    const demanat = String(route.query.espai ?? "");
+    if (!demanat) {
+      return false;
+    }
+    return !espaisActius.value.some((espai) => espai.id === demanat);
+  });
+
+  const espaisDeLlegenda = computed(() => {
+    if (esResponsable.value || !espaiSeleccionat.value) {
+      return espaisActius.value;
+    }
+    const ids = new Set<string>([espaiSeleccionat.value.id]);
+    for (const reserva of reservesCarregades.value) {
+      if (reserva.mine || reserva.space_id === espaiSeleccionat.value.id) {
+        ids.add(reserva.space_id);
+      }
+    }
+    return espaisActius.value.filter((espai) => ids.has(espai.id));
   });
 
   function aplicarEspaiDeRuta() {
@@ -138,19 +168,48 @@ export function useCalendariReserves() {
     }
   }
 
-  async function carregarReserves(des: unknown, fins: unknown): Promise<ReservaDto[]> {
+  function clauLectura(des: unknown, fins: unknown): string {
+    return `${sessio.entityId}|${sessio.token}|${valorRangAIso(des)}|${valorRangAIso(fins)}`;
+  }
+
+  function invalidarLectura() {
+    seqLectura += 1;
+    reservesCarregades.value = [];
+    contextVigent.value = "";
+    estatLectura.value = "inicial";
+    avisRefresc.value = "";
+  }
+
+  async function carregarReserves(des: unknown, fins: unknown): Promise<ReservaDto[] | null> {
     if (!sessio.token) {
+      invalidarLectura();
       return [];
     }
+    const meva = ++seqLectura;
+    const clau = clauLectura(des, fins);
+    const confirmat =
+      clau === contextVigent.value &&
+      (estatLectura.value === "actual" || estatLectura.value === "antic");
     darrerRang.value = { des, fins };
-    error.value = "";
+    if (!confirmat) {
+      reservesCarregades.value = [];
+      estatLectura.value = "carregant";
+      avisRefresc.value = "";
+      contextVigent.value = clau;
+    }
     try {
       const items = await reservesApi.llistar(
         sessio.token,
         valorRangAIso(des),
         valorRangAIso(fins),
       );
+      if (meva !== seqLectura || clau !== clauLectura(des, fins)) {
+        return null;
+      }
       reservesCarregades.value = items;
+      contextVigent.value = clau;
+      estatLectura.value = "actual";
+      avisRefresc.value = "";
       const obert = modal.value;
       if (obert?.tipus === "detall") {
         const actual = items.find((reserva) => reserva.id === obert.reserva.id);
@@ -162,17 +221,27 @@ export function useCalendariReserves() {
         }
       }
       return items;
-    } catch (err) {
-      error.value = err instanceof ApiError ? err.message : "No s’han pogut carregar les reserves.";
-      return [];
+    } catch {
+      if (meva !== seqLectura) {
+        return null;
+      }
+      avisRefresc.value = "No s’ha pogut actualitzar el calendari";
+      if (confirmat) {
+        estatLectura.value = "antic";
+        return null;
+      }
+      reservesCarregades.value = [];
+      estatLectura.value = "error";
+      return null;
     }
   }
 
-  function eventsDeReserves(items: ReservaDto[]) {
+  function eventsDeReserves(items: ReservaDto[] | null) {
+    const llista = items ?? reservesCarregades.value;
     const rol = sessio.role === "coordinator" ? "coordinator" : "responsible";
     const visibles = esResponsable.value
-      ? items
-      : items.filter((item) => item.mine || (espaiId.value !== "" && item.space_id === espaiId.value));
+      ? llista
+      : llista.filter((item) => item.mine || (espaiId.value !== "" && item.space_id === espaiId.value));
     const tramats = new Map(
       llegendaTramats([
         ...reservesCarregades.value.map((reserva) => reserva.coordinator_name),
@@ -186,7 +255,7 @@ export function useCalendariReserves() {
         id: item.id,
         title: titolReserva(item, rol),
         calendarId: item.space_id,
-        people: item.coordinator_name ? [item.coordinator_name] : undefined,
+        people: esResponsable.value && item.coordinator_name ? [item.coordinator_name] : undefined,
         _options: classe ? { additionalClasses: [classe] } : undefined,
         start: Temporal.Instant.from(item.starts_at).toZonedDateTimeISO("Europe/Madrid"),
         end: Temporal.Instant.from(item.ends_at).toZonedDateTimeISO("Europe/Madrid"),
@@ -278,7 +347,7 @@ export function useCalendariReserves() {
       clicSobreReserva = false;
       return;
     }
-    if (!potReservar.value) {
+    if (!potReservar.value || estatLectura.value === "error") {
       return;
     }
     error.value = "";
@@ -308,7 +377,7 @@ export function useCalendariReserves() {
     tancarModal();
   }
 
-  async function refrescarReserves(): Promise<ReservaDto[]> {
+  async function refrescarReserves(): Promise<ReservaDto[] | null> {
     if (!darrerRang.value) {
       return [];
     }
@@ -341,6 +410,15 @@ export function useCalendariReserves() {
   }
 
   watch(
+    () => `${sessio.entityId}\0${sessio.token}`,
+    (nou, vell) => {
+      if (vell && nou !== vell) {
+        invalidarLectura();
+      }
+    },
+  );
+
+  watch(
     () => route.query.espai,
     () => {
       if (espais.value.length > 0) {
@@ -357,8 +435,13 @@ export function useCalendariReserves() {
     espaiSeleccionat,
     calendaris,
     llegendaCoordinadors,
+    espaisDeLlegenda,
+    espaiDeRutaInvalid,
     carregant,
     error,
+    estatLectura,
+    avisRefresc,
+    reservesCarregades,
     modal,
     modalObert,
     pendent,

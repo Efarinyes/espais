@@ -51,7 +51,7 @@ export function useCreacioReserva(deps: CreacioReservaDeps) {
 
   async function confirmarPendent(): Promise<ReservaDto | null> {
     const franja = !sessio.token || !deps.espaiId.value ? null : deps.franjaOberta();
-    if (!franja) {
+    if (!franja || deps.enviant.value) {
       return null;
     }
     deps.enviant.value = true;
@@ -67,11 +67,11 @@ export function useCreacioReserva(deps: CreacioReservaDeps) {
       return creada;
     } catch (err) {
       if (err instanceof ApiError && err.status === 409) {
-        deps.error.value = "Aquest interval ja està ocupat.";
+        deps.mostrarError("Aquest interval ja està ocupat.");
       } else if (err instanceof ApiError) {
-        deps.error.value = err.message;
+        deps.mostrarError(err.message);
       } else {
-        deps.error.value = "No s’ha pogut crear la reserva.";
+        deps.mostrarError("No s’ha pogut crear la reserva.");
       }
       return null;
     } finally {

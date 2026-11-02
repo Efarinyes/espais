@@ -1,16 +1,32 @@
 <script setup lang="ts">
-import { RouterView } from "vue-router";
+import { ref, watch } from "vue";
+import { RouterView, useRoute } from "vue-router";
 
 import TaulerMenu from "./TaulerMenu.vue";
 import { useSessioStore } from "../stores/sessio";
 
 const sessio = useSessioStore();
+const route = useRoute();
+const menuMobil = ref<HTMLDetailsElement | null>(null);
+const contingut = ref<HTMLElement | null>(null);
+
+watch(
+  () => route.fullPath,
+  () => {
+    const detalls = menuMobil.value;
+    if (!detalls?.open) {
+      return;
+    }
+    detalls.open = false;
+    contingut.value?.focus();
+  },
+);
 </script>
 
 <template>
   <div class="w-full px-4 py-6 lg:flex lg:items-start lg:gap-8">
     <aside v-if="sessio.iniciada" class="mb-6 lg:mb-0 lg:w-60 lg:shrink-0">
-      <details class="group lg:hidden rounded-box bg-base-100 shadow-sm">
+      <details ref="menuMobil" class="group lg:hidden rounded-box bg-base-100 shadow-sm">
         <summary class="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 font-semibold [&::-webkit-details-marker]:hidden">
           <span class="min-w-0">{{ sessio.entityName }}</span>
           <svg
@@ -34,7 +50,7 @@ const sessio = useSessioStore();
         <TaulerMenu />
       </div>
     </aside>
-    <div class="min-w-0 flex-1">
+    <div ref="contingut" class="min-w-0 flex-1 outline-none" tabindex="-1" data-contingut>
       <RouterView />
     </div>
   </div>

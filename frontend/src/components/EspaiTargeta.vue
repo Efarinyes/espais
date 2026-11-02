@@ -23,9 +23,10 @@ const destiCalendari = computed(() => {
   }
   return { name: "calendari" as const, query: { espai: props.espai.id } };
 });
-const etiquetaCalendari = computed(() =>
-  props.calendariGlobal ? "Totes les reserves" : `Calendari de ${props.espai.name}`,
-);
+const etiquetaCalendari = computed(() => {
+  const accio = props.accioCalendari ?? "Reservar";
+  return `${accio}, ${props.espai.name}`;
+});
 </script>
 
 <template>
@@ -39,8 +40,8 @@ const etiquetaCalendari = computed(() =>
     >
       <h3 class="card-title">{{ props.espai.name }}</h3>
       <p>Aforament: {{ props.espai.capacity }}</p>
-      <p v-if="equipament">Equipament: {{ equipament }}</p>
-      <p v-else class="text-base-content/70">Aquest espai no té equipament</p>
+      <p v-if="equipament" class="text-sm text-base-content/70">Equipament: {{ equipament }}</p>
+      <p v-else class="text-sm text-base-content/70">Aquest espai no té equipament</p>
       <p>Disponibilitat: {{ horari }}</p>
       <p v-if="!props.espai.active"><span class="badge badge-ghost">Inactiu</span></p>
       <span v-if="destiCalendari" class="btn btn-primary min-h-11 mt-auto self-end pointer-events-none">

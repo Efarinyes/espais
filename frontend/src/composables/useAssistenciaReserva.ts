@@ -62,6 +62,9 @@ export function useAssistenciaReserva(deps: AssistenciaReservaDeps) {
       deps.okDetall.value = "";
       return null;
     }
+    if (enviantAssistencia.value) {
+      return null;
+    }
     enviantAssistencia.value = true;
     deps.errorDetall.value = "";
     deps.okDetall.value = "";

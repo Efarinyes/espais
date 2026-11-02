@@ -46,6 +46,34 @@ export function titolReserva(item: ReservaDto, role: RolSessio): string {
   return item.space_name?.trim() || "Tu";
 }
 
+export function nomAccessibleReserva(item: ReservaDto, role: RolSessio): string {
+  const quan = new Intl.DateTimeFormat("ca-ES", {
+    timeZone: "Europe/Madrid",
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).format(new Date(item.starts_at));
+  const fi = new Intl.DateTimeFormat("ca-ES", {
+    timeZone: "Europe/Madrid",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).format(new Date(item.ends_at));
+  const interval = `${quan} a ${fi}`;
+  const espai = item.space_name?.trim() || "Espai";
+  if (!item.mine && role !== "responsible") {
+    return `Ocupat, ${espai}, ${interval}`;
+  }
+  if (role === "responsible") {
+    const qui = item.coordinator_name?.trim() || "Reserva";
+    return `${espai}, ${qui}, ${interval}`;
+  }
+  return `${espai}, ${interval}`;
+}
+
 export const DURADES_RESERVA_MINUTS = [30, 60, 90, 120, 180] as const;
 export const DURADA_PER_DEFECTE_MINUTS = 60;
 

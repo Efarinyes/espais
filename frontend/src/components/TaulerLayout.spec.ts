@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 import { createPinia, setActivePinia } from "pinia";
 import { createMemoryHistory, createRouter, RouterView } from "vue-router";
 import { flushPromises, mount } from "@vue/test-utils";
@@ -87,6 +87,7 @@ async function muntar(
     arxivar: async () => undefined,
   };
   const wrapper = mount(Host, {
+    attachTo: document.body,
     global: {
       plugins: [pinia, router],
       provide: {
@@ -101,6 +102,9 @@ async function muntar(
 }
 
 describe("TaulerLayout", () => {
+  afterEach(() => {
+    document.body.innerHTML = "";
+  });
   it("mostra les opcions del responsable i el centre", async () => {
     const { wrapper } = await muntar("/espais");
     const nav = wrapper.get("nav[aria-label='Administració']");
@@ -214,6 +218,16 @@ describe("TaulerLayout", () => {
     expect(nav.text()).not.toContain("Estadístiques");
     expect(nav.text()).not.toContain("Tria els colors");
     expect(nav.get("a[href='/avisos']").text()).toContain("1");
+  });
+
+  it("tanca el menú mòbil en navegar i passa el focus al contingut", async () => {
+    const { wrapper, router } = await muntar("/espais");
+    const details = wrapper.get("details").element as HTMLDetailsElement;
+    details.open = true;
+    await router.push("/calendari");
+    await flushPromises();
+    expect(details.open).toBe(false);
+    expect(document.activeElement).toBe(wrapper.get("[data-contingut]").element);
   });
 
   it("no mostra el lateral sense sessió", async () => {

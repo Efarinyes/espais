@@ -67,6 +67,7 @@ describe("EspaiTargeta", () => {
     const wrapper = muntar(base);
     expect(wrapper.get('a[href="/calendari?espai=s1"]').text()).toContain("Sala Pau Casals");
     expect(wrapper.text()).toContain("Reservar");
+    expect(wrapper.get("a").attributes("aria-label")).toBe("Reservar, Sala Pau Casals");
   });
 
   it("el responsable veu Calendari en lloc de Reservar", () => {
@@ -74,6 +75,7 @@ describe("EspaiTargeta", () => {
     expect(wrapper.text()).toContain("Calendari");
     expect(wrapper.text()).not.toContain("Reservar");
     expect(wrapper.get('a[href="/calendari"]').text()).toContain("Sala Pau Casals");
+    expect(wrapper.get('a[href="/calendari"]').attributes("aria-label")).toBe("Calendari, Sala Pau Casals");
     expect(wrapper.find('a[href="/calendari?espai=s1"]').exists()).toBe(false);
   });
 

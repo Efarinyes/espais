@@ -241,6 +241,35 @@ describe("CalendariView graella", () => {
     wrapper.unmount();
   });
 
+  it("el coordinador tria l’espai sense canviar el títol i el responsable no té selector", async () => {
+    const coordinador = await muntar({
+      role: "coordinator",
+      espais: [sala1, sala2],
+      estreta: false,
+      espai: "s1",
+    });
+    await flushPromises();
+    expect(coordinador.text()).toContain("Les meves reserves");
+    expect(coordinador.text()).not.toContain("Disponibilitat de");
+    const selector = coordinador.get("select");
+    expect((selector.element as HTMLSelectElement).value).toBe("s1");
+    expect(coordinador.text()).not.toContain("Nova reserva");
+    await selector.setValue("");
+    await flushPromises();
+    expect(coordinador.vm.$route.query.espai).toBeUndefined();
+    coordinador.unmount();
+
+    const responsable = await muntar({
+      role: "responsible",
+      espais: [sala1, sala2],
+      estreta: false,
+    });
+    await flushPromises();
+    expect(responsable.text()).toContain("Totes les reserves");
+    expect(responsable.find("select").exists()).toBe(false);
+    responsable.unmount();
+  });
+
   it("el coordinador que canvia de sala veu el rang de la nova", async () => {
     const wrapper = await muntar({
       role: "coordinator",

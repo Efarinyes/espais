@@ -5,6 +5,7 @@ import {
   arrodoneixClicAFranja,
   llegendaTramats,
   parseCompteAssistencia,
+  nomAccessibleReserva,
   titolReserva,
   valorRangAIso,
 } from "./calendari";
@@ -37,6 +38,21 @@ describe("calendari", () => {
 
   it("mostra l’espai a la reserva pròpia del coordinador", () => {
     expect(titolReserva(reserva, "coordinator")).toBe("Sala 1");
+  });
+
+  it("el nom accessible de la reserva aliena no porta el coordinador", () => {
+    const nom = nomAccessibleReserva({ ...reserva, mine: false }, "coordinator");
+    expect(nom.startsWith("Ocupat, Sala 1,")).toBe(true);
+    expect(nom).not.toContain("Carla");
+    expect(nom).toContain("10:00");
+    expect(nom).toContain("10:30");
+  });
+
+  it("el nom accessible del responsable inclou espai, coordinador i interval", () => {
+    const nom = nomAccessibleReserva({ ...reserva, mine: false }, "responsible");
+    expect(nom).toContain("Sala 1");
+    expect(nom).toContain("Carla");
+    expect(nom).toContain("10:00");
   });
 
   it("assigna un tramat estable a cada coordinador", () => {

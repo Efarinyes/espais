@@ -7,6 +7,17 @@ export function horaMadrid(iso: string): string {
   }).format(new Date(iso));
 }
 
+export function intervalMadrid(inici: string, fi: string): string {
+  const data = new Intl.DateTimeFormat("ca-ES", {
+    timeZone: "Europe/Madrid",
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(new Date(inici));
+  return `${data}, de ${horaMadrid(inici)} a ${horaMadrid(fi)}`;
+}
+
 export function dataHoraMadrid(iso: string): string {
   return new Intl.DateTimeFormat("ca-ES", {
     timeZone: "Europe/Madrid",

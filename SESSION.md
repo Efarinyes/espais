@@ -9,6 +9,12 @@ Actualitza aquest arxiu al final de cada sessió. És el punt d’arrencada del 
 
 ## Darrera feina
 
+2026-11-02: correccions A i millores B del pla UX/UI revisat, a `feat/docker-caddy-sqlite`. La còpia de seguretat és `backup/pre-ux-ui-2026-11-02`, al commit `436d97b`, en local i a `origin`. No s’ha tocat `main` ni el VPS.
+
+Fet: el refresc del calendari no confon un error amb una sala lliure; el diàleg és modal i l’error de crear es veu a dins; el resum porta la data; el coordinador tria l’espai amb el `?espai=` que ja hi havia; el color de sala no depèn de l’ordre; la llegenda segueix el que es mostra; el menú mòbil es tanca en navegar; les targetes diuen «Reservar» o «Calendari» també al nom accessible; «Afegeix un espai» és al costat del títol; la landing no promet avís immediat ni bloqueig d’aforament. El contrast dels vuit temes s’ha mesurat i els hex publicats no s’han canviat (D-PALETA). Vitest 226 i `vue-tsc` nets. La landing s’ha vist a `http://127.0.0.1:5173/`. El recorregut amb sessió no s’ha fet al navegador.
+
+No s’ha fet, perquè és categoria C o decisió pendent: text visible a les caselles, «Nova reserva», Graella/Llista, filtre i cerca del responsable, títols nous (D1), tramats nous, drawer, etiqueta «Menú», reordre del menú, «Calendari general», escala tipogràfica nova, ni captures noves de la landing.
+
 2026-10-30: tancament. El commit `82730c9` (els logs ja no escriuen paràmetres SQL ni adreces) és a `origin/feat/docker-caddy-sqlite`. El VPS encara no el serveix: el desplegament el fa qui opera el servidor, amb `git pull` i `docker compose up -d --build`, sense `down -v`. La resta de l’auditoria de la recuperació no s’ha començat.
 
 2026-10-30: els logs ja no escriuen paràmetres SQL ni adreces de correu, a `feat/docker-caddy-sqlite`. El motor SQLAlchemy amaga els valors de les consultes a les excepcions. Si falla el correu d’una invitació, d’una anul·lació o d’una reprogramació, el log guarda el tipus d’excepció i, si n’hi ha, el codi SMTP, sense el traceback, l’adreça ni el missatge del servidor. La recuperació ja registrava només el tipus. Pytest 269 verds. No s’ha tocat el VPS ni s’ha desplegat. Qui opera el servidor ho publica amb `git pull` i `docker compose up -d --build`, sense `down -v`.
@@ -78,7 +84,9 @@ Desplegat al VPS (`6b455b9`) i provat amb Capgrossos, «Sala pilars». La vista 
 
 ## Següent tasca
 
-La feina continua a `feat/docker-caddy-sqlite`: és la branca que el servidor desplega després del `git pull` i de regenerar els contenidors. `backup/alpha-funcional` (`9178e98`, també a `origin`) és el punt de retorn. No es fusiona a `main` fins a la Beta, quan es canviï la configuració del servidor. No s’esborren `backup/alpha-funcional` ni `backup/pre-dockeritzacio`.
+Els canvis UX/UI del 2 de novembre són a `feat/docker-caddy-sqlite`. No es despleguen sols al VPS. Les actuacions C i D-PALETA i D1 continuen sense aprovació.
+
+La feina de desplegament continua a `feat/docker-caddy-sqlite`: és la branca que el servidor desplega després del `git pull` i de regenerar els contenidors. `backup/alpha-funcional` (`9178e98`, també a `origin`) és el punt de retorn. No es fusiona a `main` fins a la Beta, quan es canviï la configuració del servidor. No s’esborren `backup/alpha-funcional` ni `backup/pre-dockeritzacio`.
 
 L’assistència amb `mine: false`, el README, les capçaleres/OpenAPI, el registre (ADR 0016), la invitació per correu i la revocació en sortir (ADR 0014) ja són a `origin` i s’han vist a l’Alpha. No es refan. La verificació de correu segueix al backlog. L’ADR 0017 continua proposat, sense codi.
 
