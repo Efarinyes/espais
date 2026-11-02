@@ -105,6 +105,12 @@ function esMenuPetit(amplada: number): boolean {
   return amplada < 1024;
 }
 
+function esperarCalaix(): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(resolve, 220);
+  });
+}
+
 function textosMenu(wrapper: { get: (selector: string) => { findAll: (selector: string) => { text: () => string }[] } }, selector: string) {
   return wrapper
     .get(selector)
@@ -241,8 +247,17 @@ describe("TaulerLayout", () => {
     await wrapper.get("[data-obre-menu]").trigger("click");
     const panell = wrapper.get("#menu-mobil");
     expect(panell.classes()).toContain("fixed");
-    expect(panell.classes()).toContain("overflow-y-auto");
-    expect(wrapper.get("[data-fons-menu]").classes()).toContain("fixed");
+    expect(panell.classes()).toContain("left-0");
+    expect(panell.classes()).toContain("inset-y-0");
+    expect(panell.classes()).toContain("w-[min(300px,100%)]");
+    expect(panell.classes()).not.toContain("rounded-box");
+    const capcalera = wrapper.get("[data-capcalera-menu]");
+    const cos = wrapper.get("[data-cos-menu]");
+    expect(capcalera.element.parentElement).toBe(panell.element);
+    expect(cos.element.parentElement).toBe(panell.element);
+    expect(cos.classes()).toContain("overflow-y-auto");
+    expect(capcalera.classes()).toContain("shrink-0");
+    expect(wrapper.get("[data-fons-menu]").classes()).toContain("inset-0");
     expect(contingut.getBoundingClientRect()).toEqual(abans);
     expect(wrapper.get("[data-obre-menu]").attributes("aria-expanded")).toBe("true");
   });
@@ -254,19 +269,19 @@ describe("TaulerLayout", () => {
     await flushPromises();
     expect(document.activeElement).toBe(wrapper.get("[data-tanca-menu]").element);
     await wrapper.get("[data-tanca-menu]").trigger("click");
-    await flushPromises();
+    await esperarCalaix();
     expect(wrapper.find("#menu-mobil").exists()).toBe(false);
     expect(document.activeElement).toBe(boto.element);
 
     await boto.trigger("click");
     await wrapper.get("[data-fons-menu]").trigger("click");
-    await flushPromises();
+    await esperarCalaix();
     expect(wrapper.find("#menu-mobil").exists()).toBe(false);
     expect(document.activeElement).toBe(boto.element);
 
     await boto.trigger("click");
     window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
-    await flushPromises();
+    await esperarCalaix();
     expect(wrapper.find("#menu-mobil").exists()).toBe(false);
     expect(wrapper.find("[data-fons-menu]").exists()).toBe(false);
     expect(document.activeElement).toBe(boto.element);
@@ -276,7 +291,7 @@ describe("TaulerLayout", () => {
     const { wrapper } = await muntar("/espais");
     await wrapper.get("[data-obre-menu]").trigger("click");
     await wrapper.get("#menu-mobil a[href='/calendari']").trigger("click");
-    await flushPromises();
+    await esperarCalaix();
     expect(wrapper.find("#menu-mobil").exists()).toBe(false);
     expect(document.activeElement).toBe(wrapper.get("[data-contingut]").element);
     await wrapper.get("[data-obre-menu]").trigger("click");
