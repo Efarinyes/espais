@@ -9,7 +9,7 @@ Actualitza aquest arxiu al final de cada sessió. És el punt d’arrencada del 
 
 ## Darrera feina
 
-2026-11-02: correccions A i millores B del pla UX/UI revisat, a `feat/docker-caddy-sqlite`. La còpia de seguretat és `backup/pre-ux-ui-2026-11-02`, al commit `436d97b`, en local i a `origin`. No s’ha tocat `main` ni el VPS.
+2026-11-02: correccions A i millores B del pla UX/UI revisat, a `feat/docker-caddy-sqlite` (`b7b5aeb`, també a `origin`). La còpia de seguretat és `backup/pre-ux-ui-2026-11-02`, al commit `436d97b`, en local i a `origin`. No s’ha tocat `main` ni el VPS. Una pila Docker `espais-e2e` ha comprovat l’alta, el botó al costat del títol, el títol del responsable i el tancament del menú; després s’ha esborrat amb els seus volums.
 
 Fet: el refresc del calendari no confon un error amb una sala lliure; el diàleg és modal i l’error de crear es veu a dins; el resum porta la data; el coordinador tria l’espai amb el `?espai=` que ja hi havia; el color de sala no depèn de l’ordre; la llegenda segueix el que es mostra; el menú mòbil es tanca en navegar; les targetes diuen «Reservar» o «Calendari» també al nom accessible; «Afegeix un espai» és al costat del títol; la landing no promet avís immediat ni bloqueig d’aforament. El contrast dels vuit temes s’ha mesurat i els hex publicats no s’han canviat (D-PALETA). Vitest 226 i `vue-tsc` nets. La landing s’ha vist a `http://127.0.0.1:5173/`. El recorregut amb sessió no s’ha fet al navegador.
 
