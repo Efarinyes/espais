@@ -101,6 +101,17 @@ async function muntar(
   return { wrapper, router };
 }
 
+function esMenuPetit(amplada: number): boolean {
+  return amplada < 1024;
+}
+
+function textosMenu(wrapper: { get: (selector: string) => { findAll: (selector: string) => { text: () => string }[] } }, selector: string) {
+  return wrapper
+    .get(selector)
+    .findAll("a")
+    .map((enllac) => enllac.text().replace(/\s+/g, " ").trim());
+}
+
 describe("TaulerLayout", () => {
   afterEach(() => {
     document.body.innerHTML = "";
@@ -172,15 +183,18 @@ describe("TaulerLayout", () => {
     expect(wrapper.text()).toContain("centre-analisi");
   });
 
-  it("plega l’administració dins d’un details tancat a mòbil", async () => {
+  it("el botó hamburguesa és de pantalles petites i l’escriptori conserva el lateral", async () => {
     const { wrapper } = await muntar("/espais");
-    const plegat = wrapper.get("aside details");
-    expect(plegat.attributes("open")).toBeUndefined();
-    expect(plegat.get("summary").text()).toContain("AAVV Barri A");
-    expect(plegat.get("summary svg").attributes("aria-hidden")).toBe("true");
+    const boto = wrapper.get("[data-obre-menu]");
     const escriptori = wrapper.get("aside .hidden.lg\\:block");
-    expect(escriptori.exists()).toBe(true);
-    expect(escriptori.find("svg").exists()).toBe(false);
+    expect(boto.element.parentElement?.className).toContain("lg:hidden");
+    expect(escriptori.classes()).toContain("lg:block");
+    expect(wrapper.find("details").exists()).toBe(false);
+    expect(wrapper.find("#menu-mobil").exists()).toBe(false);
+    for (const amplada of [360, 390, 430, 768]) {
+      expect(esMenuPetit(amplada)).toBe(true);
+    }
+    expect(esMenuPetit(1280)).toBe(false);
   });
 
   it("marca Calendari com a pàgina activa", async () => {
@@ -220,14 +234,67 @@ describe("TaulerLayout", () => {
     expect(nav.get("a[href='/avisos']").text()).toContain("1");
   });
 
-  it("tanca el menú mòbil en navegar i passa el focus al contingut", async () => {
-    const { wrapper, router } = await muntar("/espais");
-    const details = wrapper.get("details").element as HTMLDetailsElement;
-    details.open = true;
-    await router.push("/calendari");
+  it("obre el menú superposat sense moure el contingut", async () => {
+    const { wrapper } = await muntar("/espais");
+    const contingut = wrapper.get("[data-contingut]").element;
+    const abans = contingut.getBoundingClientRect();
+    await wrapper.get("[data-obre-menu]").trigger("click");
+    const panell = wrapper.get("#menu-mobil");
+    expect(panell.classes()).toContain("fixed");
+    expect(panell.classes()).toContain("overflow-y-auto");
+    expect(wrapper.get("[data-fons-menu]").classes()).toContain("fixed");
+    expect(contingut.getBoundingClientRect()).toEqual(abans);
+    expect(wrapper.get("[data-obre-menu]").attributes("aria-expanded")).toBe("true");
+  });
+
+  it("tanca el menú amb el botó, el fons i Escape, i torna el focus", async () => {
+    const { wrapper } = await muntar("/espais");
+    const boto = wrapper.get("[data-obre-menu]");
+    await boto.trigger("click");
     await flushPromises();
-    expect(details.open).toBe(false);
+    expect(document.activeElement).toBe(wrapper.get("[data-tanca-menu]").element);
+    await wrapper.get("[data-tanca-menu]").trigger("click");
+    await flushPromises();
+    expect(wrapper.find("#menu-mobil").exists()).toBe(false);
+    expect(document.activeElement).toBe(boto.element);
+
+    await boto.trigger("click");
+    await wrapper.get("[data-fons-menu]").trigger("click");
+    await flushPromises();
+    expect(wrapper.find("#menu-mobil").exists()).toBe(false);
+    expect(document.activeElement).toBe(boto.element);
+
+    await boto.trigger("click");
+    window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
+    await flushPromises();
+    expect(wrapper.find("#menu-mobil").exists()).toBe(false);
+    expect(wrapper.find("[data-fons-menu]").exists()).toBe(false);
+    expect(document.activeElement).toBe(boto.element);
+  });
+
+  it("tanca el menú en navegar i es pot tornar a obrir", async () => {
+    const { wrapper } = await muntar("/espais");
+    await wrapper.get("[data-obre-menu]").trigger("click");
+    await wrapper.get("#menu-mobil a[href='/calendari']").trigger("click");
+    await flushPromises();
+    expect(wrapper.find("#menu-mobil").exists()).toBe(false);
     expect(document.activeElement).toBe(wrapper.get("[data-contingut]").element);
+    await wrapper.get("[data-obre-menu]").trigger("click");
+    expect(wrapper.find("#menu-mobil").exists()).toBe(true);
+    expect(wrapper.get("#menu-mobil a[href='/calendari']").attributes("aria-current")).toBe("page");
+  });
+
+  it("el panell mòbil repeteix les opcions del rol, sense afegir-ne", async () => {
+    const responsable = await muntar("/espais");
+    await responsable.wrapper.get("[data-obre-menu]").trigger("click");
+    expect(textosMenu(responsable.wrapper, "#menu-mobil")).toEqual(textosMenu(responsable.wrapper, "aside .hidden"));
+    responsable.wrapper.unmount();
+
+    const coordinador = await muntar("/espais", { ...sessioAnna, role: "coordinator", user_name: "Carla" });
+    await coordinador.wrapper.get("[data-obre-menu]").trigger("click");
+    expect(textosMenu(coordinador.wrapper, "#menu-mobil")).toEqual(["Espais", "Calendari", "Avisos"]);
+    expect(coordinador.wrapper.get("#menu-mobil").text()).not.toContain("Convida coordinadors");
+    expect(coordinador.wrapper.get("#menu-mobil").text()).not.toContain("Tria els colors");
   });
 
   it("no mostra el lateral sense sessió", async () => {
