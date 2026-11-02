@@ -1,7 +1,16 @@
 diff --git a/node_modules/@schedule-x/calendar/dist/core.cjs.js b/node_modules/@schedule-x/calendar/dist/core.cjs.js
-index 39315f1..85c6b44 100644
+index 39315f1..951adfe 100644
 --- a/node_modules/@schedule-x/calendar/dist/core.cjs.js
 +++ b/node_modules/@schedule-x/calendar/dist/core.cjs.js
+@@ -8,7 +8,7 @@ var signals = require('@preact/signals');
+ 
+ const AppContext$1 = preact.createContext({});
+ 
+-var img = "data:image/svg+xml,%3c%3fxml version='1.0' encoding='utf-8'%3f%3e%3c!-- Uploaded to: SVG Repo%2c www.svgrepo.com%2c Generator: SVG Repo Mixer Tools --%3e%3csvg width='800px' height='800px' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M6 9L12 15L18 9' stroke='%23B8B5B8' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'/%3e%3c/svg%3e";
++var img = "/fletxa-calendari.svg";
+ 
+ /**
+  * Can be used for generating a random id for an entity
 @@ -2047,7 +2047,21 @@ const getTimeAxisHours = ({ start, end }, isHybridDay) => {
      return hours;
  };
@@ -52,9 +61,18 @@ index 39315f1..85c6b44 100644
      }
  };
 diff --git a/node_modules/@schedule-x/calendar/dist/core.js b/node_modules/@schedule-x/calendar/dist/core.js
-index be9b905..b81d3a1 100644
+index be9b905..641a0a4 100644
 --- a/node_modules/@schedule-x/calendar/dist/core.js
 +++ b/node_modules/@schedule-x/calendar/dist/core.js
+@@ -6,7 +6,7 @@ import { useSignalEffect, useComputed, signal, effect, computed, batch } from '@
+ 
+ const AppContext$1 = createContext({});
+ 
+-var img = "data:image/svg+xml,%3c%3fxml version='1.0' encoding='utf-8'%3f%3e%3c!-- Uploaded to: SVG Repo%2c www.svgrepo.com%2c Generator: SVG Repo Mixer Tools --%3e%3csvg width='800px' height='800px' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M6 9L12 15L18 9' stroke='%23B8B5B8' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'/%3e%3c/svg%3e";
++var img = "/fletxa-calendari.svg";
+ 
+ /**
+  * Can be used for generating a random id for an entity
 @@ -2045,7 +2045,21 @@ const getTimeAxisHours = ({ start, end }, isHybridDay) => {
      return hours;
  };
