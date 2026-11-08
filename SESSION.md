@@ -121,7 +121,7 @@ Desplegat al VPS (`6b455b9`) i provat amb Capgrossos, «Sala pilars». La vista 
 
 ## Següent tasca
 
-La fase d’UX i de D1 està tancada. La propera sessió llegeix aquest fitxer i espera què es demani. L’únic pendent de producte d’aquesta peça és D-PALETA. Qui opera el servidor publica `origin/feat/docker-caddy-sqlite` amb `git pull` i `docker compose up -d --build`, sense `down -v`. No es fusiona a `main`.
+Sessió tancada el 2026-11-08. No hi ha feina de codi oberta. La propera sessió llegeix aquest fitxer i espera què es demani. La fase d’UX i D1 està tancada i ja és a `origin/feat/docker-caddy-sqlite` (`e4dc78f`). L’únic pendent de producte d’aquesta peça és D-PALETA: no es canvien els hex publicats fins que es decideixi. Qui opera el servidor publica amb `git pull` i `docker compose up -d --build`, sense `down -v`. No es fusiona a `main`. Les notes de més avall que diuen que D1 no s’ha de començar són anteriors a aquesta decisió.
 
 La feina de desplegament continua a `feat/docker-caddy-sqlite`: és la branca que el servidor desplega després del `git pull` i de regenerar els contenidors. `backup/alpha-funcional` (`9178e98`, també a `origin`) és el punt de retorn. `backup/pre-ux-ui-2026-11-02` (`436d97b`) no es mou. No es fusiona a `main` fins a la Beta, quan es canviï la configuració del servidor. No s’esborren `backup/alpha-funcional` ni `backup/pre-dockeritzacio`.
 
