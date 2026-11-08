@@ -70,15 +70,18 @@ describe("calendari", () => {
     expect(llegendaTramats(["Abel", "Núria"])[1]?.classe).toBe(classeTramat("Núria"));
   });
 
-  it("el coordinador veu les pròpies i les de la sala, i ignora la cerca", () => {
+  it("amb sala, el coordinador només veu aquella sala i ignora la cerca", () => {
     const propiaAltra = { ...reserva, id: "r2", space_id: "s2", mine: true };
     const aliena = { ...reserva, id: "r3", mine: false, coordinator_name: "Núria" };
     const ambit = { rol: "coordinator" as const, espaiId: "s1", cerca: "Núria" };
     expect(reservaVisible(reserva, ambit)).toBe(true);
-    expect(reservaVisible(propiaAltra, ambit)).toBe(true);
+    expect(reservaVisible(propiaAltra, ambit)).toBe(false);
     expect(reservaVisible(aliena, ambit)).toBe(true);
     expect(reservaVisible({ ...aliena, space_id: "s2" }, ambit)).toBe(false);
     expect(reservaVisible(aliena, { ...ambit, espaiId: "" })).toBe(false);
+    expect(reservaVisible(propiaAltra, { ...ambit, espaiId: "" })).toBe(true);
+    expect(titolReserva(reserva, "coordinator", true)).toBe("Teva");
+    expect(titolReserva(reserva, "coordinator")).toBe("Sala 1");
   });
 
   it("el responsable filtra per sala i per text, i els homònims coincideixen tots", () => {

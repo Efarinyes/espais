@@ -33,6 +33,10 @@ const emit = defineEmits<{
         v-for="fila in files"
         :key="fila.id"
         class="flex flex-col gap-2 border-b border-base-300 py-4 sm:flex-row sm:items-center sm:justify-between"
+        :class="{
+          'border-l-4 border-l-base-content pl-4': fila.paper === 'teva',
+          'opacity-80': fila.paper === 'ocupada',
+        }"
       >
         <div>
           <p class="font-semibold">{{ fila.espai }}</p>

@@ -9,6 +9,10 @@ Actualitza aquest arxiu al final de cada sessió. És el punt d’arrencada del 
 
 ## Darrera feina
 
+2026-11-08: D1 implementada, alternativa C. Amb una sala triada, el coordinador només veu la disponibilitat d’aquella sala. Les alienes diuen «Ocupat», no es poden obrir ni reservar-hi, i no porten nom. Les pròpies diuen «Teva», es poden obrir i porten una vora pròpia. Sense sala, el títol és «Les meves reserves» i només hi ha les seves, de totes les sales. El responsable manté «Totes les reserves» i «Reserves de [espai]». La graella i la llista fan servir la mateixa regla. No s’han canviat hex, tramats del responsable ni el gris de fora d’horari. Sense push ni VPS. `backup/pre-ux-ui-2026-11-02` segueix a `436d97b`.
+
+Vitest 237, `vue-tsc -b` i `npm run build` nets. Al navegador, a 1280 px, la setmana de Sala 3 mostrava «Disponibilitat — Sala 3» i la casella «Teva» amb la classe `reserva-propia`. La llista de Sala 1, el mateix dia, no mostrava aquella reserva. Sense sala, el títol tornava a «Les meves reserves» i la reserva de Sala 3 hi sortia. No hi ha un segon coordinador a l’entitat de prova: la franja aliena s’ha vist a les proves, no al navegador. La reserva de comprovació (Sala 3, 8 de novembre de 2026, 20:30–21:30) s’ha anul·lat.
+
 2026-11-08: actuacions C del pla UX/UI, a `feat/docker-caddy-sqlite`, sense push ni VPS. `backup/pre-ux-ui-2026-11-02` segueix a `436d97b`. No s’ha tocat cap hex ni D-PALETA. D1 no s’ha implementat: amb una sala triada, el coordinador continua veient les seves reserves de totes les sales i les alienes d’aquella sala com a «Ocupat».
 
 Fet, sense canviar permisos ni la creació existent:
@@ -105,7 +109,7 @@ Desplegat al VPS (`6b455b9`) i provat amb Capgrossos, «Sala pilars». La vista 
 
 ## Següent tasca
 
-La propera sessió llegeix aquest fitxer i espera què es demani. Falta la decisió D1 (proposta al tancament del 8 de novembre: alternativa A, calendari de la sala). Fins que no es triï, no es canvia el conjunt de reserves del coordinador amb sala seleccionada ni els títols «Les meves reserves» / «Totes les reserves». D-PALETA continua sense decidir. No es fa push ni desplegament fins que es demani. Qui operi el servidor, quan es publiqui aquest commit, farà `git pull` a `feat/docker-caddy-sqlite` i `docker compose up -d --build`, sense `down -v`.
+La propera sessió llegeix aquest fitxer i espera què es demani. D1 ja està feta: calendari de disponibilitat de la sala, amb les reserves pròpies identificables. D-PALETA continua sense decidir. No es fa push ni desplegament fins que es demani. Qui operi el servidor, quan es publiqui aquest commit, farà `git pull` a `feat/docker-caddy-sqlite` i `docker compose up -d --build`, sense `down -v`.
 
 La feina de desplegament continua a `feat/docker-caddy-sqlite`: és la branca que el servidor desplega després del `git pull` i de regenerar els contenidors. `backup/alpha-funcional` (`9178e98`, també a `origin`) és el punt de retorn. `backup/pre-ux-ui-2026-11-02` (`436d97b`) no es mou. No es fusiona a `main` fins a la Beta, quan es canviï la configuració del servidor. No s’esborren `backup/alpha-funcional` ni `backup/pre-dockeritzacio`.
 

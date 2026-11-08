@@ -9,6 +9,9 @@ describe("estils del calendari", () => {
     expect(css).toContain(".calendari-espais .sx__time-grid-event-title");
     expect(css).toMatch(/sx__time-grid-event-title[\s\S]*line-clamp:\s*2/);
     expect(css).toMatch(/sx__time-grid-event-people[\s\S]*display:\s*none/);
+    expect(css).toContain(".reserva-ocupada");
+    expect(css).toContain(".reserva-propia");
+    expect(css).toContain(".reserva-tramat-0");
     expect(css).toContain("--tipus-titol: 1.75rem");
     expect(css).toContain("--fora-horari:");
     const reglesEvent = css.split(".calendari-espais .sx__time-grid-event-inner")[1] ?? "";

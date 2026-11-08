@@ -6,7 +6,8 @@ import { calendarisPerEspais } from "../aparenca/colorsCalendari";
 import {
   DURADA_PER_DEFECTE_MINUTS,
   DURADES_RESERVA_MINUTS,
-  classeTramat,
+  classesReserva,
+  cobreixInstant,
   filaReserva,
   franjaDesDeInici,
   llegendaTramats,
@@ -260,15 +261,15 @@ export function useCalendariReserves() {
     const rol = sessio.role === "coordinator" ? "coordinator" : "responsible";
     const ambit = ambitActual();
     const visibles = llista.filter((item) => reservaVisible(item, ambit));
+    const salaSeleccionada = rol === "coordinator" && ambit.espaiId !== "";
     return visibles.map((item) => {
-      const nom = item.coordinator_name?.trim() ?? "";
-      const classe = esResponsable.value && nom ? classeTramat(nom) : undefined;
+      const classes = classesReserva(item, rol);
       return {
         id: item.id,
-        title: titolReserva(item, rol),
+        title: titolReserva(item, rol, salaSeleccionada),
         calendarId: item.space_id,
         people: esResponsable.value && item.coordinator_name ? [item.coordinator_name] : undefined,
-        _options: classe ? { additionalClasses: [classe] } : undefined,
+        _options: classes.length > 0 ? { additionalClasses: classes } : undefined,
         start: Temporal.Instant.from(item.starts_at).toZonedDateTimeISO("Europe/Madrid"),
         end: Temporal.Instant.from(item.ends_at).toZonedDateTimeISO("Europe/Madrid"),
       };
@@ -369,6 +370,13 @@ export function useCalendariReserves() {
       return;
     }
     if (!potReservar.value || estatLectura.value === "error") {
+      return;
+    }
+    const instant = dateTime.toInstant();
+    const ocupada = reservesVisibles.value.some(
+      (reserva) => !reserva.mine && cobreixInstant(reserva, instant),
+    );
+    if (ocupada) {
       return;
     }
     error.value = "";
@@ -479,10 +487,13 @@ export function useCalendariReserves() {
 
   function obrirDetall(reservaId: string) {
     const item = reservesCarregades.value.find((reserva) => reserva.id === reservaId);
-    if (!item || !potVeureDetall(item)) {
+    if (!item) {
       return;
     }
     clicSobreReserva = true;
+    if (!potVeureDetall(item)) {
+      return;
+    }
     errorDetall.value = "";
     okDetall.value = "";
     campAssistencia.value = item.attendance_count == null ? "" : String(item.attendance_count);

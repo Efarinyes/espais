@@ -243,7 +243,20 @@ describe("useCalendariReserves", () => {
     const items = await wrapper.vm.carregarReserves("2026-09-07T22:00:00Z", "2026-09-14T22:00:00Z");
     expect(espaiFiltrat).toBeUndefined();
     const events = wrapper.vm.eventsDeReserves(items);
-    expect(events.map((event) => event.id)).toEqual(["r1", "r2", "r3"]);
+    expect(events.map((event) => event.id)).toEqual(["r3"]);
+    expect(events.map((event) => event.title)).toEqual(["Ocupat"]);
+    expect(events[0]?._options?.additionalClasses).toEqual(["reserva-ocupada"]);
+    expect(events[0]?.people).toBeUndefined();
+    expect(wrapper.vm.filesLlista.map((fila) => fila.id)).toEqual(["r3"]);
+    expect(wrapper.vm.filesLlista[0]?.paper).toBe("ocupada");
+    expect(JSON.stringify(wrapper.vm.filesLlista)).not.toContain("Núria");
+    wrapper.vm.clicarFranja(Temporal.ZonedDateTime.from("2026-09-08T10:00:00+02:00[Europe/Madrid]"));
+    expect(wrapper.vm.modal).toBeNull();
+    wrapper.vm.clicarFranja(Temporal.ZonedDateTime.from("2026-09-08T12:00:00+02:00[Europe/Madrid]"));
+    expect(wrapper.vm.modal?.tipus).toBe("crear");
+    wrapper.vm.tancarModal();
+    wrapper.vm.obrirDetall("r3");
+    expect(wrapper.vm.modal).toBeNull();
   });
 
   it("el responsable sense espai a la ruta llista totes les reserves", async () => {
@@ -306,8 +319,11 @@ describe("useCalendariReserves", () => {
     const propies = await wrapperCoord.vm.carregarReserves("2026-09-07T22:00:00Z", "2026-09-14T22:00:00Z");
     const vistes = wrapperCoord.vm.eventsDeReserves(propies);
     expect(vistes).toHaveLength(2);
-    expect(vistes.every((event) => event._options === undefined)).toBe(true);
-    expect(vistes.map((event) => event.title)).toEqual(["Sala 1", "Ocupat"]);
+    expect(vistes.map((event) => event.title)).toEqual(["Teva", "Ocupat"]);
+    expect(vistes.map((event) => event._options?.additionalClasses)).toEqual([
+      ["reserva-propia"],
+      ["reserva-ocupada"],
+    ]);
     expect(vistes.find((event) => event.title === "Ocupat")?.people).toBeUndefined();
     expect(wrapperCoord.vm.llegendaCoordinadors).toEqual([]);
   });
@@ -380,7 +396,7 @@ describe("useCalendariReserves", () => {
     await coordinador.vm.carregarEspais();
     const vistes = await coordinador.vm.carregarReserves("2026-09-07T22:00:00Z", "2026-09-14T22:00:00Z");
     const events = coordinador.vm.eventsDeReserves(vistes);
-    expect(events.map((event) => event.title)).toEqual(["Sala 1", "Ocupat"]);
+    expect(events.map((event) => event.title)).toEqual(["Teva", "Ocupat"]);
     expect(coordinador.vm.filesLlista.map((fila) => fila.propietat)).toEqual(["Teva", "Ocupat"]);
     expect(JSON.stringify(coordinador.vm.filesLlista)).not.toContain("Núria");
   });
@@ -864,6 +880,6 @@ describe("useCalendariReserves", () => {
     );
     await wrapper.vm.carregarEspais();
     await wrapper.vm.carregarReserves("2026-09-07T22:00:00Z", "2026-09-14T22:00:00Z");
-    expect(wrapper.vm.espaisDeLlegenda.map((item) => item.id)).toEqual(["s1", "s2"]);
+    expect(wrapper.vm.espaisDeLlegenda.map((item) => item.id)).toEqual(["s1"]);
   });
 });

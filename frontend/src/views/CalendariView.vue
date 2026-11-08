@@ -137,7 +137,13 @@ function etiquetarEvents() {
     if (!item) {
       continue;
     }
-    el.setAttribute("aria-label", nomAccessibleReserva(item, rol));
+    const sala = rol === "coordinator" && Boolean(espaiId.value);
+    el.setAttribute("aria-label", nomAccessibleReserva(item, rol, sala));
+    if (rol === "coordinator" && !item.mine) {
+      el.setAttribute("aria-disabled", "true");
+    } else {
+      el.removeAttribute("aria-disabled");
+    }
   }
 }
 
@@ -178,6 +184,12 @@ function mourePeriode(endavant: boolean) {
 }
 
 const periodeLlista = computed(() => etiquetaPeriode(diaActiu.value, vistaUnDia.value));
+const titolPagina = computed(() => {
+  if (esResponsable.value) {
+    return espaiSeleccionat.value ? `Reserves de ${espaiSeleccionat.value.name}` : "Totes les reserves";
+  }
+  return espaiSeleccionat.value ? `Disponibilitat — ${espaiSeleccionat.value.name}` : "Les meves reserves";
+});
 const campsNova = computed(() => ({
   espais: espaisActius.value.map((espai) => ({ id: espai.id, name: espai.name })),
   espaiId: espaiPerCrear.value,
@@ -578,9 +590,7 @@ async function reintentar() {
 <template>
   <main class="mx-auto w-full max-w-6xl">
     <div class="flex flex-wrap items-center justify-between gap-4">
-      <h1 class="titol-pantalla">
-        {{ esResponsable ? "Totes les reserves" : "Les meves reserves" }}
-      </h1>
+      <h1 class="titol-pantalla">{{ titolPagina }}</h1>
       <button
         v-if="!esResponsable && espaisActius.length > 0"
         class="btn btn-primary min-h-11"
@@ -591,13 +601,13 @@ async function reintentar() {
       </button>
     </div>
     <p v-if="esResponsable && espaiSeleccionat" class="mt-2 text-base-content/80">
-      Reserves de {{ espaiSeleccionat.name }}. Arrossega una reserva per canviar l’horari, o obre-la per anul·lar.
+      Arrossega una reserva per canviar l’horari, o obre-la per anul·lar.
     </p>
     <p v-else-if="esResponsable" class="mt-2 text-base-content/80">
       Tots els espais i coordinadors. Arrossega una reserva per canviar l’horari, o obre-la per anul·lar.
     </p>
     <p v-else-if="potReservar && espaiSeleccionat" class="mt-2 text-base-content/80">
-      Clica l’hora d’inici per reservar {{ espaiSeleccionat.name }}, o usa Nova reserva.
+      Clica una franja lliure per reservar {{ espaiSeleccionat.name }}, o usa Nova reserva. Les ocupades no es poden triar.
     </p>
     <p v-else-if="espaisActius.length > 0" class="mt-2 text-base-content/80">
       Les teves reserves de tots els espais. Arrossega-ne una per canviar l’horari.

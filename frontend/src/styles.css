@@ -501,6 +501,22 @@ dialog.modal.modal-open .modal-box {
   touch-action: none;
 }
 
+.calendari-espais .sx__time-grid-event.reserva-propia {
+  cursor: pointer;
+  box-shadow: inset 0 0 0 2px var(--color-base-content);
+}
+
+.calendari-espais .sx__time-grid-event.reserva-ocupada {
+  cursor: not-allowed;
+  background-image: repeating-linear-gradient(
+    135deg,
+    transparent,
+    transparent 6px,
+    color-mix(in oklab, var(--color-base-content) 32%, transparent) 6px,
+    color-mix(in oklab, var(--color-base-content) 32%, transparent) 8px
+  );
+}
+
 .calendari-espais--arrossegant,
 .calendari-espais--arrossegant .sx__time-grid-event {
   cursor: grabbing;

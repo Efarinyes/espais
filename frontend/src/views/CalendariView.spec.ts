@@ -241,7 +241,7 @@ describe("CalendariView graella", () => {
     wrapper.unmount();
   });
 
-  it("el coordinador tria l’espai sense canviar el títol i pot obrir Nova reserva", async () => {
+  it("el coordinador canvia el títol amb la sala i pot obrir Nova reserva", async () => {
     const coordinador = await muntar({
       role: "coordinator",
       espais: [sala1, sala2],
@@ -249,14 +249,15 @@ describe("CalendariView graella", () => {
       espai: "s1",
     });
     await flushPromises();
-    expect(coordinador.text()).toContain("Les meves reserves");
-    expect(coordinador.text()).not.toContain("Disponibilitat de");
+    expect(coordinador.text()).toContain("Disponibilitat — Sala 1");
+    expect(coordinador.text()).not.toContain("Les meves reserves");
     const selector = coordinador.get("select");
     expect((selector.element as HTMLSelectElement).value).toBe("s1");
     expect(coordinador.text()).toContain("Nova reserva");
     expect(coordinador.text()).not.toContain("Coordinador");
     await selector.setValue("");
     await flushPromises();
+    expect(coordinador.text()).toContain("Les meves reserves");
     expect(coordinador.vm.$route.query.espai).toBeUndefined();
     expect(coordinador.vm.$route.query.vista).toBeUndefined();
     coordinador.unmount();

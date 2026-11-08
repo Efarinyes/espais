@@ -53,10 +53,13 @@ export type AmbitVista = {
   cerca: string;
 };
 
-/** El coordinador conserva les pròpies i, si ha triat sala, les d’aquella sala. La cerca només la aplica el responsable. */
+/** Sense sala, el coordinador només veu les seves. Amb sala, només la disponibilitat d’aquella sala. */
 export function reservaVisible(item: ReservaDto, ambit: AmbitVista): boolean {
   if (ambit.rol !== "responsible") {
-    return item.mine || (ambit.espaiId !== "" && item.space_id === ambit.espaiId);
+    if (ambit.espaiId === "") {
+      return item.mine;
+    }
+    return item.space_id === ambit.espaiId;
   }
   if (ambit.espaiId !== "" && item.space_id !== ambit.espaiId) {
     return false;
@@ -68,12 +71,15 @@ export function reservaVisible(item: ReservaDto, ambit: AmbitVista): boolean {
   return (item.coordinator_name ?? "").toLocaleLowerCase("ca").includes(cerca);
 }
 
+export type PaperReserva = "teva" | "ocupada" | "altra";
+
 export type FilaReserva = {
   id: string;
   data: string;
   espai: string;
   interval: string;
   propietat: string;
+  paper: PaperReserva;
   obrible: boolean;
 };
 
@@ -85,14 +91,19 @@ export function filaReserva(item: ReservaDto, rol: RolSessio): FilaReserva {
     month: "long",
   }).format(new Date(item.starts_at));
   let propietat: string;
+  let paper: PaperReserva;
   if (item.status === "cancelled") {
     propietat = "Anul·lada";
+    paper = "altra";
   } else if (rol === "responsible") {
     propietat = item.coordinator_name?.trim() || "Reserva";
+    paper = "altra";
   } else if (item.mine) {
     propietat = "Teva";
+    paper = "teva";
   } else {
     propietat = "Ocupat";
+    paper = "ocupada";
   }
   return {
     id: item.id,
@@ -100,8 +111,15 @@ export function filaReserva(item: ReservaDto, rol: RolSessio): FilaReserva {
     espai: item.space_name?.trim() || "Espai",
     interval: `${horaMadrid(item.starts_at)}–${horaMadrid(item.ends_at)}`,
     propietat,
+    paper,
     obrible: item.mine || rol === "responsible",
   };
+}
+
+export function cobreixInstant(reserva: Pick<ReservaDto, "starts_at" | "ends_at">, instant: Temporal.Instant): boolean {
+  const inici = Temporal.Instant.from(reserva.starts_at);
+  const fi = Temporal.Instant.from(reserva.ends_at);
+  return Temporal.Instant.compare(instant, inici) >= 0 && Temporal.Instant.compare(instant, fi) < 0;
 }
 
 const ZONA_CALENDARI = "Europe/Madrid";
@@ -165,17 +183,28 @@ export function etiquetaPeriode(dia: Temporal.PlainDate, unDia: boolean): string
   return `${format.format(aMilis(dilluns))} – ${format.format(aMilis(diumenge))}`;
 }
 
-export function titolReserva(item: ReservaDto, role: RolSessio): string {
+export function titolReserva(item: ReservaDto, role: RolSessio, salaSeleccionada = false): string {
   if (!item.mine && role !== "responsible") {
     return "Ocupat";
   }
   if (role === "responsible") {
     return item.coordinator_name?.trim() || "Reserva";
   }
+  if (salaSeleccionada) {
+    return "Teva";
+  }
   return item.space_name?.trim() || "Tu";
 }
 
-export function nomAccessibleReserva(item: ReservaDto, role: RolSessio): string {
+export function classesReserva(item: ReservaDto, role: RolSessio): string[] {
+  if (role === "responsible") {
+    const nom = item.coordinator_name?.trim();
+    return nom ? [classeTramat(nom)] : [];
+  }
+  return [item.mine ? "reserva-propia" : "reserva-ocupada"];
+}
+
+export function nomAccessibleReserva(item: ReservaDto, role: RolSessio, salaSeleccionada = false): string {
   const quan = new Intl.DateTimeFormat("ca-ES", {
     timeZone: "Europe/Madrid",
     weekday: "long",
@@ -199,6 +228,9 @@ export function nomAccessibleReserva(item: ReservaDto, role: RolSessio): string 
   if (role === "responsible") {
     const qui = item.coordinator_name?.trim() || "Reserva";
     return `${espai}, ${qui}, ${interval}`;
+  }
+  if (salaSeleccionada) {
+    return `Teva, ${espai}, ${interval}`;
   }
   return `${espai}, ${interval}`;
 }
