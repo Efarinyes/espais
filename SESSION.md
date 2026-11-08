@@ -9,6 +9,8 @@ Actualitza aquest arxiu al final de cada sessió. És el punt d’arrencada del 
 
 ## Darrera feina
 
+2026-11-08: la fase d’UX, D1 i la prova E2E es dona per tancada. Queda pendent només D-PALETA: els hex publicats no es canvien fins que es decideixi. `feat/docker-caddy-sqlite` es puja a `origin` perquè qui opera el servidor pugui fer `git pull` i `docker compose up -d --build`, sense `down -v`. No s’ha tocat el VPS ni `main`. `backup/pre-ux-ui-2026-11-02` segueix a `436d97b`.
+
 2026-11-08: auditoria E2E amb Docker local, projecte `espais-e2e-d1-20261108`, només a `127.0.0.1:80` i `127.0.0.1:8025`. Volums propis. La base de desenvolupament i els volums `espais_*` no s’han tocat. En acabar, `docker compose -p espais-e2e-d1-20261108 down -v` ha esborrat només aquesta pila. Sense canvis de codi: no s’ha trobat cap defecte de D1 ni de permisos dins de l’abast. Sense push ni VPS. `backup/pre-ux-ui-2026-11-02` segueix a `436d97b`.
 
 Entitat `E2E — Entitat de verificació`. Rita Responsable (`e2e.resp@example.com`). Coordinadores Cora Un, Cora Dos i Cora Tres. Sales: Sala 1 dilluns–divendres 17:00–23:00, aforament 10; Sala 2 dilluns–divendres 09:00–14:00; Sala 3 dilluns–dissabte 16:00–22:00. Reserves de les tres a sales i dies diferents, una anul·lada, una amb 12 assistents (per sobre de l’aforament) i una segona entitat buida per a l’aïllament. Contrasenya només de la pila, ja esborrada.
@@ -119,7 +121,7 @@ Desplegat al VPS (`6b455b9`) i provat amb Capgrossos, «Sala pilars». La vista 
 
 ## Següent tasca
 
-La propera sessió llegeix aquest fitxer i espera què es demani. D1 està feta i s’ha recorregut amb una pila Docker ja esborrada. D-PALETA continua sense decidir. El servidor el publica qui l’opera, quan es demani, amb `git pull` a `feat/docker-caddy-sqlite` i `docker compose up -d --build`, sense `down -v`. No es fa push ni desplegament fins que es demani. Qui operi el servidor, quan es publiqui aquest commit, farà `git pull` a `feat/docker-caddy-sqlite` i `docker compose up -d --build`, sense `down -v`.
+La fase d’UX i de D1 està tancada. La propera sessió llegeix aquest fitxer i espera què es demani. L’únic pendent de producte d’aquesta peça és D-PALETA. Qui opera el servidor publica `origin/feat/docker-caddy-sqlite` amb `git pull` i `docker compose up -d --build`, sense `down -v`. No es fusiona a `main`.
 
 La feina de desplegament continua a `feat/docker-caddy-sqlite`: és la branca que el servidor desplega després del `git pull` i de regenerar els contenidors. `backup/alpha-funcional` (`9178e98`, també a `origin`) és el punt de retorn. `backup/pre-ux-ui-2026-11-02` (`436d97b`) no es mou. No es fusiona a `main` fins a la Beta, quan es canviï la configuració del servidor. No s’esborren `backup/alpha-funcional` ni `backup/pre-dockeritzacio`.
 
