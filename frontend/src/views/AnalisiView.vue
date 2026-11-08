@@ -77,7 +77,7 @@ watch(espaiDestacat, () => {
 
 <template>
   <main class="w-full max-w-3xl">
-    <h1 class="text-3xl font-semibold">Estadístiques</h1>
+    <h1 class="titol-pantalla">Estadístiques</h1>
     <p class="mt-2 text-base-content/80">
       Com s’han fet servir els espais de l’entitat: ocupació, reserves i assistència.
     </p>

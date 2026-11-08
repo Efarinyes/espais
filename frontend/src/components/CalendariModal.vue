@@ -6,6 +6,15 @@ import type { ModalCalendari } from "../composables/useCalendariReserves";
 
 const props = defineProps<{
   modal: ModalCalendari;
+  nova?: {
+    espais: { id: string; name: string }[];
+    espaiId: string;
+    dia: string;
+    hora: string;
+    resum: string;
+    valida: boolean;
+    error: string;
+  } | null;
   resumPendent: string;
   resumDetall: string;
   duradaMinuts: number;
@@ -36,6 +45,9 @@ const emit = defineEmits<{
   "update:campAssistencia": [valor: string];
   "update:diaHorari": [valor: string];
   "update:horaHorari": [valor: string];
+  "update:espaiNova": [valor: string];
+  "update:diaNova": [valor: string];
+  "update:horaNova": [valor: string];
   canviarHorari: [];
   demanarAnulacio: [];
   tornarDetall: [];
@@ -54,6 +66,9 @@ function valorDe(event: Event): string {
 const dialeg = ref<HTMLDialogElement | null>(null);
 const botoEnrere = ref<HTMLButtonElement | null>(null);
 const idTitol = computed(() => {
+  if (props.modal.tipus === "nova") {
+    return "nova-titol";
+  }
   if (props.modal.tipus === "crear") {
     return "confirma-titol";
   }
@@ -106,6 +121,10 @@ onMounted(() => {
     botoEnrere.value?.focus();
     return;
   }
+  if (props.modal.tipus === "nova") {
+    el.querySelector<HTMLElement>("#espai-nova")?.focus();
+    return;
+  }
   el.querySelector<HTMLElement>("h2")?.focus();
 });
 
@@ -121,7 +140,76 @@ onUnmounted(() => {
 <template>
   <dialog ref="dialeg" class="modal modal-open" :aria-labelledby="idTitol">
     <form
-      v-if="modal.tipus === 'crear'"
+      v-if="modal.tipus === 'nova' && nova"
+      class="modal-box"
+      @submit.prevent="emit('confirmar')"
+    >
+      <h2 id="nova-titol" class="font-semibold text-lg" tabindex="-1">Nova reserva</h2>
+      <label class="mt-4 block font-medium" for="espai-nova">
+        Espai
+        <select
+          id="espai-nova"
+          class="select mt-2 w-full min-h-11 border border-base-300 bg-base-100"
+          :value="nova.espaiId"
+          :disabled="enviant"
+          @change="emit('update:espaiNova', valorDe($event))"
+        >
+          <option v-for="espai in nova.espais" :key="espai.id" :value="espai.id">{{ espai.name }}</option>
+        </select>
+      </label>
+      <label class="mt-4 block font-medium" for="dia-nova">
+        Dia
+        <input
+          id="dia-nova"
+          class="input mt-2 w-full min-h-11 border border-base-300 bg-base-100"
+          type="date"
+          :value="nova.dia"
+          :disabled="enviant"
+          @input="emit('update:diaNova', valorDe($event))"
+        />
+      </label>
+      <label class="mt-4 block font-medium" for="hora-nova">
+        Hora d’inici
+        <input
+          id="hora-nova"
+          class="input mt-2 w-full min-h-11 border border-base-300 bg-base-100"
+          type="time"
+          step="1800"
+          :value="nova.hora"
+          :disabled="enviant"
+          @input="emit('update:horaNova', valorDe($event))"
+        />
+      </label>
+      <p class="mt-4 font-medium">Durada</p>
+      <div class="mt-2 flex flex-wrap gap-2" role="group" aria-label="Durada">
+        <button
+          v-for="minuts in durades"
+          :key="minuts"
+          class="btn min-h-11"
+          :class="duradaMinuts === minuts ? 'btn-primary' : 'btn-outline'"
+          type="button"
+          :disabled="enviant"
+          :aria-pressed="duradaMinuts === minuts"
+          @click="emit('triarDurada', minuts)"
+        >
+          {{ etiquetaDurada(minuts) }}
+        </button>
+      </div>
+      <p v-if="errorDetall" class="mt-4 text-error" role="alert">{{ errorDetall }}</p>
+      <p v-else-if="!nova.valida && nova.error" class="mt-4 text-error" role="alert">{{ nova.error }}</p>
+      <p v-else-if="nova.resum" class="mt-4">{{ nova.resum }}</p>
+      <div class="modal-action">
+        <button class="btn btn-ghost min-h-11" type="button" :disabled="enviant" @click="emit('tancar')">
+          Cancel·la
+        </button>
+        <button class="btn btn-primary min-h-11" type="submit" :disabled="enviant || !nova.valida">
+          {{ enviant ? "Reservant…" : "Reserva" }}
+        </button>
+      </div>
+    </form>
+
+    <form
+      v-else-if="modal.tipus === 'crear'"
       class="modal-box"
       @submit.prevent="emit('confirmar')"
     >

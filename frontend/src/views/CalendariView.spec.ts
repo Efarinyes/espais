@@ -241,7 +241,7 @@ describe("CalendariView graella", () => {
     wrapper.unmount();
   });
 
-  it("el coordinador tria l’espai sense canviar el títol i el responsable no té selector", async () => {
+  it("el coordinador tria l’espai sense canviar el títol i pot obrir Nova reserva", async () => {
     const coordinador = await muntar({
       role: "coordinator",
       espais: [sala1, sala2],
@@ -253,10 +253,12 @@ describe("CalendariView graella", () => {
     expect(coordinador.text()).not.toContain("Disponibilitat de");
     const selector = coordinador.get("select");
     expect((selector.element as HTMLSelectElement).value).toBe("s1");
-    expect(coordinador.text()).not.toContain("Nova reserva");
+    expect(coordinador.text()).toContain("Nova reserva");
+    expect(coordinador.text()).not.toContain("Coordinador");
     await selector.setValue("");
     await flushPromises();
     expect(coordinador.vm.$route.query.espai).toBeUndefined();
+    expect(coordinador.vm.$route.query.vista).toBeUndefined();
     coordinador.unmount();
 
     const responsable = await muntar({
@@ -266,8 +268,31 @@ describe("CalendariView graella", () => {
     });
     await flushPromises();
     expect(responsable.text()).toContain("Totes les reserves");
-    expect(responsable.find("select").exists()).toBe(false);
+    expect(responsable.text()).not.toContain("Nova reserva");
+    expect((responsable.get("select").element as HTMLSelectElement).value).toBe("");
+    await responsable.get("select").setValue("s1");
+    await flushPromises();
+    expect(responsable.vm.$route.query.espai).toBe("s1");
+    expect(responsable.text()).toContain("Reserves de Sala 1");
     responsable.unmount();
+  });
+
+  it("graella i llista comparteixen la consulta i la llista no diu que no hi ha reserves si falla", async () => {
+    const wrapper = await muntar({
+      role: "coordinator",
+      espais: [sala1],
+      estreta: false,
+      espai: "s1",
+    });
+    await flushPromises();
+    expect(wrapper.get("[aria-label='Vista']").text()).toContain("Graella");
+    await wrapper.get("[aria-label='Vista']").findAll("button")[1].trigger("click");
+    await flushPromises();
+    expect(wrapper.vm.$route.query.vista).toBe("llista");
+    expect(wrapper.vm.$route.query.espai).toBe("s1");
+    expect(wrapper.find(".calendari-espais").exists()).toBe(false);
+    expect(wrapper.text()).toContain("No hi ha reserves en aquest període");
+    wrapper.unmount();
   });
 
   it("el coordinador que canvia de sala veu el rang de la nova", async () => {

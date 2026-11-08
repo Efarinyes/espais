@@ -16,7 +16,7 @@ const llistaAmpla = computed(() => !error.value && !carregant.value && espais.va
 <template>
   <main class="w-full" :class="llistaAmpla ? '' : 'max-w-xl'">
     <div class="flex flex-wrap items-center justify-between gap-3">
-      <h1 class="text-3xl font-semibold">Espais de {{ sessio.entityName }}</h1>
+      <h1 class="titol-pantalla">Espais de {{ sessio.entityName }}</h1>
       <RouterLink
         v-if="esResponsable && espais.length > 0 && !carregant && !error"
         class="btn btn-primary min-h-11"

@@ -9,6 +9,21 @@ Actualitza aquest arxiu al final de cada sessió. És el punt d’arrencada del 
 
 ## Darrera feina
 
+2026-11-08: actuacions C del pla UX/UI, a `feat/docker-caddy-sqlite`, sense push ni VPS. `backup/pre-ux-ui-2026-11-02` segueix a `436d97b`. No s’ha tocat cap hex ni D-PALETA. D1 no s’ha implementat: amb una sala triada, el coordinador continua veient les seves reserves de totes les sales i les alienes d’aquella sala com a «Ocupat».
+
+Fet, sense canviar permisos ni la creació existent:
+
+- Les caselles mostren un text curt (espai, «Ocupat» o coordinador) amb el·lipsi. Les persones del calendari continuen ocultes.
+- El responsable filtra per `?espai=` (la vista inicial segueix sent tota l’entitat) i per `?cerca=` (text, no un id; els homònims surten tots). El coordinador no té cerca.
+- Graella i Llista comparteixen rang, filtre i permisos. Una càrrega fallida no es presenta com a «No hi ha reserves».
+- «Nova reserva» només per al coordinador. Reutilitza `avaluarFranja` i `CreateReservation`. El clic a la franja lliure es manté. El responsable no la veu.
+- El botó petit diu «Menú». L’ordre és Espais, Calendari, Estadístiques (responsable) o Avisos (coordinador). Convida i Tria els colors van sota Administració. Surt queda separat. El calaix no s’ha redissenyat.
+- Els tramats es conserven i el patró surt del nom, de manera que no canvia si al rang hi ha altres persones. Sis patrons es poden repetir. Dos noms iguals comparteixen patró: l’API no dona un id de coordinador i no se’n fabrica cap.
+- Els títols de pantalla de l’app fan 28 px. El hero de la landing no s’ha tocat.
+- La targeta del responsable continua dient «Calendari» i obre el calendari sense `?espai=` (ADR 0008). «Calendari general» no s’ha adoptat.
+
+Vitest 237 i `vue-tsc` nets. `npm run build` net fora del sandbox (el workbox falla a dins). Al navegador, amb l’entitat de prova, el coordinador ha vist el menú, la llista («Teva», sense el nom d’un altre) i el text «Sala 3» a la casella. Per veure-ho s’ha creat una reserva a Sala 3 el 8 de novembre de 2026, 20:30–21:30, i s’ha anul·lat després: queda `cancelled` i el calendari no la llista. El recorregut del responsable al navegador no s’ha completat. No s’ha fet push.
+
 2026-11-02: tancament. `feat/docker-caddy-sqlite` local i `origin` coincideixen a `a562a8f`. Qui opera el servidor ho publica amb `git pull` i `docker compose up -d --build`, sense `down -v`. No s’ha tocat el VPS ni `main`. La còpia `backup/pre-ux-ui-2026-11-02` segueix a `436d97b`.
 
 2026-11-02: la fletxa del calendari de Schedule-X ja no és una imatge `data:` (`a562a8f`). La CSP de l’ADR 0015 (`img-src 'self'`) la bloquejava en obrir `/calendari`. Ara és `/fletxa-calendari.svg`, al pedaç existent de Schedule-X. No s’ha obert cap ADR.
@@ -90,7 +105,7 @@ Desplegat al VPS (`6b455b9`) i provat amb Capgrossos, «Sala pilars». La vista 
 
 ## Següent tasca
 
-La propera sessió llegeix aquest fitxer i espera què es demani. El pas pendent el fa qui opera el servidor: `git pull` a `feat/docker-caddy-sqlite` (`a562a8f`) i `docker compose up -d --build`, sense `down -v`. Després, al calendari, la consola no ha de bloquejar la fletxa. No es comencen soles les actuacions C, ni D-PALETA, ni D1.
+La propera sessió llegeix aquest fitxer i espera què es demani. Falta la decisió D1 (proposta al tancament del 8 de novembre: alternativa A, calendari de la sala). Fins que no es triï, no es canvia el conjunt de reserves del coordinador amb sala seleccionada ni els títols «Les meves reserves» / «Totes les reserves». D-PALETA continua sense decidir. No es fa push ni desplegament fins que es demani. Qui operi el servidor, quan es publiqui aquest commit, farà `git pull` a `feat/docker-caddy-sqlite` i `docker compose up -d --build`, sense `down -v`.
 
 La feina de desplegament continua a `feat/docker-caddy-sqlite`: és la branca que el servidor desplega després del `git pull` i de regenerar els contenidors. `backup/alpha-funcional` (`9178e98`, també a `origin`) és el punt de retorn. `backup/pre-ux-ui-2026-11-02` (`436d97b`) no es mou. No es fusiona a `main` fins a la Beta, quan es canviï la configuració del servidor. No s’esborren `backup/alpha-funcional` ni `backup/pre-dockeritzacio`.
 
@@ -154,5 +169,6 @@ Cap. API de desenvolupament `http://127.0.0.1:8000`; front de desenvolupament `h
 - Deute d’aquesta sessió (2026-10-21): l’ADR 0015 és la decisió de capçaleres i d’OpenAPI. `style-src 'unsafe-inline'` és la decisió, perquè el calendari i la paleta posen atributs `style`. Ja és al VPS.
 - Deute d’aquesta sessió (2026-10-29): l’ADR 0018 és la recuperació. El correu de l’Alpha el captura Mailpit; un relay real (STARTTLS, usuari i contrasenya) no s’ha provat.
 - Deute d’implementació (2026-11-02), sense ADR: el pedaç de Schedule-X de l’ADR 0013 també substitueix la fletxa `data:` per `/fletxa-calendari.svg`, perquè la CSP no admet imatges incrustades. Actualitzar Schedule-X obliga a refer les dues parts del pedaç.
+- Deute d’implementació (2026-11-08), sense ADR: el refresc dels filtres comprova `eventsFacade` de Schedule-X, perquè `set` falla si el plugin encara no està lligat al calendari. Els homònims comparteixen tramat perquè la llista de reserves no porta id de coordinador. El dia visible de la Llista no és a la URL: en recarregar torna a avui, com la graella.
 - Risc anotat (2026-10-30), sense decisió: `POST /sessio` només fa bcrypt si el compte existeix, i el temps de resposta pot delatar un correu registrat. Va amb el límit d’intents de l’ADR 0017, que continua proposat. No s’ha tocat. El navegador escriu en vermell els 401 i 410 que respon el servidor (contrasenya antiga, sessió morta, enllaç usat): no són errors de l’app. Els avisos de `ruff` que ja hi havia (ordre d’imports en fitxers no tocats) es queden.
 - Deute d’implementació de l’auditoria del 2026-10-06 (sense ADR, cap no és urgent): `patch-package` sense `--error-on-fail`, i per això un pedaç que no s’aplica no atura el `docker build`; selectors `data-slots` 2–4 morts a `styles.css` i camps `margeInici` / `margeFi` sense ús a `Graella`; el divisor 30 de `slotsInici` / `slotsFi` repeteix el `gridStep`; falten tests de renderitzat per a 19:30–24:00 i per a un rang no múltiple de 30 (l’última fila queda mig retallada); comprovacions amb decimals exactes a `CalendariView.spec.ts`. No fer: abstraure Schedule-X, un composable de graella, estratègies per rol, marge configurable.

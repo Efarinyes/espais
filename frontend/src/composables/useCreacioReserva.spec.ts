@@ -60,7 +60,7 @@ function muntar(
       const reservesCarregades = ref<ReservaDto[]>([]);
       let tancat = false;
       const creacio = useCreacioReserva({
-        espaiId,
+        espaiDeCreacio: () => espaiId.value,
         franjaOberta: () => franja.value,
         enviant,
         error,

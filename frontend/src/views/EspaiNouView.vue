@@ -7,7 +7,7 @@ const { camps, dies, errorsCamp, errorGlobal, enviant, enviar } = useCreaEspai()
 
 <template>
   <main class="w-full max-w-5xl">
-    <h1 class="text-3xl font-semibold">Defineix un espai</h1>
+    <h1 class="titol-pantalla">Defineix un espai</h1>
     <p class="mt-2 text-base-content/80">
       El nom el trieu vosaltres (Sala 1 o Sala Pau Casals). L’aforament és el màxim de persones.
       La disponibilitat són els dies i hores en què es podrà reservar.

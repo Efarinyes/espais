@@ -8,7 +8,7 @@ const { camps, errorsCamp, errorGlobal, enviant, enviar } = useRegistre();
 
 <template>
   <main class="mx-auto w-full max-w-md px-4 py-6">
-    <h1 class="text-3xl font-semibold">Registra l’entitat</h1>
+    <h1 class="titol-pantalla">Registra l’entitat</h1>
     <p class="mt-2 text-base-content/80">Un sol pas: dades de l’entitat i del primer responsable. Sense cobrament.</p>
 
     <div v-if="errorGlobal" class="alert alert-error mt-6" role="alert">

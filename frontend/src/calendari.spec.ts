@@ -3,9 +3,14 @@ import { describe, expect, it } from "vitest";
 
 import {
   arrodoneixClicAFranja,
+  classeTramat,
+  etiquetaPeriode,
+  filaReserva,
   llegendaTramats,
   parseCompteAssistencia,
   nomAccessibleReserva,
+  rangVisible,
+  reservaVisible,
   titolReserva,
   valorRangAIso,
 } from "./calendari";
@@ -55,12 +60,59 @@ describe("calendari", () => {
     expect(nom).toContain("10:00");
   });
 
-  it("assigna un tramat estable a cada coordinador", () => {
+  it("assigna un tramat estable a cada nom, sense dependre de qui més hi ha", () => {
     const llegenda = llegendaTramats(["Núria", "Carla", "Carla", "  ", null]);
     expect(llegenda.map((entrada) => entrada.nom)).toEqual(["Carla", "Núria"]);
-    expect(llegenda[0]?.classe).toBe("reserva-tramat-0");
-    expect(llegenda[1]?.classe).toBe("reserva-tramat-1");
+    expect(llegenda[0]?.classe).toBe(classeTramat("Carla"));
+    expect(llegenda[1]?.classe).toBe(classeTramat("Núria"));
     expect(llegenda[0]?.classe).not.toBe(llegenda[1]?.classe);
+    expect(llegendaTramats(["Núria"])[0]?.classe).toBe(classeTramat("Núria"));
+    expect(llegendaTramats(["Abel", "Núria"])[1]?.classe).toBe(classeTramat("Núria"));
+  });
+
+  it("el coordinador veu les pròpies i les de la sala, i ignora la cerca", () => {
+    const propiaAltra = { ...reserva, id: "r2", space_id: "s2", mine: true };
+    const aliena = { ...reserva, id: "r3", mine: false, coordinator_name: "Núria" };
+    const ambit = { rol: "coordinator" as const, espaiId: "s1", cerca: "Núria" };
+    expect(reservaVisible(reserva, ambit)).toBe(true);
+    expect(reservaVisible(propiaAltra, ambit)).toBe(true);
+    expect(reservaVisible(aliena, ambit)).toBe(true);
+    expect(reservaVisible({ ...aliena, space_id: "s2" }, ambit)).toBe(false);
+    expect(reservaVisible(aliena, { ...ambit, espaiId: "" })).toBe(false);
+  });
+
+  it("el responsable filtra per sala i per text, i els homònims coincideixen tots", () => {
+    const anna1 = { ...reserva, id: "a1", coordinator_name: "Anna Costa" };
+    const anna2 = { ...reserva, id: "a2", space_id: "s2", coordinator_name: "Anna Soler" };
+    const nuria = { ...reserva, id: "n1", coordinator_name: "Núria" };
+    const ambit = { rol: "responsible" as const, espaiId: "", cerca: "anna" };
+    expect(reservaVisible(anna1, ambit)).toBe(true);
+    expect(reservaVisible(anna2, ambit)).toBe(true);
+    expect(reservaVisible(nuria, ambit)).toBe(false);
+    expect(reservaVisible(anna2, { ...ambit, espaiId: "s1", cerca: "" })).toBe(false);
+    expect(reservaVisible(anna1, { ...ambit, espaiId: "s1", cerca: "anna" })).toBe(true);
+  });
+
+  it("la fila de llista no revela el coordinador aliè", () => {
+    const fila = filaReserva({ ...reserva, mine: false, coordinator_name: "Núria" }, "coordinator");
+    expect(fila.propietat).toBe("Ocupat");
+    expect(fila.obrible).toBe(false);
+    expect(JSON.stringify(fila)).not.toContain("Núria");
+    const propia = filaReserva(reserva, "coordinator");
+    expect(propia.propietat).toBe("Teva");
+    expect(propia.obrible).toBe(true);
+    expect(filaReserva({ ...reserva, mine: false }, "responsible").propietat).toBe("Carla");
+  });
+
+  it("el rang de la llista segueix la setmana i tanca a les 23:59 si la graella arriba a les 24:00", () => {
+    const dilluns = Temporal.PlainDate.from("2026-10-05");
+    const rang = rangVisible(dilluns, false, "09:30", "24:00");
+    expect(rang.start.toString()).toContain("2026-10-05T09:30");
+    expect(rang.end.toString()).toContain("2026-10-11T23:59");
+    expect(etiquetaPeriode(dilluns, false)).toContain("2026");
+    const dia = rangVisible(dilluns, true, "19:30", "22:30");
+    expect(dia.start.toString()).toContain("2026-10-05T19:30");
+    expect(dia.end.toString()).toContain("2026-10-05T22:30");
   });
 
   it("accepta un compte escrit o numèric", () => {

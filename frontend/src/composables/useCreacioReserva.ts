@@ -14,7 +14,7 @@ import { requireReservesApi, type ReservaDto } from "../services/reserves";
 import { useSessioStore } from "../stores/sessio";
 
 export type CreacioReservaDeps = {
-  espaiId: Ref<string>;
+  espaiDeCreacio: () => string;
   franjaOberta: () => FranjaReserva | null;
   enviant: Ref<boolean>;
   error: Ref<string>;
@@ -22,6 +22,25 @@ export type CreacioReservaDeps = {
   mostrarError: (text: string) => void;
   tancarModal: () => void;
 };
+
+export function avaluarFranja(
+  dateTime: Temporal.ZonedDateTime,
+  windows: FinestraDto[] | undefined,
+  durada: number,
+): { ok: true; franja: FranjaReserva } | { ok: false; error: string } {
+  if (!diaObert(windows, weekdayDelModel(dateTime))) {
+    return { ok: false, error: "Aquest dia no és accessible." };
+  }
+  let inici = arrodoneixInici(dateTime);
+  if (!clicDinsFinestra(windows, inici, durada)) {
+    const encaixat = encaixaClicAFinestra(windows, inici, durada);
+    if (!encaixat) {
+      return { ok: false, error: "Aquesta hora queda fora de l’horari de l’espai." };
+    }
+    inici = encaixat;
+  }
+  return { ok: true, franja: franjaDesDeInici(inici, durada) };
+}
 
 export function useCreacioReserva(deps: CreacioReservaDeps) {
   const reservesApi = requireReservesApi();
@@ -32,25 +51,17 @@ export function useCreacioReserva(deps: CreacioReservaDeps) {
     windows: FinestraDto[] | undefined,
     durada: number,
   ): FranjaReserva | null {
-    if (!diaObert(windows, weekdayDelModel(dateTime))) {
-      deps.mostrarError("Aquest dia no és accessible.");
+    const avaluacio = avaluarFranja(dateTime, windows, durada);
+    if (!avaluacio.ok) {
+      deps.mostrarError(avaluacio.error);
       return null;
     }
-    const iniciArrodonit = arrodoneixInici(dateTime);
-    let inici = iniciArrodonit;
-    if (!clicDinsFinestra(windows, inici, durada)) {
-      const encaixat = encaixaClicAFinestra(windows, inici, durada);
-      if (!encaixat) {
-        deps.mostrarError("Aquesta hora queda fora de l’horari de l’espai.");
-        return null;
-      }
-      inici = encaixat;
-    }
-    return franjaDesDeInici(inici, durada);
+    return avaluacio.franja;
   }
 
   async function confirmarPendent(): Promise<ReservaDto | null> {
-    const franja = !sessio.token || !deps.espaiId.value ? null : deps.franjaOberta();
+    const espaiId = deps.espaiDeCreacio();
+    const franja = !sessio.token || !espaiId ? null : deps.franjaOberta();
     if (!franja || deps.enviant.value) {
       return null;
     }
@@ -58,7 +69,7 @@ export function useCreacioReserva(deps: CreacioReservaDeps) {
     deps.error.value = "";
     try {
       const creada = await reservesApi.crear(sessio.token, {
-        space_id: deps.espaiId.value,
+        space_id: espaiId,
         starts_at: franja.starts_at,
         ends_at: franja.ends_at,
       });

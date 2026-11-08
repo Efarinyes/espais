@@ -8,7 +8,7 @@ const { camps, errorsCamp, errorGlobal, enviant, enviar } = useIniciSessio();
 
 <template>
   <main class="mx-auto w-full max-w-md px-4 py-6">
-    <h1 class="text-3xl font-semibold">Inicia sessió</h1>
+    <h1 class="titol-pantalla">Inicia sessió</h1>
     <p class="mt-2 text-base-content/80">Entra amb l’email i la contrasenya del teu compte a l’entitat.</p>
 
     <div v-if="errorGlobal" class="alert alert-error mt-6" role="alert">

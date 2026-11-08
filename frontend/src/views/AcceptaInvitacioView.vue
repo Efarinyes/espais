@@ -14,7 +14,7 @@ const { preview, carregant, errorCarrega, camps, errorsCamp, errorGlobal, envian
     </div>
 
     <template v-else-if="preview">
-      <h1 class="text-3xl font-semibold">T’han convidat</h1>
+      <h1 class="titol-pantalla">T’han convidat</h1>
       <p class="mt-2 text-base-content/80">
         Crea el compte de coordinador a {{ preview.entity_name }} amb l’email {{ preview.email }}.
       </p>

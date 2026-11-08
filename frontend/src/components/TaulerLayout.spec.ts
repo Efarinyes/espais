@@ -124,14 +124,15 @@ describe("TaulerLayout", () => {
   });
   it("mostra les opcions del responsable i el centre", async () => {
     const { wrapper } = await muntar("/espais");
-    const nav = wrapper.get("nav[aria-label='Administració']");
+    const nav = wrapper.get("nav[aria-label='Navegació']");
     expect(nav.findAll("a").map((enllac) => enllac.text())).toEqual([
-      "Convida coordinadors",
       "Espais",
       "Calendari",
       "Estadístiques",
+      "Convida coordinadors",
       "Tria els colors",
     ]);
+    expect(nav.get("#grup-administracio").text()).toBe("Administració");
     expect(nav.get("a[href='/espais']").attributes("aria-current")).toBe("page");
     expect(wrapper.text()).toContain("centre-espais");
   });
@@ -147,22 +148,23 @@ describe("TaulerLayout", () => {
     expect(lateral.text()).not.toContain("Responsable");
   });
 
-  it("posa Tria els colors i Surt al final, separats de les accions", async () => {
+  it("agrupa Administració i deixa Surt al final, separat", async () => {
     const { wrapper } = await muntar("/espais");
-    const nav = wrapper.get("nav[aria-label='Administració']");
-    const items = nav.findAll("li");
-    expect(items).toHaveLength(6);
-    expect(items[3].get("a").text()).toBe("Estadístiques");
-    expect(items[4].get("a").text()).toBe("Tria els colors");
-    expect(items[4].classes()).toContain("border-t");
-    const surt = items[5].get("button");
+    const nav = wrapper.get("nav[aria-label='Navegació']");
+    const administracio = nav.get("[aria-labelledby='grup-administracio']");
+    expect(administracio.findAll("a").map((enllac) => enllac.text())).toEqual([
+      "Convida coordinadors",
+      "Tria els colors",
+    ]);
+    const surt = nav.get("button");
     expect(surt.text()).toBe("Surt");
     expect(surt.classes()).toContain("text-error");
+    expect(surt.element.closest("[aria-labelledby='grup-administracio']")).toBeNull();
   });
 
   it("surt de la sessió des del lateral", async () => {
     const { wrapper, router } = await muntar("/espais");
-    await wrapper.get("nav[aria-label='Administració']").get("button").trigger("click");
+    await wrapper.get("nav[aria-label='Navegació']").get("button").trigger("click");
     await flushPromises();
     expect(useSessioStore().iniciada).toBe(false);
     expect(localStorage.getItem("espais.sessio")).toBeNull();
@@ -174,7 +176,7 @@ describe("TaulerLayout", () => {
       throw new Error("xarxa");
     });
     const desada = localStorage.getItem("espais.sessio");
-    await wrapper.get("nav[aria-label='Administració']").get("button").trigger("click");
+    await wrapper.get("nav[aria-label='Navegació']").get("button").trigger("click");
     await flushPromises();
     expect(useSessioStore().iniciada).toBe(true);
     expect(localStorage.getItem("espais.sessio")).toBe(desada);
@@ -193,6 +195,9 @@ describe("TaulerLayout", () => {
     const { wrapper } = await muntar("/espais");
     const boto = wrapper.get("[data-obre-menu]");
     const escriptori = wrapper.get("aside .hidden.lg\\:block");
+    expect(boto.text()).toContain("Menú");
+    expect(boto.text()).toContain("AAVV Barri A");
+    expect(boto.attributes("aria-label")).toBe("Menú, AAVV Barri A");
     expect(boto.element.parentElement?.className).toContain("lg:hidden");
     expect(escriptori.classes()).toContain("lg:block");
     expect(wrapper.find("details").exists()).toBe(false);
@@ -228,12 +233,13 @@ describe("TaulerLayout", () => {
         created_at: "2026-09-08T10:00:00Z",
       },
     ]);
-    const nav = wrapper.get("nav[aria-label='Administració']");
+    const nav = wrapper.get("nav[aria-label='Navegació']");
     expect(nav.findAll("a").map((enllac) => enllac.text().replace(/\s+/g, " ").trim())).toEqual([
       "Espais",
       "Calendari",
       "Avisos 1",
     ]);
+    expect(nav.text()).not.toContain("Administració");
     expect(nav.text()).not.toContain("Convida coordinadors");
     expect(nav.text()).not.toContain("Estadístiques");
     expect(nav.text()).not.toContain("Tria els colors");
@@ -314,7 +320,7 @@ describe("TaulerLayout", () => {
 
   it("no mostra el lateral sense sessió", async () => {
     const { wrapper } = await muntar("/espais", null);
-    expect(wrapper.find("nav[aria-label='Administració']").exists()).toBe(false);
+    expect(wrapper.find("nav[aria-label='Navegació']").exists()).toBe(false);
     expect(wrapper.text()).toContain("centre-espais");
   });
 });

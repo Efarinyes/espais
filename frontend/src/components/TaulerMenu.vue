@@ -48,7 +48,7 @@ async function sortir() {
 <template>
   <div>
     <div v-if="!compacte" class="px-4 pt-4">
-      <p class="text-xs font-medium uppercase tracking-wide text-base-content/55">Entitat</p>
+      <p class="text-sm font-medium uppercase tracking-wide text-base-content/55">Entitat</p>
       <p class="mt-1 text-lg font-semibold leading-snug">{{ sessio.entityName }}</p>
       <p class="mt-5 leading-snug">
         <span class="text-sm text-base-content/70">Hola, </span>
@@ -61,17 +61,8 @@ async function sortir() {
         <span class="mt-0.5 block font-medium">{{ sessio.userName }}</span>
       </p>
     </div>
-    <nav class="mt-4 border-t border-base-content/10" aria-label="Administració">
+    <nav class="mt-4 border-t border-base-content/10" aria-label="Navegació">
       <ul class="menu w-full p-2">
-        <li v-if="esResponsable">
-          <RouterLink
-            class="min-h-11"
-            to="/coordinadors/convidar"
-            :aria-current="esConvida ? 'page' : undefined"
-          >
-            Convida coordinadors
-          </RouterLink>
-        </li>
         <li>
           <RouterLink class="min-h-11" to="/espais" :aria-current="esEspais ? 'page' : undefined">
             Espais
@@ -103,16 +94,32 @@ async function sortir() {
             </span>
           </RouterLink>
         </li>
-        <li v-if="esResponsable" class="border-t border-base-content/20">
-          <RouterLink
-            class="min-h-11"
-            to="/entitat/colors"
-            :aria-current="esColors ? 'page' : undefined"
-          >
-            Tria els colors
-          </RouterLink>
-        </li>
-        <li :class="esResponsable ? '' : 'border-t border-base-content/20'">
+      </ul>
+      <div v-if="esResponsable" class="border-t border-base-content/20">
+        <p id="grup-administracio" class="px-4 pt-4 text-sm font-medium text-base-content/70">Administració</p>
+        <ul class="menu w-full p-2" aria-labelledby="grup-administracio">
+          <li>
+            <RouterLink
+              class="min-h-11"
+              to="/coordinadors/convidar"
+              :aria-current="esConvida ? 'page' : undefined"
+            >
+              Convida coordinadors
+            </RouterLink>
+          </li>
+          <li>
+            <RouterLink
+              class="min-h-11"
+              to="/entitat/colors"
+              :aria-current="esColors ? 'page' : undefined"
+            >
+              Tria els colors
+            </RouterLink>
+          </li>
+        </ul>
+      </div>
+      <ul class="menu w-full border-t border-base-content/20 p-2">
+        <li>
           <button class="min-h-11 text-error" type="button" :disabled="tancant" @click="sortir">Surt</button>
           <p v-if="errorTancament" class="px-4 py-2 text-sm text-error" role="status">{{ errorTancament }}</p>
         </li>

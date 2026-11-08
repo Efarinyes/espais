@@ -24,10 +24,13 @@ const { obert, alternar, tancar } = useMenuMobil(contingut, boto, panell);
           data-obre-menu
           :aria-expanded="obert"
           :aria-controls="obert ? 'menu-mobil' : undefined"
-          :aria-label="'Obre el menú, ' + sessio.entityName"
+          :aria-label="'Menú, ' + sessio.entityName"
           @click="alternar"
         >
-          <span class="min-w-0">{{ sessio.entityName }}</span>
+          <span class="flex min-w-0 flex-col items-start">
+            <span class="text-sm font-semibold">Menú</span>
+            <span class="truncate">{{ sessio.entityName }}</span>
+          </span>
           <svg class="h-5 w-5 shrink-0" viewBox="0 0 20 20" fill="none" aria-hidden="true">
             <path
               d="M3.5 5.5h13M3.5 10h13M3.5 14.5h13"

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, onUnmounted, ref, shallowRef, watch } from "vue";
-import { RouterLink, useRouter } from "vue-router";
+import { RouterLink, useRoute, useRouter } from "vue-router";
 import { ScheduleXCalendar } from "@schedule-x/vue";
 import { createCalendar, createViewDay, createViewWeek } from "@schedule-x/calendar";
 import { createEventsServicePlugin } from "@schedule-x/events-service";
@@ -8,7 +8,9 @@ import "@schedule-x/theme-default/dist/index.css";
 import "temporal-polyfill/global";
 
 import CalendariModal from "../components/CalendariModal.vue";
-import { nomAccessibleReserva } from "../calendari";
+import LlistaReserves from "../components/LlistaReserves.vue";
+import { etiquetaPeriode, nomAccessibleReserva, rangVisible } from "../calendari";
+import { queryCalendari, type VistaCalendari } from "../consultaCalendari";
 import { useAparencaStore } from "../stores/aparenca";
 import { useCalendariReserves } from "../composables/useCalendariReserves";
 import { useRefrescCalendari } from "../composables/useRefrescCalendari";
@@ -19,7 +21,9 @@ import {
 } from "../arrossegarReserva";
 import {
   diaEnDireccio,
+  diaObertAnterior,
   diesOberts,
+  properDiaObert,
   finestresPerRol,
   graellaDeLaVista,
   minutsDeHora,
@@ -44,6 +48,13 @@ const {
   potReservar,
   espaisActius,
   espaiId,
+  espaiPerCrear,
+  diaNova,
+  horaNova,
+  propostaNova,
+  resumNova,
+  cercaCoordinador,
+  filesLlista,
   espaiSeleccionat,
   espaisDeLlegenda,
   espaiDeRutaInvalid,
@@ -65,6 +76,8 @@ const {
   eventsDeReserves,
   clicarFranja,
   triarDurada,
+  obrirNovaReserva,
+  confirmarNova,
   tancarModal,
   confirmarPendent,
   campAssistencia,
@@ -99,6 +112,13 @@ const {
 
 const aparenca = useAparencaStore();
 const router = useRouter();
+const route = useRoute();
+const vista = computed<VistaCalendari>(() => (route.query.vista === "llista" ? "llista" : "graella"));
+
+function escriureQuery(canvi: Partial<{ espai: string; cerca: string; vista: VistaCalendari }>) {
+  const net = esResponsable.value ? canvi : { ...canvi, cerca: "" };
+  void router.replace({ name: "calendari", query: queryCalendari(route.query, net) });
+}
 const caixaCalendari = ref<HTMLElement | null>(null);
 let observadorEvents: MutationObserver | null = null;
 
@@ -134,9 +154,39 @@ function observarEvents() {
 }
 
 function canviarEspai(event: Event) {
-  const id = (event.target as HTMLSelectElement).value;
-  void router.replace({ name: "calendari", query: id ? { espai: id } : {} });
+  escriureQuery({ espai: (event.target as HTMLSelectElement).value });
 }
+
+function canviarCerca(event: Event) {
+  escriureQuery({ cerca: (event.target as HTMLInputElement).value });
+}
+
+function canviarVista(seguent: VistaCalendari) {
+  escriureQuery({ vista: seguent });
+}
+
+function mourePeriode(endavant: boolean) {
+  const pas = vistaUnDia.value ? 1 : 7;
+  const salt = diaActiu.value.add({ days: endavant ? pas : -pas });
+  if (!vistaUnDia.value) {
+    diaActiu.value = salt;
+    return;
+  }
+  diaActiu.value = endavant
+    ? properDiaObert(finestresVisibles.value, salt)
+    : diaObertAnterior(finestresVisibles.value, salt);
+}
+
+const periodeLlista = computed(() => etiquetaPeriode(diaActiu.value, vistaUnDia.value));
+const campsNova = computed(() => ({
+  espais: espaisActius.value.map((espai) => ({ id: espai.id, name: espai.name })),
+  espaiId: espaiPerCrear.value,
+  dia: diaNova.value,
+  hora: horaNova.value,
+  resum: resumNova.value,
+  valida: propostaNova.value?.ok === true,
+  error: propostaNova.value && !propostaNova.value.ok ? propostaNova.value.error : "",
+}));
 
 const eventsServiceHolder = { current: createEventsServicePlugin() };
 const calendarApp = shallowRef<ReturnType<typeof createCalendar> | null>(null);
@@ -406,9 +456,27 @@ const { engegar, aturarRefresc } = useRefrescCalendari(
 
 async function confirmar() {
   const creada = await confirmarPendent();
-  if (creada) {
-    const [event] = eventsDeReserves([creada]);
+  if (!creada || vista.value === "llista") {
+    return;
+  }
+  const [event] = eventsDeReserves([creada]);
+  if (event) {
     eventsServiceHolder.current.add(event);
+  }
+}
+
+async function confirmarFormulari() {
+  const creada = await confirmarNova();
+  if (!creada) {
+    return;
+  }
+  if (vista.value === "llista") {
+    const rang = rangVisible(diaActiu.value, vistaUnDia.value, graella.value.start, graella.value.end);
+    await carregarReserves(rang.start, rang.end);
+    return;
+  }
+  if (calendarApp.value) {
+    await aplicarAvisCalendari();
   }
 }
 
@@ -433,10 +501,62 @@ watch(finestresVisibles, encaixarDiaObert);
 watch(vistaUnDia, encaixarDiaObert);
 
 watch([carregant, clauCalendari], () => {
-  if (!carregant.value) {
+  if (!carregant.value && vista.value === "graella") {
     muntarCalendari();
   }
 });
+
+watch(vista, (nova) => {
+  if (carregant.value) {
+    return;
+  }
+  if (nova === "llista") {
+    calendarApp.value?.destroy();
+    calendarApp.value = null;
+    return;
+  }
+  muntarCalendari();
+});
+
+watch([espaiId, cercaCoordinador], async () => {
+  await nextTick();
+  // Schedule-X només omple eventsFacade quan el plugin queda lligat al calendari.
+  const servei = eventsServiceHolder.current as unknown as { eventsFacade?: unknown };
+  if (!calendarApp.value || vista.value === "llista" || !servei.eventsFacade) {
+    return;
+  }
+  eventsServiceHolder.current.set(eventsDeReserves(null));
+});
+
+watch(
+  () =>
+    [
+      vista.value,
+      diaActiu.value.toString(),
+      vistaUnDia.value,
+      graella.value.start,
+      graella.value.end,
+      carregant.value,
+      espaisActius.value.length,
+    ].join("|"),
+  () => {
+    if (vista.value !== "llista" || carregant.value || espaisActius.value.length === 0) {
+      return;
+    }
+    const rang = rangVisible(diaActiu.value, vistaUnDia.value, graella.value.start, graella.value.end);
+    void carregarReserves(rang.start, rang.end);
+  },
+);
+
+watch(
+  () => route.query.cerca,
+  (cerca) => {
+    if (!esResponsable.value && cerca) {
+      escriureQuery({ cerca: "" });
+    }
+  },
+  { immediate: true },
+);
 
 watch(calendarApp, (app) => {
   if (app) {
@@ -457,31 +577,77 @@ async function reintentar() {
 
 <template>
   <main class="mx-auto w-full max-w-6xl">
-    <h1 class="text-3xl font-semibold">
-      {{ esResponsable ? "Totes les reserves" : "Les meves reserves" }}
-    </h1>
-    <p v-if="esResponsable" class="mt-2 text-base-content/80">
+    <div class="flex flex-wrap items-center justify-between gap-4">
+      <h1 class="titol-pantalla">
+        {{ esResponsable ? "Totes les reserves" : "Les meves reserves" }}
+      </h1>
+      <button
+        v-if="!esResponsable && espaisActius.length > 0"
+        class="btn btn-primary min-h-11"
+        type="button"
+        @click="obrirNovaReserva"
+      >
+        Nova reserva
+      </button>
+    </div>
+    <p v-if="esResponsable && espaiSeleccionat" class="mt-2 text-base-content/80">
+      Reserves de {{ espaiSeleccionat.name }}. Arrossega una reserva per canviar l’horari, o obre-la per anul·lar.
+    </p>
+    <p v-else-if="esResponsable" class="mt-2 text-base-content/80">
       Tots els espais i coordinadors. Arrossega una reserva per canviar l’horari, o obre-la per anul·lar.
     </p>
     <p v-else-if="potReservar && espaiSeleccionat" class="mt-2 text-base-content/80">
-      Clica l’hora d’inici per reservar {{ espaiSeleccionat.name }}.
+      Clica l’hora d’inici per reservar {{ espaiSeleccionat.name }}, o usa Nova reserva.
     </p>
     <p v-else-if="espaisActius.length > 0" class="mt-2 text-base-content/80">
       Les teves reserves de tots els espais. Arrossega-ne una per canviar l’horari.
     </p>
 
-    <label v-if="!esResponsable && espaisActius.length > 0" class="mt-4 block max-w-sm font-medium" for="espai-calendari">
-      Espai
-      <select
-        id="espai-calendari"
-        class="select mt-1 w-full min-h-11 border border-base-300 bg-base-100"
-        :value="espaiId"
-        @change="canviarEspai"
-      >
-        <option value="">Tots els espais</option>
-        <option v-for="espai in espaisActius" :key="espai.id" :value="espai.id">{{ espai.name }}</option>
-      </select>
-    </label>
+    <div v-if="espaisActius.length > 0" class="mt-4 flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-end">
+      <label class="block min-w-0 flex-1 font-medium sm:max-w-sm" for="espai-calendari">
+        Espai
+        <select
+          id="espai-calendari"
+          class="select mt-2 w-full min-h-11 border border-base-300 bg-base-100"
+          :value="espaiId"
+          @change="canviarEspai"
+        >
+          <option value="">Tots els espais</option>
+          <option v-for="espai in espaisActius" :key="espai.id" :value="espai.id">{{ espai.name }}</option>
+        </select>
+      </label>
+      <label v-if="esResponsable" class="block min-w-0 flex-1 font-medium sm:max-w-sm" for="cerca-coordinador">
+        Coordinador
+        <input
+          id="cerca-coordinador"
+          class="input mt-2 w-full min-h-11 border border-base-300 bg-base-100"
+          type="search"
+          autocomplete="off"
+          :value="cercaCoordinador"
+          @input="canviarCerca"
+        />
+      </label>
+      <div class="flex gap-2" role="group" aria-label="Vista">
+        <button
+          class="btn min-h-11"
+          :class="vista === 'graella' ? 'btn-primary' : 'btn-outline'"
+          type="button"
+          :aria-pressed="vista === 'graella'"
+          @click="canviarVista('graella')"
+        >
+          Graella
+        </button>
+        <button
+          class="btn min-h-11"
+          :class="vista === 'llista' ? 'btn-primary' : 'btn-outline'"
+          type="button"
+          :aria-pressed="vista === 'llista'"
+          @click="canviarVista('llista')"
+        >
+          Llista
+        </button>
+      </div>
+    </div>
     <p v-if="espaiDeRutaInvalid" class="mt-2 text-error" role="alert">Aquest espai no està disponible.</p>
 
     <div v-if="avisRefresc" class="alert alert-warning mt-6" role="alert">
@@ -532,8 +698,18 @@ async function reintentar() {
           <span>{{ entrada.nom }}</span>
         </li>
       </ul>
+      <LlistaReserves
+        v-if="vista === 'llista'"
+        :files="filesLlista"
+        :periode="periodeLlista"
+        :carregant="estatLectura === 'carregant' || estatLectura === 'inicial'"
+        :fallida="estatLectura === 'error'"
+        @obrir="obrirDetall"
+        @anterior="mourePeriode(false)"
+        @seguent="mourePeriode(true)"
+      />
       <div
-        v-if="calendarApp"
+        v-else-if="calendarApp"
         ref="caixaCalendari"
         :key="clauCalendari"
         class="calendari-espais mt-4"
@@ -562,6 +738,7 @@ async function reintentar() {
     <CalendariModal
       v-if="modal"
       :modal="modal"
+      :nova="modal.tipus === 'nova' ? campsNova : null"
       :resum-pendent="resumPendent"
       :resum-detall="resumDetall"
       :durada-minuts="duradaMinuts"
@@ -587,7 +764,10 @@ async function reintentar() {
       :reprogramacio-amb-avis="reprogramacioAmbAvis"
       @tancar="tancarModal"
       @triar-durada="triarDurada"
-      @confirmar="confirmar"
+      @confirmar="modal.tipus === 'nova' ? confirmarFormulari() : confirmar()"
+      @update:espai-nova="espaiPerCrear = $event"
+      @update:dia-nova="diaNova = $event"
+      @update:hora-nova="horaNova = $event"
       @desar="desarAssistencia"
       @update:camp-assistencia="actualitzarCampAssistencia"
       @demanar-anulacio="demanarAnulacio"

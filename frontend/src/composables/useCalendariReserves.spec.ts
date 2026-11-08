@@ -5,6 +5,7 @@ import { defineComponent } from "vue";
 import { createMemoryHistory, createRouter } from "vue-router";
 import { flushPromises, mount } from "@vue/test-utils";
 
+import { classeTramat } from "../calendari";
 import { useCalendariReserves } from "./useCalendariReserves";
 import { ApiError } from "../services/http";
 import { espaisApiKey, type EspaiDto, type EspaisApi } from "../services/espais";
@@ -265,7 +266,7 @@ describe("useCalendariReserves", () => {
     expect(event.title).toBe("Carla");
     expect(event.calendarId).toBe("s1");
     expect(event.people).toEqual(["Carla"]);
-    expect(event._options?.additionalClasses).toEqual(["reserva-tramat-0"]);
+    expect(event._options?.additionalClasses).toEqual([classeTramat("Carla")]);
   });
 
   it("el responsable distingeix els coordinadors pel tramat i el coordinador no", async () => {
@@ -285,9 +286,10 @@ describe("useCalendariReserves", () => {
     const events = wrapperResp.vm.eventsDeReserves(items);
     expect(events.map((event) => event.calendarId)).toEqual(["s1", "s2"]);
     expect(events.map((event) => event._options?.additionalClasses?.[0])).toEqual([
-      "reserva-tramat-1",
-      "reserva-tramat-0",
+      classeTramat("Núria"),
+      classeTramat("Carla"),
     ]);
+    expect(classeTramat("Núria")).not.toBe(classeTramat("Carla"));
     expect(wrapperResp.vm.llegendaCoordinadors.map((entrada) => entrada.nom)).toEqual(["Carla", "Núria"]);
 
     const wrapperCoord = await muntar(
@@ -310,7 +312,7 @@ describe("useCalendariReserves", () => {
     expect(wrapperCoord.vm.llegendaCoordinadors).toEqual([]);
   });
 
-  it("el responsable ignora ?espai= i llista totes les reserves", async () => {
+  it("el responsable filtra per ?espai= sense poder crear, i la llista segueix el mateix àmbit", async () => {
     let espaiFiltrat: string | undefined = "sentinel";
     const wrapper = await muntar(
       {
@@ -327,13 +329,96 @@ describe("useCalendariReserves", () => {
       [espai, { ...espai, id: "s2", name: "Sala 2" }],
     );
     await wrapper.vm.carregarEspais();
-    expect(wrapper.vm.espaiId).toBe("");
+    expect(wrapper.vm.espaiId).toBe("s1");
     expect(wrapper.vm.potReservar).toBe(false);
     const items = await wrapper.vm.carregarReserves("2026-09-07T22:00:00Z", "2026-09-14T22:00:00Z");
     expect(espaiFiltrat).toBeUndefined();
     expect(items).toHaveLength(2);
+    expect(wrapper.vm.eventsDeReserves(items).map((event) => event.id)).toEqual(["r1"]);
+    expect(wrapper.vm.filesLlista.map((fila) => fila.id)).toEqual(["r1"]);
+    expect(wrapper.vm.filesLlista[0]?.propietat).toBe("Carla");
     wrapper.vm.clicarFranja(Temporal.ZonedDateTime.from("2026-09-08T10:00:00+02:00[Europe/Madrid]"));
     expect(wrapper.vm.pendent).toBeNull();
+    expect(wrapper.vm.modal).toBeNull();
+    wrapper.vm.obrirNovaReserva();
+    expect(wrapper.vm.modal).toBeNull();
+  });
+
+  it("la cerca del responsable inclou els homònims i el coordinador no l’aplica", async () => {
+    const items = [
+      reserva({ id: "a1", coordinator_name: "Anna Costa" }),
+      reserva({ id: "a2", coordinator_name: "Anna Soler", space_id: "s2" }),
+      reserva({ id: "n1", coordinator_name: "Núria" }),
+    ];
+    const responsable = await muntar(
+      { llistar: async () => items },
+      { cerca: "anna" },
+      sessioResp,
+      [espai, { ...espai, id: "s2", name: "Sala 2" }],
+    );
+    await responsable.vm.carregarEspais();
+    const carregades = await responsable.vm.carregarReserves("2026-09-07T22:00:00Z", "2026-09-14T22:00:00Z");
+    expect(responsable.vm.eventsDeReserves(carregades).map((event) => event.id)).toEqual(["a1", "a2"]);
+    expect(responsable.vm.filesLlista.map((fila) => fila.propietat)).toEqual(["Anna Costa", "Anna Soler"]);
+
+    const coordinador = await muntar(
+      {
+        llistar: async () => [
+          reserva({ id: "meva", mine: true, coordinator_name: "Carla", starts_at: "2026-09-08T08:00:00Z" }),
+          reserva({
+            id: "aliena",
+            mine: false,
+            coordinator_name: "Núria",
+            starts_at: "2026-09-08T09:00:00Z",
+            ends_at: "2026-09-08T10:00:00Z",
+          }),
+        ],
+      },
+      { espai: "s1", cerca: "Núria" },
+      sessioCoord,
+    );
+    await coordinador.vm.carregarEspais();
+    const vistes = await coordinador.vm.carregarReserves("2026-09-07T22:00:00Z", "2026-09-14T22:00:00Z");
+    const events = coordinador.vm.eventsDeReserves(vistes);
+    expect(events.map((event) => event.title)).toEqual(["Sala 1", "Ocupat"]);
+    expect(coordinador.vm.filesLlista.map((fila) => fila.propietat)).toEqual(["Teva", "Ocupat"]);
+    expect(JSON.stringify(coordinador.vm.filesLlista)).not.toContain("Núria");
+  });
+
+  it("nova reserva reutilitza la creació i no la duplica", async () => {
+    let creat: { space_id: string; starts_at: string; ends_at: string } | null = null;
+    const sales = [espai, { ...espai, id: "s2", name: "Sala 2" }];
+    const wrapper = await muntar(
+      {
+        crear: async (_token, input) => {
+          creat = input;
+          return reserva({
+            id: "nova",
+            mine: true,
+            space_id: input.space_id,
+            space_name: "Sala 2",
+            starts_at: input.starts_at,
+            ends_at: input.ends_at,
+          });
+        },
+      },
+      {},
+      sessioCoord,
+      sales,
+    );
+    await wrapper.vm.carregarEspais();
+    wrapper.vm.obrirNovaReserva();
+    expect(wrapper.vm.modal?.tipus).toBe("nova");
+    wrapper.vm.espaiPerCrear = "s2";
+    wrapper.vm.diaNova = "2026-09-08";
+    wrapper.vm.horaNova = "10:00";
+    wrapper.vm.triarDurada(60);
+    await wrapper.vm.confirmarNova();
+    expect(creat).toEqual({
+      space_id: "s2",
+      starts_at: "2026-09-08T08:00:00Z",
+      ends_at: "2026-09-08T09:00:00Z",
+    });
     expect(wrapper.vm.modal).toBeNull();
   });
 

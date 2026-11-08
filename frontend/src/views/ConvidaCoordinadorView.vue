@@ -7,7 +7,7 @@ const { camps, errorsCamp, errorGlobal, enviant, enllacComplet, copiat, avis, en
 
 <template>
   <main class="w-full max-w-md">
-    <h1 class="text-3xl font-semibold">Convida un coordinador</h1>
+    <h1 class="titol-pantalla">Convida un coordinador</h1>
     <p class="mt-2 text-base-content/80">
       El coordinador rep un enllaç que caduca al cap de 14 dies.
     </p>

@@ -1,5 +1,6 @@
 import type { RolSessio } from "./services/identitat";
 import type { ReservaDto } from "./services/reserves";
+import { horaMadrid } from "./utils/formatData";
 import "temporal-polyfill/global";
 
 export type FranjaReserva = {
@@ -26,14 +27,142 @@ export type EntradaTramat = {
   classe: string;
 };
 
+/** El mateix nom conserva el patró encara que canviï qui més hi ha al rang. Sis patrons: es poden repetir. */
+export function classeTramat(nom: string): string {
+  let hash = 2166136261;
+  for (const char of nom.trim()) {
+    hash ^= char.codePointAt(0) ?? 0;
+    hash = Math.imul(hash, 16777619);
+  }
+  return `reserva-tramat-${(hash >>> 0) % NOMBRE_TRAMATS}`;
+}
+
 export function llegendaTramats(noms: (string | null | undefined)[]): EntradaTramat[] {
   const unics = [...new Set(noms.map((nom) => nom?.trim() ?? "").filter(Boolean))].sort((a, b) =>
     a.localeCompare(b, "ca"),
   );
-  return unics.map((nom, index) => ({
+  return unics.map((nom) => ({
     nom,
-    classe: `reserva-tramat-${index % NOMBRE_TRAMATS}`,
+    classe: classeTramat(nom),
   }));
+}
+
+export type AmbitVista = {
+  rol: RolSessio;
+  espaiId: string;
+  cerca: string;
+};
+
+/** El coordinador conserva les pròpies i, si ha triat sala, les d’aquella sala. La cerca només la aplica el responsable. */
+export function reservaVisible(item: ReservaDto, ambit: AmbitVista): boolean {
+  if (ambit.rol !== "responsible") {
+    return item.mine || (ambit.espaiId !== "" && item.space_id === ambit.espaiId);
+  }
+  if (ambit.espaiId !== "" && item.space_id !== ambit.espaiId) {
+    return false;
+  }
+  const cerca = ambit.cerca.trim().toLocaleLowerCase("ca");
+  if (!cerca) {
+    return true;
+  }
+  return (item.coordinator_name ?? "").toLocaleLowerCase("ca").includes(cerca);
+}
+
+export type FilaReserva = {
+  id: string;
+  data: string;
+  espai: string;
+  interval: string;
+  propietat: string;
+  obrible: boolean;
+};
+
+export function filaReserva(item: ReservaDto, rol: RolSessio): FilaReserva {
+  const data = new Intl.DateTimeFormat("ca-ES", {
+    timeZone: "Europe/Madrid",
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+  }).format(new Date(item.starts_at));
+  let propietat: string;
+  if (item.status === "cancelled") {
+    propietat = "Anul·lada";
+  } else if (rol === "responsible") {
+    propietat = item.coordinator_name?.trim() || "Reserva";
+  } else if (item.mine) {
+    propietat = "Teva";
+  } else {
+    propietat = "Ocupat";
+  }
+  return {
+    id: item.id,
+    data,
+    espai: item.space_name?.trim() || "Espai",
+    interval: `${horaMadrid(item.starts_at)}–${horaMadrid(item.ends_at)}`,
+    propietat,
+    obrible: item.mine || rol === "responsible",
+  };
+}
+
+const ZONA_CALENDARI = "Europe/Madrid";
+
+function instantLimit(dia: Temporal.PlainDate, hora: string, esFi: boolean): Temporal.ZonedDateTime {
+  if (esFi && hora.startsWith("24:")) {
+    return Temporal.ZonedDateTime.from({
+      timeZone: ZONA_CALENDARI,
+      year: dia.year,
+      month: dia.month,
+      day: dia.day,
+      hour: 23,
+      minute: 59,
+    });
+  }
+  const [hour, minute] = hora.split(":").map((part) => Number(part));
+  return Temporal.ZonedDateTime.from({
+    timeZone: ZONA_CALENDARI,
+    year: dia.year,
+    month: dia.month,
+    day: dia.day,
+    hour,
+    minute,
+  });
+}
+
+/** El mateix interval que la graella: setmana de dilluns a diumenge, o el dia, amb els límits horaris. */
+export function rangVisible(
+  dia: Temporal.PlainDate,
+  unDia: boolean,
+  iniciHora: string,
+  fiHora: string,
+): { start: Temporal.ZonedDateTime; end: Temporal.ZonedDateTime } {
+  if (unDia) {
+    return { start: instantLimit(dia, iniciHora, false), end: instantLimit(dia, fiHora, true) };
+  }
+  const dilluns = dia.subtract({ days: dia.dayOfWeek - 1 });
+  const diumenge = dilluns.add({ days: 6 });
+  return { start: instantLimit(dilluns, iniciHora, false), end: instantLimit(diumenge, fiHora, true) };
+}
+
+export function etiquetaPeriode(dia: Temporal.PlainDate, unDia: boolean): string {
+  const format = new Intl.DateTimeFormat("ca-ES", {
+    timeZone: ZONA_CALENDARI,
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+  if (unDia) {
+    return new Intl.DateTimeFormat("ca-ES", {
+      timeZone: ZONA_CALENDARI,
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    }).format(dia.toZonedDateTime(ZONA_CALENDARI).toInstant().epochMilliseconds);
+  }
+  const dilluns = dia.subtract({ days: dia.dayOfWeek - 1 });
+  const diumenge = dilluns.add({ days: 6 });
+  const aMilis = (data: Temporal.PlainDate) => data.toZonedDateTime(ZONA_CALENDARI).toInstant().epochMilliseconds;
+  return `${format.format(aMilis(dilluns))} – ${format.format(aMilis(diumenge))}`;
 }
 
 export function titolReserva(item: ReservaDto, role: RolSessio): string {

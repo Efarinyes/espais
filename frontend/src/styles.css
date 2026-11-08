@@ -13,12 +13,28 @@
 
 html {
   font-family: var(--font-sans);
+  font-size: 100%;
 }
 
 /* El gra de DaisyUI és un SVG en data:. La CSP només admet imatges del mateix origen
    i el navegador el bloqueja a cada botó. El gra ja està apagat; aquí es deixa de demanar. */
 :root {
   --fx-noise: none;
+  --espai-1: 0.25rem;
+  --espai-2: 0.5rem;
+  --espai-3: 0.75rem;
+  --espai-4: 1rem;
+  --espai-6: 1.5rem;
+  --espai-8: 2rem;
+  --tipus-secundari: 0.875rem;
+  --tipus-cos: 1rem;
+  --tipus-titol: 1.75rem;
+}
+
+.titol-pantalla {
+  font-size: var(--tipus-titol);
+  font-weight: 600;
+  line-height: 1.25;
 }
 
 @plugin "daisyui/theme" {
@@ -512,11 +528,22 @@ dialog.modal.modal-open .modal-box {
 }
 
 .calendari-espais .sx__time-grid-event-inner {
-  padding: 0;
+  padding: var(--espai-1);
   overflow: hidden;
 }
 
-.calendari-espais .sx__time-grid-event-title,
+.calendari-espais .sx__time-grid-event-title {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  font-size: var(--tipus-secundari);
+  font-weight: 600;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
 .calendari-espais .sx__time-grid-event-time,
 .calendari-espais .sx__time-grid-event-people,
 .calendari-espais .sx__time-grid-event-location {

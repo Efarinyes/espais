@@ -6,17 +6,21 @@ import { calendarisPerEspais } from "../aparenca/colorsCalendari";
 import {
   DURADA_PER_DEFECTE_MINUTS,
   DURADES_RESERVA_MINUTS,
+  classeTramat,
+  filaReserva,
   franjaDesDeInici,
   llegendaTramats,
+  reservaVisible,
   titolReserva,
   valorRangAIso,
+  type AmbitVista,
   type FranjaReserva,
 } from "../calendari";
 import { intervalMadrid } from "../utils/formatData";
 import { type FinestraDto } from "../disponibilitat";
 import { useAnulacioReserva } from "./useAnulacioReserva";
 import { useAssistenciaReserva } from "./useAssistenciaReserva";
-import { useCreacioReserva } from "./useCreacioReserva";
+import { avaluarFranja, useCreacioReserva } from "./useCreacioReserva";
 import { useReprogramacioReserva } from "./useReprogramacioReserva";
 import { ApiError } from "../services/http";
 import { requireEspaisApi, type EspaiDto } from "../services/espais";
@@ -27,6 +31,7 @@ export type EstatLecturaCalendari = "inicial" | "carregant" | "actual" | "antic"
 
 export type ModalCalendari =
   | { tipus: "crear"; franja: FranjaReserva }
+  | { tipus: "nova" }
   | { tipus: "detall"; reserva: ReservaDto }
   | { tipus: "confirmar-anulacio"; reserva: ReservaDto };
 
@@ -42,6 +47,10 @@ export function useCalendariReserves() {
   const error = ref("");
   const modal = ref<ModalCalendari | null>(null);
   const duradaMinuts = ref(DURADA_PER_DEFECTE_MINUTS);
+  const espaiPerCrear = ref("");
+  const diaNova = ref("");
+  const horaNova = ref("");
+  const franjaNova = ref<FranjaReserva | null>(null);
   const enviant = ref(false);
   const darrerRang = ref<{ des: unknown; fins: unknown } | null>(null);
   const reservesCarregades = ref<ReservaDto[]>([]);
@@ -90,8 +99,21 @@ export function useCalendariReserves() {
     () => espaisActius.value.find((espai) => espai.id === espaiId.value) ?? null,
   );
   const calendaris = computed(() => calendarisPerEspais(espaisActius.value));
+  const cercaCoordinador = computed(() => (esResponsable.value ? String(route.query.cerca ?? "") : ""));
+
+  function ambitActual(): AmbitVista {
+    const rol = sessio.role === "responsible" ? "responsible" : "coordinator";
+    return { rol, espaiId: espaiId.value, cerca: cercaCoordinador.value };
+  }
+
+  const reservesVisibles = computed(() => reservesCarregades.value.filter((item) => reservaVisible(item, ambitActual())));
+  const filesLlista = computed(() =>
+    [...reservesVisibles.value]
+      .sort((a, b) => a.starts_at.localeCompare(b.starts_at) || a.id.localeCompare(b.id))
+      .map((item) => filaReserva(item, ambitActual().rol)),
+  );
   const llegendaCoordinadors = computed(() =>
-    esResponsable.value ? llegendaTramats(reservesCarregades.value.map((reserva) => reserva.coordinator_name)) : [],
+    esResponsable.value ? llegendaTramats(reservesVisibles.value.map((reserva) => reserva.coordinator_name)) : [],
   );
   const pendent = computed(() => (modal.value?.tipus === "crear" ? modal.value.franja : null));
   const detall = computed(() =>
@@ -116,7 +138,7 @@ export function useCalendariReserves() {
   });
 
   const espaiDeRutaInvalid = computed(() => {
-    if (esResponsable.value || espais.value.length === 0) {
+    if (espais.value.length === 0) {
       return false;
     }
     const demanat = String(route.query.espai ?? "");
@@ -127,23 +149,20 @@ export function useCalendariReserves() {
   });
 
   const espaisDeLlegenda = computed(() => {
-    if (esResponsable.value || !espaiSeleccionat.value) {
+    if (esResponsable.value) {
+      return espaiSeleccionat.value ? [espaiSeleccionat.value] : espaisActius.value;
+    }
+    if (!espaiSeleccionat.value) {
       return espaisActius.value;
     }
     const ids = new Set<string>([espaiSeleccionat.value.id]);
-    for (const reserva of reservesCarregades.value) {
-      if (reserva.mine || reserva.space_id === espaiSeleccionat.value.id) {
-        ids.add(reserva.space_id);
-      }
+    for (const reserva of reservesVisibles.value) {
+      ids.add(reserva.space_id);
     }
     return espaisActius.value.filter((espai) => ids.has(espai.id));
   });
 
   function aplicarEspaiDeRuta() {
-    if (esResponsable.value) {
-      espaiId.value = "";
-      return;
-    }
     const demanat = String(route.query.espai ?? "");
     if (demanat && espaisActius.value.some((espai) => espai.id === demanat)) {
       espaiId.value = demanat;
@@ -239,18 +258,11 @@ export function useCalendariReserves() {
   function eventsDeReserves(items: ReservaDto[] | null) {
     const llista = items ?? reservesCarregades.value;
     const rol = sessio.role === "coordinator" ? "coordinator" : "responsible";
-    const visibles = esResponsable.value
-      ? llista
-      : llista.filter((item) => item.mine || (espaiId.value !== "" && item.space_id === espaiId.value));
-    const tramats = new Map(
-      llegendaTramats([
-        ...reservesCarregades.value.map((reserva) => reserva.coordinator_name),
-        ...visibles.map((reserva) => reserva.coordinator_name),
-      ]).map((entrada) => [entrada.nom, entrada.classe]),
-    );
+    const ambit = ambitActual();
+    const visibles = llista.filter((item) => reservaVisible(item, ambit));
     return visibles.map((item) => {
       const nom = item.coordinator_name?.trim() ?? "";
-      const classe = esResponsable.value && nom ? tramats.get(nom) : undefined;
+      const classe = esResponsable.value && nom ? classeTramat(nom) : undefined;
       return {
         id: item.id,
         title: titolReserva(item, rol),
@@ -265,6 +277,7 @@ export function useCalendariReserves() {
 
   function tancarModal() {
     modal.value = null;
+    franjaNova.value = null;
     duradaMinuts.value = DURADA_PER_DEFECTE_MINUTS;
     campAssistencia.value = "";
     errorDetall.value = "";
@@ -279,8 +292,16 @@ export function useCalendariReserves() {
   }
 
   const { franjaDesDeClic, confirmarPendent } = useCreacioReserva({
-    espaiId,
-    franjaOberta: () => (modal.value?.tipus === "crear" ? modal.value.franja : null),
+    espaiDeCreacio: () => espaiPerCrear.value,
+    franjaOberta: () => {
+      if (modal.value?.tipus === "crear") {
+        return modal.value.franja;
+      }
+      if (modal.value?.tipus === "nova") {
+        return franjaNova.value;
+      }
+      return null;
+    },
     enviant,
     error,
     reservesCarregades,
@@ -352,6 +373,7 @@ export function useCalendariReserves() {
     }
     error.value = "";
     duradaMinuts.value = DURADA_PER_DEFECTE_MINUTS;
+    espaiPerCrear.value = espaiId.value;
     const franja = franjaDesDeClic(dateTime, finestresPerClic(), duradaMinuts.value);
     if (!franja) {
       return;
@@ -360,10 +382,14 @@ export function useCalendariReserves() {
   }
 
   function triarDurada(minuts: number) {
-    if (modal.value?.tipus !== "crear") {
+    if (modal.value?.tipus !== "crear" && modal.value?.tipus !== "nova") {
       return;
     }
     duradaMinuts.value = minuts;
+    if (modal.value.tipus !== "crear") {
+      errorDetall.value = "";
+      return;
+    }
     modal.value = {
       tipus: "crear",
       franja: franjaDesDeInici(
@@ -371,6 +397,69 @@ export function useCalendariReserves() {
         minuts,
       ),
     };
+  }
+
+  const propostaNova = computed(() => {
+    if (modal.value?.tipus !== "nova") {
+      return null;
+    }
+    const espai = espaisActius.value.find((item) => item.id === espaiPerCrear.value);
+    if (!espai || !diaNova.value || !horaNova.value) {
+      return { ok: false as const, error: "Cal espai, dia i hora." };
+    }
+    const [hour, minute] = horaNova.value.split(":").map((part) => Number(part));
+    if (!Number.isInteger(hour) || !Number.isInteger(minute)) {
+      return { ok: false as const, error: "L’hora no és vàlida." };
+    }
+    let inici: Temporal.ZonedDateTime;
+    try {
+      inici = Temporal.PlainDate.from(diaNova.value).toZonedDateTime({
+        timeZone: "Europe/Madrid",
+        plainTime: Temporal.PlainTime.from({ hour, minute }),
+      });
+    } catch {
+      return { ok: false as const, error: "El dia o l’hora no són vàlids." };
+    }
+    return avaluarFranja(inici, espai.windows, duradaMinuts.value);
+  });
+
+  const resumNova = computed(() => {
+    const proposta = propostaNova.value;
+    if (!proposta?.ok) {
+      return "";
+    }
+    const nom = espaisActius.value.find((espai) => espai.id === espaiPerCrear.value)?.name ?? "Espai";
+    return `Reservar ${nom}, ${intervalMadrid(proposta.franja.starts_at, proposta.franja.ends_at)}?`;
+  });
+
+  function obrirNovaReserva() {
+    if (esResponsable.value || espaisActius.value.length === 0) {
+      return;
+    }
+    error.value = "";
+    errorDetall.value = "";
+    okDetall.value = "";
+    espaiPerCrear.value = espaiId.value || espaisActius.value[0]?.id || "";
+    diaNova.value = Temporal.Now.zonedDateTimeISO("Europe/Madrid").toPlainDate().toString();
+    horaNova.value = "08:00";
+    duradaMinuts.value = DURADA_PER_DEFECTE_MINUTS;
+    franjaNova.value = null;
+    modal.value = { tipus: "nova" };
+  }
+
+  async function confirmarNova() {
+    if (modal.value?.tipus !== "nova" || esResponsable.value) {
+      return;
+    }
+    const proposta = propostaNova.value;
+    if (!proposta?.ok) {
+      errorDetall.value = proposta?.error ?? "Revisa la reserva.";
+      return;
+    }
+    franjaNova.value = proposta.franja;
+    error.value = "";
+    errorDetall.value = "";
+    return confirmarPendent();
   }
 
   function cancelarPendent() {
@@ -427,11 +516,24 @@ export function useCalendariReserves() {
     },
   );
 
+  watch([espaiPerCrear, diaNova, horaNova, duradaMinuts], () => {
+    if (modal.value?.tipus === "nova") {
+      errorDetall.value = "";
+    }
+  });
+
   return {
     esResponsable,
     potReservar,
     espaisActius,
     espaiId,
+    espaiPerCrear,
+    diaNova,
+    horaNova,
+    propostaNova,
+    resumNova,
+    cercaCoordinador,
+    filesLlista,
     espaiSeleccionat,
     calendaris,
     llegendaCoordinadors,
@@ -450,6 +552,8 @@ export function useCalendariReserves() {
     enviant,
     resumPendent,
     triarDurada,
+    obrirNovaReserva,
+    confirmarNova,
     carregarEspais,
     carregarReserves,
     refrescarReserves,

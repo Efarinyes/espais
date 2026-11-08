@@ -7,7 +7,7 @@ const { camps, dies, errorsCamp, errorGlobal, carregant, enviant, trobat, enviar
 
 <template>
   <main class="w-full max-w-5xl">
-    <h1 class="text-3xl font-semibold">Edita l’espai</h1>
+    <h1 class="titol-pantalla">Edita l’espai</h1>
     <p class="mt-2 text-base-content/80">
       Podeu canviar el nom, l’aforament, l’equipament i l’horari. Desactivar no esborra l’espai.
     </p>

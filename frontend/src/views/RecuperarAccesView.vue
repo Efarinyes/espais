@@ -19,7 +19,7 @@ const {
 
 <template>
   <main class="mx-auto w-full max-w-md px-4 py-6">
-    <h1 class="text-3xl font-semibold">Recupera l’accés</h1>
+    <h1 class="titol-pantalla">Recupera l’accés</h1>
     <p v-if="pas === 'contrasenya' && !enllacInvalid" class="mt-2 text-base-content/80">
       Tria una contrasenya nova per al teu compte.
     </p>
