@@ -9,7 +9,7 @@ Actualitza aquest arxiu al final de cada sessió. És el punt d’arrencada del 
 
 ## Darrera feina
 
-2026-11-12: Croses i Manilles es confonien perquè eren dos marrons. Els colors de sala passen a blau, teal, verd, llima, groc, vermell, fúcsia i porpra. El text sobre el groc i la llima és fosc. L’assignació per id d’espai no canvia.
+2026-11-12: Croses i Manilles eren els dos liles de la llista. Un passa a groc i l’altre a blau. Sala pilars es queda teal. La llista ja no té dos porpres.
 
 2026-11-08: la fase d’UX, D1 i la prova E2E es dona per tancada. Queda pendent només D-PALETA: els hex publicats no es canvien fins que es decideixi. `feat/docker-caddy-sqlite` es puja a `origin` perquè qui opera el servidor pugui fer `git pull` i `docker compose up -d --build`, sense `down -v`. No s’ha tocat el VPS ni `main`. `backup/pre-ux-ui-2026-11-02` segueix a `436d97b`.
 

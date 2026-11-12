@@ -56,6 +56,7 @@ describe("colorsCalendari", () => {
     expect(mains.has("#A16207")).toBe(false);
     expect(mains.has("#C2410C")).toBe(false);
     const tons = [...mains].map(toHue);
+    expect(tons.filter((to) => to >= 250 && to <= 310).length).toBeLessThanOrEqual(1);
     for (let i = 0; i < tons.length; i += 1) {
       for (let j = i + 1; j < tons.length; j += 1) {
         const gir = Math.abs(tons[i] - tons[j]) % 360;
