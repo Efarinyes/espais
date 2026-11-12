@@ -9,6 +9,7 @@ Pot:
 - Completar i editar dades de l’entitat, inclosa la paleta de colors (ADR [0011](adr/0011-paleta-entitat-mode-personal.md)).
 - Crear, editar i desactivar espais.
 - Convidar coordinadors.
+- Veure la llista de coordinadors de l’entitat i filtrar el calendari per una persona (ADR [0021](adr/0021-filtre-coordinador-i-colors-sala.md)).
 - Veure **totes** les reserves de l’entitat i canviar-ne el nombre d’assistents.
 - Reprogramar i anul·lar qualsevol reserva.
 - Veure l’anàlisi d’ús.

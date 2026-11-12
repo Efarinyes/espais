@@ -60,6 +60,7 @@ class ReservationResponse(BaseModel):
     status: ReservationStatus
     mine: bool
     coordinator_name: str | None
+    coordinator_id: UUID | None = None
     attendance_count: int | None
     capacity: int
     min_attendance: int | None
@@ -77,6 +78,7 @@ def _to_response(item: ReservationListItem) -> ReservationResponse:
         status=item.status,
         mine=item.mine,
         coordinator_name=item.coordinator_name,
+        coordinator_id=item.coordinator_id,
         attendance_count=item.attendance_count,
         capacity=item.capacity,
         min_attendance=item.min_attendance,

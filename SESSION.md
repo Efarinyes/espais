@@ -9,7 +9,7 @@ Actualitza aquest arxiu al final de cada sessió. És el punt d’arrencada del 
 
 ## Darrera feina
 
-2026-11-12: les quatre paletes aprovades ja són als vuit temes de `frontend/src/styles.css`. El nom visible de `vinyes` és «Vinyes vora al mar»; els identificadors no canvien. La paleta segueix sent de l’entitat i el mode, del navegador. L’ADR és [0020](docs/adr/0020-paletes-aprovades.md). Els vuit colors de sala no s’han tocat. Vitest 240 i `vue-tsc` nets. Sense commit, sense push i sense VPS.
+2026-11-12: el responsable tria el coordinador en un desplegable, no amb un camp de text. `GET /entitat/coordinadors` és només seu i no porta correu. Les reserves que ell veu porten l’id; les del coordinador, no. Els vuit colors de sala se separen i la casella pinta el mateix to que la llegenda. ADR [0021](docs/adr/0021-filtre-coordinador-i-colors-sala.md). Pytest 273 i Vitest 241. E2E local `espais-e2e-coordinadors`, 33 comprovacions, pila esborrada amb els volums.
 
 2026-11-08: la fase d’UX, D1 i la prova E2E es dona per tancada. Queda pendent només D-PALETA: els hex publicats no es canvien fins que es decideixi. `feat/docker-caddy-sqlite` es puja a `origin` perquè qui opera el servidor pugui fer `git pull` i `docker compose up -d --build`, sense `down -v`. No s’ha tocat el VPS ni `main`. `backup/pre-ux-ui-2026-11-02` segueix a `436d97b`.
 
@@ -123,7 +123,7 @@ Desplegat al VPS (`6b455b9`) i provat amb Capgrossos, «Sala pilars». La vista 
 
 ## Següent tasca
 
-Les paletes aprovades ja són a l’app (ADR [0020](docs/adr/0020-paletes-aprovades.md)). El canvi és local i encara no s’ha de pujar ni desplegar fins que es demani. Qui opera el servidor publica amb `git pull` i `docker compose up -d --build`, sense `down -v`. No es fusiona a `main`.
+Les paletes (ADR [0020](docs/adr/0020-paletes-aprovades.md)) i el desplegable de coordinador amb els colors de sala (ADR [0021](docs/adr/0021-filtre-coordinador-i-colors-sala.md)) són a `feat/docker-caddy-sqlite`. Qui opera el servidor publica amb `git pull` i `docker compose up -d --build`, sense `down -v`. No es fusiona a `main`.
 
 La feina de desplegament continua a `feat/docker-caddy-sqlite`: és la branca que el servidor desplega després del `git pull` i de regenerar els contenidors. `backup/alpha-funcional` (`9178e98`, també a `origin`) és el punt de retorn. `backup/pre-ux-ui-2026-11-02` (`436d97b`) no es mou. No es fusiona a `main` fins a la Beta, quan es canviï la configuració del servidor. No s’esborren `backup/alpha-funcional` ni `backup/pre-dockeritzacio`.
 
@@ -167,6 +167,7 @@ Cap. API de desenvolupament `http://127.0.0.1:8000`; front de desenvolupament `h
 - [0018](docs/adr/0018-recuperacio-de-compte.md) — acceptat, esmenat per 0019 (recuperació per correu; token al fragment; `session_version`; Mailpit a l’Alpha)
 - [0019](docs/adr/0019-recuperacio-sense-sessio.md) — acceptat (la recuperació no obre sessió; consum atòmic; 410; resposta abans de la feina; 401 esborra la sessió local; 72 bytes)
 - [0020](docs/adr/0020-paletes-aprovades.md) — acceptat (hex aprovats als vuit temes; nom visible «Vinyes vora al mar»; els identificadors `vinyes` i `vinyes-dark` no canvien)
+- [0021](docs/adr/0021-filtre-coordinador-i-colors-sala.md) — acceptat (desplegable de coordinador; colors de sala separats)
 
 ## Notes
 

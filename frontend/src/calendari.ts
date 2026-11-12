@@ -27,30 +27,40 @@ export type EntradaTramat = {
   classe: string;
 };
 
-/** El mateix nom conserva el patró encara que canviï qui més hi ha al rang. Sis patrons: es poden repetir. */
-export function classeTramat(nom: string): string {
+export type PersonaTramat = {
+  nom: string;
+  clau: string;
+};
+
+/** La mateixa persona conserva el patró. La clau és l’id; si no n’hi ha, el nom. Sis patrons: es poden repetir. */
+export function classeTramat(clau: string): string {
   let hash = 2166136261;
-  for (const char of nom.trim()) {
+  for (const char of clau.trim()) {
     hash ^= char.codePointAt(0) ?? 0;
     hash = Math.imul(hash, 16777619);
   }
   return `reserva-tramat-${(hash >>> 0) % NOMBRE_TRAMATS}`;
 }
 
-export function llegendaTramats(noms: (string | null | undefined)[]): EntradaTramat[] {
-  const unics = [...new Set(noms.map((nom) => nom?.trim() ?? "").filter(Boolean))].sort((a, b) =>
-    a.localeCompare(b, "ca"),
-  );
-  return unics.map((nom) => ({
-    nom,
-    classe: classeTramat(nom),
-  }));
+export function llegendaTramats(persones: PersonaTramat[]): EntradaTramat[] {
+  const perClau = new Map<string, string>();
+  for (const persona of persones) {
+    const nom = persona.nom.trim();
+    const clau = persona.clau.trim() || nom;
+    if (!nom || !clau || perClau.has(clau)) {
+      continue;
+    }
+    perClau.set(clau, nom);
+  }
+  return [...perClau.entries()]
+    .sort((a, b) => a[1].localeCompare(b[1], "ca") || a[0].localeCompare(b[0]))
+    .map(([clau, nom]) => ({ nom, classe: classeTramat(clau) }));
 }
 
 export type AmbitVista = {
   rol: RolSessio;
   espaiId: string;
-  cerca: string;
+  coordinadorId: string;
 };
 
 /** Sense sala, el coordinador només veu les seves. Amb sala, només la disponibilitat d’aquella sala. */
@@ -64,11 +74,11 @@ export function reservaVisible(item: ReservaDto, ambit: AmbitVista): boolean {
   if (ambit.espaiId !== "" && item.space_id !== ambit.espaiId) {
     return false;
   }
-  const cerca = ambit.cerca.trim().toLocaleLowerCase("ca");
-  if (!cerca) {
+  const coordinadorId = ambit.coordinadorId.trim();
+  if (!coordinadorId) {
     return true;
   }
-  return (item.coordinator_name ?? "").toLocaleLowerCase("ca").includes(cerca);
+  return item.coordinator_id === coordinadorId;
 }
 
 export type PaperReserva = "teva" | "ocupada" | "altra";
@@ -196,10 +206,14 @@ export function titolReserva(item: ReservaDto, role: RolSessio, salaSeleccionada
   return item.space_name?.trim() || "Tu";
 }
 
+export function clauTramat(item: ReservaDto): string {
+  return item.coordinator_id?.trim() || item.coordinator_name?.trim() || "";
+}
+
 export function classesReserva(item: ReservaDto, role: RolSessio): string[] {
   if (role === "responsible") {
-    const nom = item.coordinator_name?.trim();
-    return nom ? [classeTramat(nom)] : [];
+    const clau = clauTramat(item);
+    return clau ? [classeTramat(clau)] : [];
   }
   return [item.mine ? "reserva-propia" : "reserva-ocupada"];
 }

@@ -360,22 +360,22 @@ describe("useCalendariReserves", () => {
     expect(wrapper.vm.modal).toBeNull();
   });
 
-  it("la cerca del responsable inclou els homònims i el coordinador no l’aplica", async () => {
+  it("el responsable filtra per la persona triada i el coordinador ignora aquest filtre", async () => {
     const items = [
-      reserva({ id: "a1", coordinator_name: "Anna Costa" }),
-      reserva({ id: "a2", coordinator_name: "Anna Soler", space_id: "s2" }),
-      reserva({ id: "n1", coordinator_name: "Núria" }),
+      reserva({ id: "a1", coordinator_id: "a1", coordinator_name: "Anna Costa" }),
+      reserva({ id: "a2", coordinator_id: "a2", coordinator_name: "Anna Soler", space_id: "s2" }),
+      reserva({ id: "n1", coordinator_id: "n1", coordinator_name: "Núria" }),
     ];
     const responsable = await muntar(
       { llistar: async () => items },
-      { cerca: "anna" },
+      { coordinador: "a1" },
       sessioResp,
       [espai, { ...espai, id: "s2", name: "Sala 2" }],
     );
     await responsable.vm.carregarEspais();
     const carregades = await responsable.vm.carregarReserves("2026-09-07T22:00:00Z", "2026-09-14T22:00:00Z");
-    expect(responsable.vm.eventsDeReserves(carregades).map((event) => event.id)).toEqual(["a1", "a2"]);
-    expect(responsable.vm.filesLlista.map((fila) => fila.propietat)).toEqual(["Anna Costa", "Anna Soler"]);
+    expect(responsable.vm.eventsDeReserves(carregades).map((event) => event.id)).toEqual(["a1"]);
+    expect(responsable.vm.filesLlista.map((fila) => fila.propietat)).toEqual(["Anna Costa"]);
 
     const coordinador = await muntar(
       {
@@ -390,7 +390,7 @@ describe("useCalendariReserves", () => {
           }),
         ],
       },
-      { espai: "s1", cerca: "Núria" },
+      { espai: "s1", coordinador: "n1" },
       sessioCoord,
     );
     await coordinador.vm.carregarEspais();

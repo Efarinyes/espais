@@ -38,11 +38,17 @@ export type InvitacioPreviewDto = {
   entity_name: string;
 };
 
+export type CoordinadorDto = {
+  id: string;
+  name: string;
+};
+
 export type IdentityApi = {
   registrar(input: RegistreInput): Promise<SessioDto>;
   iniciarSessio(email: string, password: string): Promise<SessioDto>;
   obtenirSessio(token: string): Promise<Omit<SessioDto, "token">>;
   actualitzarPaleta(token: string, palette: string): Promise<{ palette: string }>;
+  llistarCoordinadors(token: string): Promise<CoordinadorDto[]>;
   convidarCoordinador(token: string, email: string): Promise<InvitacioDto>;
   obtenirInvitacio(inviteToken: string): Promise<InvitacioPreviewDto>;
   acceptarInvitacio(inviteToken: string, name: string, password: string): Promise<SessioDto>;
@@ -93,6 +99,10 @@ export function createIdentityApi(baseUrl = ""): IdentityApi {
         token,
         body: JSON.stringify({ palette }),
       });
+    },
+
+    async llistarCoordinadors(token) {
+      return fetchApi<CoordinadorDto[]>(`${baseUrl}/entitat/coordinadors`, { token });
     },
 
     async convidarCoordinador(token, email) {

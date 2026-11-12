@@ -51,6 +51,7 @@ Punt de mapa. Llegeix [`SESSION.md`](../SESSION.md) abans de qualsevol capítol.
 - [adr/0018-recuperacio-de-compte.md](adr/0018-recuperacio-de-compte.md)
 - [adr/0019-recuperacio-sense-sessio.md](adr/0019-recuperacio-sense-sessio.md)
 - [adr/0020-paletes-aprovades.md](adr/0020-paletes-aprovades.md)
+- [adr/0021-filtre-coordinador-i-colors-sala.md](adr/0021-filtre-coordinador-i-colors-sala.md)
 
 ## Skills i rules
 

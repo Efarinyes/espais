@@ -14,7 +14,7 @@ import { flushPromises, mount } from "@vue/test-utils";
 import { disparadorCalendariKey } from "../calendariLive";
 import { espaisApiKey, type EspaiDto, type EspaisApi } from "../services/espais";
 import { reservesApiKey, type ReservesApi } from "../services/reserves";
-import type { SessioDto } from "../services/identitat";
+import { identityApiKey } from "../services/identitat";
 import { useSessioStore } from "../stores/sessio";
 import CalendariView from "./CalendariView.vue";
 
@@ -126,6 +126,12 @@ async function muntar(opts: {
       provide: {
         [espaisApiKey as symbol]: espaisApi(opts.espais),
         [reservesApiKey as symbol]: reservesApi,
+        [identityApiKey as symbol]: {
+          llistarCoordinadors: async () => [
+            { id: "c1", name: "Oriol Ferrer" },
+            { id: "c2", name: "Cugat Coma" },
+          ],
+        },
         [disparadorCalendariKey as symbol]: { iniciar: () => () => {} },
       },
     },
@@ -251,7 +257,7 @@ describe("CalendariView graella", () => {
     await flushPromises();
     expect(coordinador.text()).toContain("Disponibilitat — Sala 1");
     expect(coordinador.text()).not.toContain("Les meves reserves");
-    const selector = coordinador.get("select");
+    const selector = coordinador.get("#espai-calendari");
     expect((selector.element as HTMLSelectElement).value).toBe("s1");
     expect(coordinador.text()).toContain("Nova reserva");
     expect(coordinador.text()).not.toContain("Coordinador");
@@ -270,8 +276,11 @@ describe("CalendariView graella", () => {
     await flushPromises();
     expect(responsable.text()).toContain("Totes les reserves");
     expect(responsable.text()).not.toContain("Nova reserva");
-    expect((responsable.get("select").element as HTMLSelectElement).value).toBe("");
-    await responsable.get("select").setValue("s1");
+    expect(responsable.get("#coordinador-calendari").text()).toContain("Tots");
+    expect(responsable.get("#coordinador-calendari").text()).toContain("Oriol Ferrer");
+    expect(responsable.get("#coordinador-calendari").text()).toContain("Cugat Coma");
+    expect((responsable.get("#espai-calendari").element as HTMLSelectElement).value).toBe("");
+    await responsable.get("#espai-calendari").setValue("s1");
     await flushPromises();
     expect(responsable.vm.$route.query.espai).toBe("s1");
     expect(responsable.text()).toContain("Reserves de Sala 1");

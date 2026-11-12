@@ -23,6 +23,7 @@ const identityBuit: IdentityApi = {
   iniciarSessio: async () => sessioAnna,
   obtenirSessio: async () => sessioAnna,
   actualitzarPaleta: async (_token, palette) => ({ palette }),
+  llistarCoordinadors: async () => [],
   convidarCoordinador: async () => ({
     email: "carla@example.com",
     accept_url: "/invitar/token-convidat",

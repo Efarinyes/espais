@@ -98,6 +98,13 @@ class InMemoryMembershipRepository:
                 return membership
         return None
 
+    def list_by_entity_id(self, entity_id: UUID) -> list[Membership]:
+        return [
+            membership
+            for membership in self._uow._working.memberships
+            if membership.entity_id == entity_id
+        ]
+
     def list_all(self) -> list[Membership]:
         return list(self._uow._working.memberships)
 

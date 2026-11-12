@@ -12,6 +12,8 @@ import LlistaReserves from "../components/LlistaReserves.vue";
 import { etiquetaPeriode, nomAccessibleReserva, rangVisible } from "../calendari";
 import { queryCalendari, type VistaCalendari } from "../consultaCalendari";
 import { useAparencaStore } from "../stores/aparenca";
+import { useSessioStore } from "../stores/sessio";
+import { requireIdentityApi, type CoordinadorDto } from "../services/identitat";
 import { useCalendariReserves } from "../composables/useCalendariReserves";
 import { useRefrescCalendari } from "../composables/useRefrescCalendari";
 import {
@@ -53,7 +55,7 @@ const {
   horaNova,
   propostaNova,
   resumNova,
-  cercaCoordinador,
+  coordinadorId,
   filesLlista,
   espaiSeleccionat,
   espaisDeLlegenda,
@@ -111,12 +113,16 @@ const {
 } = useCalendariReserves();
 
 const aparenca = useAparencaStore();
+const sessio = useSessioStore();
+const identity = requireIdentityApi();
+const coordinadors = ref<CoordinadorDto[]>([]);
+const errorCoordinadors = ref("");
 const router = useRouter();
 const route = useRoute();
 const vista = computed<VistaCalendari>(() => (route.query.vista === "llista" ? "llista" : "graella"));
 
-function escriureQuery(canvi: Partial<{ espai: string; cerca: string; vista: VistaCalendari }>) {
-  const net = esResponsable.value ? canvi : { ...canvi, cerca: "" };
+function escriureQuery(canvi: Partial<{ espai: string; coordinador: string; vista: VistaCalendari }>) {
+  const net = esResponsable.value ? canvi : { ...canvi, coordinador: "" };
   void router.replace({ name: "calendari", query: queryCalendari(route.query, net) });
 }
 const caixaCalendari = ref<HTMLElement | null>(null);
@@ -163,8 +169,8 @@ function canviarEspai(event: Event) {
   escriureQuery({ espai: (event.target as HTMLSelectElement).value });
 }
 
-function canviarCerca(event: Event) {
-  escriureQuery({ cerca: (event.target as HTMLInputElement).value });
+function canviarCoordinador(event: Event) {
+  escriureQuery({ coordinador: (event.target as HTMLSelectElement).value });
 }
 
 function canviarVista(seguent: VistaCalendari) {
@@ -499,8 +505,27 @@ async function anular() {
   }
 }
 
+async function carregarCoordinadors() {
+  if (!esResponsable.value) {
+    return;
+  }
+  try {
+    coordinadors.value = await identity.llistarCoordinadors(sessio.token);
+    errorCoordinadors.value = "";
+    if (
+      coordinadorId.value &&
+      !coordinadors.value.some((persona) => persona.id === coordinadorId.value)
+    ) {
+      escriureQuery({ coordinador: "" });
+    }
+  } catch {
+    errorCoordinadors.value = "No s’han pogut carregar els coordinadors.";
+  }
+}
+
 onMounted(() => {
   void carregarEspais();
+  void carregarCoordinadors();
 });
 
 onUnmounted(() => {
@@ -530,7 +555,7 @@ watch(vista, (nova) => {
   muntarCalendari();
 });
 
-watch([espaiId, cercaCoordinador], async () => {
+watch([espaiId, coordinadorId], async () => {
   await nextTick();
   // Schedule-X només omple eventsFacade quan el plugin queda lligat al calendari.
   const servei = eventsServiceHolder.current as unknown as { eventsFacade?: unknown };
@@ -561,10 +586,10 @@ watch(
 );
 
 watch(
-  () => route.query.cerca,
-  (cerca) => {
-    if (!esResponsable.value && cerca) {
-      escriureQuery({ cerca: "" });
+  () => route.query.coordinador,
+  (coordinador) => {
+    if (!esResponsable.value && coordinador) {
+      escriureQuery({ coordinador: "" });
     }
   },
   { immediate: true },
@@ -626,17 +651,19 @@ async function reintentar() {
           <option v-for="espai in espaisActius" :key="espai.id" :value="espai.id">{{ espai.name }}</option>
         </select>
       </label>
-      <label v-if="esResponsable" class="block min-w-0 flex-1 font-medium sm:max-w-sm" for="cerca-coordinador">
+      <label v-if="esResponsable" class="block min-w-0 flex-1 font-medium sm:max-w-sm" for="coordinador-calendari">
         Coordinador
-        <input
-          id="cerca-coordinador"
-          class="input mt-2 w-full min-h-11 border border-base-300 bg-base-100"
-          type="search"
-          autocomplete="off"
-          :value="cercaCoordinador"
-          @input="canviarCerca"
-        />
+        <select
+          id="coordinador-calendari"
+          class="select mt-2 w-full min-h-11 border border-base-300 bg-base-100"
+          :value="coordinadorId"
+          @change="canviarCoordinador"
+        >
+          <option value="">Tots</option>
+          <option v-for="persona in coordinadors" :key="persona.id" :value="persona.id">{{ persona.name }}</option>
+        </select>
       </label>
+      <p v-if="errorCoordinadors" class="text-error" role="alert">{{ errorCoordinadors }}</p>
       <div class="flex gap-2" role="group" aria-label="Vista">
         <button
           class="btn min-h-11"

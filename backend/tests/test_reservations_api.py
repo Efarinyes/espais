@@ -157,3 +157,57 @@ def test_other_entity_does_not_see_reservations(sqlite_session_factory) -> None:
     listed_b = client.get("/reserves", headers=headers_b, params={"des": start, "fins": end})
     assert listed_b.status_code == 200
     assert listed_b.json() == []
+
+
+def _accept(client: TestClient, headers: dict[str, str], email: str, name: str) -> dict[str, object]:
+    invited = client.post("/invitacions", headers=headers, json={"email": email})
+    assert invited.status_code == 201
+    token = invited.json()["accept_url"].rsplit("/", 1)[-1]
+    accepted = client.post(
+        f"/invitacions/{token}/acceptar",
+        json={"name": name, "password": "secret123"},
+    )
+    assert accepted.status_code == 201
+    return accepted.json()
+
+
+def test_responsible_lists_coordinators_and_reservation_ids(sqlite_session_factory) -> None:
+    client = TestClient(create_app(session_factory=sqlite_session_factory))
+    created = _register(client, email="resp-llista@example.com", entity_name="Capgrossos")
+    headers = {"Authorization": f"Bearer {created['token']}"}
+    anna = _accept(client, headers, "anna-costa@example.com", "Anna Costa")
+    altra = _accept(client, headers, "anna-soler@example.com", "Anna Soler")
+    denied = client.get("/entitat/coordinadors", headers={"Authorization": f"Bearer {anna['token']}"})
+    assert denied.status_code == 403
+
+    listed = client.get("/entitat/coordinadors", headers=headers)
+    assert listed.status_code == 200
+    noms = [item["name"] for item in listed.json()]
+    assert noms == ["Anna Costa", "Anna Soler"]
+    assert all("email" not in item for item in listed.json())
+    assert created["user_id"] not in [item["id"] for item in listed.json()]
+
+    space = client.post("/espais", headers=headers, json={"name": "Sala Croses", "capacity": 10})
+    assert space.status_code == 201
+    start, end = _slot_iso(18)
+    posted = client.post(
+        "/reserves",
+        headers={"Authorization": f"Bearer {anna['token']}"},
+        json={"space_id": space.json()["id"], "starts_at": start, "ends_at": end},
+    )
+    assert posted.status_code == 201
+    assert posted.json()["coordinator_id"] is None
+
+    responsable = client.get("/reserves", headers=headers, params={"des": start, "fins": end})
+    assert responsable.status_code == 200
+    assert responsable.json()[0]["coordinator_id"] == anna["user_id"]
+    assert responsable.json()[0]["coordinator_name"] == "Anna Costa"
+
+    vist_pel_coordinador = client.get(
+        "/reserves",
+        headers={"Authorization": f"Bearer {altra['token']}"},
+        params={"des": start, "fins": end},
+    )
+    assert vist_pel_coordinador.status_code == 200
+    assert vist_pel_coordinador.json()[0]["coordinator_name"] is None
+    assert vist_pel_coordinador.json()[0]["coordinator_id"] is None

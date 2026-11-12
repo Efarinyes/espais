@@ -10,6 +10,7 @@ export type ReservaDto = {
   ends_at: string;
   status: string;
   mine: boolean;
+  coordinator_id?: string | null;
   coordinator_name: string | null;
   attendance_count: number | null;
   capacity: number;

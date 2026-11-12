@@ -27,6 +27,7 @@ function identity(api: Partial<IdentityApi> = {}): IdentityApi {
     iniciarSessio: async () => sessioAntiga,
     obtenirSessio: async () => sessioAntiga,
     actualitzarPaleta: async (_token, palette) => ({ palette }),
+    llistarCoordinadors: async () => [],
     convidarCoordinador: async () => ({
       email: "carla@example.com",
       accept_url: "/invitar/token-convidat",

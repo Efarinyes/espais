@@ -100,11 +100,13 @@ export function useCalendariReserves() {
     () => espaisActius.value.find((espai) => espai.id === espaiId.value) ?? null,
   );
   const calendaris = computed(() => calendarisPerEspais(espaisActius.value));
-  const cercaCoordinador = computed(() => (esResponsable.value ? String(route.query.cerca ?? "") : ""));
+  const coordinadorId = computed(() =>
+    esResponsable.value ? String(route.query.coordinador ?? "") : "",
+  );
 
   function ambitActual(): AmbitVista {
     const rol = sessio.role === "responsible" ? "responsible" : "coordinator";
-    return { rol, espaiId: espaiId.value, cerca: cercaCoordinador.value };
+    return { rol, espaiId: espaiId.value, coordinadorId: coordinadorId.value };
   }
 
   const reservesVisibles = computed(() => reservesCarregades.value.filter((item) => reservaVisible(item, ambitActual())));
@@ -114,7 +116,14 @@ export function useCalendariReserves() {
       .map((item) => filaReserva(item, ambitActual().rol)),
   );
   const llegendaCoordinadors = computed(() =>
-    esResponsable.value ? llegendaTramats(reservesVisibles.value.map((reserva) => reserva.coordinator_name)) : [],
+    esResponsable.value
+      ? llegendaTramats(
+          reservesVisibles.value.map((reserva) => ({
+            nom: reserva.coordinator_name?.trim() ?? "",
+            clau: reserva.coordinator_id?.trim() || reserva.coordinator_name?.trim() || "",
+          })),
+        )
+      : [],
   );
   const pendent = computed(() => (modal.value?.tipus === "crear" ? modal.value.franja : null));
   const detall = computed(() =>
@@ -543,7 +552,7 @@ export function useCalendariReserves() {
     horaNova,
     propostaNova,
     resumNova,
-    cercaCoordinador,
+    coordinadorId,
     filesLlista,
     espaiSeleccionat,
     calendaris,

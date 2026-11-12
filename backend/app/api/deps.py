@@ -22,7 +22,11 @@ from app.adapters.sqlalchemy.reservations import SqlAlchemyReservationUnitOfWork
 from app.adapters.sqlalchemy.revocation import SqlAlchemyRevocationUnitOfWork
 from app.adapters.sqlalchemy.schema import bootstrap_session_factory
 from app.adapters.sqlalchemy.spaces import SqlAlchemySpaceUnitOfWork
-from app.adapters.system import SecretsInvitationTokenGenerator, SystemClock, UuidIdGenerator
+from app.adapters.system import (
+    SecretsInvitationTokenGenerator,
+    SystemClock,
+    UuidIdGenerator,
+)
 from app.adapters.tokens import HmacTokenIssuer, session_secret
 from app.domain.errors import SessionNotFoundError
 from app.ports.identity import TokenIssuer
@@ -31,7 +35,9 @@ from app.usecases.accept_invitation import AcceptInvitation
 from app.usecases.archive_notification import ArchiveNotification
 from app.usecases.authenticate_user import AuthenticateUser
 from app.usecases.cancel_own_reservation import CancelOwnReservation
-from app.usecases.cancel_reservation_by_responsible import CancelReservationByResponsible
+from app.usecases.cancel_reservation_by_responsible import (
+    CancelReservationByResponsible,
+)
 from app.usecases.confirm_password_reset import ConfirmPasswordReset
 from app.usecases.create_reservation import CreateReservation
 from app.usecases.create_space import CreateSpace
@@ -39,13 +45,17 @@ from app.usecases.get_invitation import GetInvitation
 from app.usecases.get_space import GetSpace
 from app.usecases.get_usage_summary import GetUsageSummary
 from app.usecases.invite_coordinator import InviteCoordinator
+from app.usecases.list_entity_coordinators import ListEntityCoordinators
 from app.usecases.list_notifications import ListNotifications
 from app.usecases.list_reservations import ListReservations
 from app.usecases.list_spaces import ListSpaces
 from app.usecases.mark_notification_read import MarkNotificationRead
 from app.usecases.record_attendance import RecordAttendance
 from app.usecases.register_entity import RegisterEntity
-from app.usecases.request_password_reset import RequestPasswordReset, RequestPasswordResetCommand
+from app.usecases.request_password_reset import (
+    RequestPasswordReset,
+    RequestPasswordResetCommand,
+)
 from app.usecases.reschedule_reservation import RescheduleReservation
 from app.usecases.resolve_session import ResolveSession, SessionView
 from app.usecases.update_entity_palette import UpdateEntityPalette
@@ -66,6 +76,7 @@ class IdentityHttp:
     preview: GetInvitation
     accept: AcceptInvitation
     update_palette: UpdateEntityPalette
+    list_coordinators: ListEntityCoordinators
     confirm_reset: ConfirmPasswordReset
 
 
@@ -132,6 +143,7 @@ def get_identity_http(request: Request) -> Iterator[IdentityHttp]:
             preview=GetInvitation(uow, clock),
             accept=AcceptInvitation(uow, clock, ids, hasher),
             update_palette=UpdateEntityPalette(uow),
+            list_coordinators=ListEntityCoordinators(uow),
             confirm_reset=ConfirmPasswordReset(uow, clock, hasher),
         )
     finally:

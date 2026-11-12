@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import {
   arrodoneixClicAFranja,
   classeTramat,
+  classesReserva,
   etiquetaPeriode,
   filaReserva,
   llegendaTramats,
@@ -60,20 +61,29 @@ describe("calendari", () => {
     expect(nom).toContain("10:00");
   });
 
-  it("assigna un tramat estable a cada nom, sense dependre de qui més hi ha", () => {
-    const llegenda = llegendaTramats(["Núria", "Carla", "Carla", "  ", null]);
+  it("assigna un tramat estable a cada persona, sense dependre de qui més hi ha", () => {
+    const llegenda = llegendaTramats([
+      { nom: "Núria", clau: "nuria" },
+      { nom: "Carla", clau: "carla" },
+      { nom: "Carla", clau: "carla" },
+      { nom: "  ", clau: "" },
+    ]);
     expect(llegenda.map((entrada) => entrada.nom)).toEqual(["Carla", "Núria"]);
-    expect(llegenda[0]?.classe).toBe(classeTramat("Carla"));
-    expect(llegenda[1]?.classe).toBe(classeTramat("Núria"));
+    expect(llegenda[0]?.classe).toBe(classeTramat("carla"));
+    expect(llegenda[1]?.classe).toBe(classeTramat("nuria"));
     expect(llegenda[0]?.classe).not.toBe(llegenda[1]?.classe);
-    expect(llegendaTramats(["Núria"])[0]?.classe).toBe(classeTramat("Núria"));
-    expect(llegendaTramats(["Abel", "Núria"])[1]?.classe).toBe(classeTramat("Núria"));
+    const homonims = llegendaTramats([
+      { nom: "Anna", clau: "a1" },
+      { nom: "Anna", clau: "a2" },
+    ]);
+    expect(homonims).toHaveLength(2);
+    expect(homonims[0]?.classe).not.toBe(homonims[1]?.classe);
   });
 
-  it("amb sala, el coordinador només veu aquella sala i ignora la cerca", () => {
+  it("amb sala, el coordinador només veu aquella sala i ignora el filtre de persona", () => {
     const propiaAltra = { ...reserva, id: "r2", space_id: "s2", mine: true };
     const aliena = { ...reserva, id: "r3", mine: false, coordinator_name: "Núria" };
-    const ambit = { rol: "coordinator" as const, espaiId: "s1", cerca: "Núria" };
+    const ambit = { rol: "coordinator" as const, espaiId: "s1", coordinadorId: "nuria" };
     expect(reservaVisible(reserva, ambit)).toBe(true);
     expect(reservaVisible(propiaAltra, ambit)).toBe(false);
     expect(reservaVisible(aliena, ambit)).toBe(true);
@@ -84,16 +94,20 @@ describe("calendari", () => {
     expect(titolReserva(reserva, "coordinator")).toBe("Sala 1");
   });
 
-  it("el responsable filtra per sala i per text, i els homònims coincideixen tots", () => {
-    const anna1 = { ...reserva, id: "a1", coordinator_name: "Anna Costa" };
-    const anna2 = { ...reserva, id: "a2", space_id: "s2", coordinator_name: "Anna Soler" };
-    const nuria = { ...reserva, id: "n1", coordinator_name: "Núria" };
-    const ambit = { rol: "responsible" as const, espaiId: "", cerca: "anna" };
+  it("el responsable filtra per sala i per la persona triada", () => {
+    const anna1 = { ...reserva, id: "a1", coordinator_id: "a1", coordinator_name: "Anna Costa" };
+    const anna2 = { ...reserva, id: "a2", space_id: "s2", coordinator_id: "a2", coordinator_name: "Anna Soler" };
+    const nuria = { ...reserva, id: "n1", coordinator_id: "n1", coordinator_name: "Núria" };
+    const ambit = { rol: "responsible" as const, espaiId: "", coordinadorId: "a1" };
     expect(reservaVisible(anna1, ambit)).toBe(true);
-    expect(reservaVisible(anna2, ambit)).toBe(true);
+    expect(reservaVisible(anna2, ambit)).toBe(false);
     expect(reservaVisible(nuria, ambit)).toBe(false);
-    expect(reservaVisible(anna2, { ...ambit, espaiId: "s1", cerca: "" })).toBe(false);
-    expect(reservaVisible(anna1, { ...ambit, espaiId: "s1", cerca: "anna" })).toBe(true);
+    expect(reservaVisible(anna2, { ...ambit, espaiId: "s1", coordinadorId: "" })).toBe(false);
+    expect(reservaVisible(anna1, { ...ambit, espaiId: "s1", coordinadorId: "a1" })).toBe(true);
+    expect(classesReserva(anna1, "responsible")).toEqual([classeTramat("a1")]);
+    expect(classesReserva({ ...anna1, coordinator_id: "a2", coordinator_name: "Anna Costa" }, "responsible")).not.toEqual(
+      classesReserva(anna1, "responsible"),
+    );
   });
 
   it("la fila de llista no revela el coordinador aliè", () => {

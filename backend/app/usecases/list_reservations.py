@@ -33,6 +33,7 @@ class ReservationListItem:
     status: ReservationStatus
     mine: bool
     coordinator_name: str | None
+    coordinator_id: UUID | None
     attendance_count: int | None
     capacity: int
     min_attendance: int | None
@@ -83,6 +84,11 @@ class ListReservations:
                     status=reservation.status,
                     mine=mine,
                     coordinator_name=reservation.coordinator_name if show_name else None,
+                    coordinator_id=(
+                        reservation.coordinator_id
+                        if query.actor_role == MembershipRole.RESPONSIBLE
+                        else None
+                    ),
                     attendance_count=count,
                     capacity=space.capacity,
                     min_attendance=space.min_attendance,

@@ -173,6 +173,12 @@ class SqlAlchemyMembershipRepository:
             return None
         return _membership_from_row(row)
 
+    def list_by_entity_id(self, entity_id: UUID) -> list[Membership]:
+        rows = self._session.scalars(
+            select(MembershipRow).where(MembershipRow.entity_id == entity_id)
+        ).all()
+        return [_membership_from_row(row) for row in rows]
+
     def list_all(self) -> list[Membership]:
         rows = self._session.scalars(select(MembershipRow)).all()
         return [_membership_from_row(row) for row in rows]

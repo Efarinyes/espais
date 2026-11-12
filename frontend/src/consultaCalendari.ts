@@ -2,7 +2,7 @@ export type VistaCalendari = "graella" | "llista";
 
 export type ConsultaCalendari = {
   espai: string;
-  cerca: string;
+  coordinador: string;
   vista: VistaCalendari;
 };
 
@@ -19,7 +19,7 @@ function textQuery(valor: unknown): string {
 export function consultaCalendari(query: Record<string, unknown>): ConsultaCalendari {
   return {
     espai: textQuery(query.espai),
-    cerca: textQuery(query.cerca),
+    coordinador: textQuery(query.coordinador),
     vista: query.vista === "llista" ? "llista" : "graella",
   };
 }
@@ -32,7 +32,7 @@ export function queryCalendari(
   const fusion = consultaCalendari({ ...actual, ...canvi });
   const sortida: Record<string, string> = {};
   for (const [clau, valor] of Object.entries(actual)) {
-    if (clau === "espai" || clau === "cerca" || clau === "vista") {
+    if (clau === "espai" || clau === "cerca" || clau === "coordinador" || clau === "vista") {
       continue;
     }
     const text = textQuery(valor);
@@ -43,8 +43,8 @@ export function queryCalendari(
   if (fusion.espai) {
     sortida.espai = fusion.espai;
   }
-  if (fusion.cerca) {
-    sortida.cerca = fusion.cerca;
+  if (fusion.coordinador) {
+    sortida.coordinador = fusion.coordinador;
   }
   if (fusion.vista === "llista") {
     sortida.vista = "llista";

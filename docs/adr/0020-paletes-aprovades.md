@@ -21,7 +21,7 @@ Les quatre famílies s’han aprovat. La font dels valors és [`docs/ux/colors/P
   - Primari, secundari i accent són els botons i els tocs. Si el farcit no es separa sol del fons, la vora aprovada (`--color-primary-border`, `--color-secondary-border`, `--color-accent-border`) fa de límit.
   - Èxit, avís i informació: el color Daisy és el text i el farcit del botó; `*-content` és el text del botó; `*-soft` és el fons de l’avís. Són els mateixos a les quatre famílies.
   - L’error en té dos: `error` és el text i la vora de l’avís; `error-solid` amb `error-content` és el botó; `error-soft` és el fons de l’avís.
-- Els vuit colors de sala de `colorsCalendari.ts` no formen part d’aquestes famílies i no es canvien. El crom del calendari Schedule-X segueix els tokens del tema actiu. La lògica del calendari no canvia.
+- Els vuit colors de sala de `colorsCalendari.ts` no formen part d’aquestes famílies. La distinció entre sales és l’ADR [0021](0021-filtre-coordinador-i-colors-sala.md). El crom del calendari Schedule-X segueix els tokens del tema actiu. La lògica del calendari no canvia.
 
 ## Conseqüències
 
