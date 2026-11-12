@@ -1,6 +1,6 @@
 # ADR 0010 — Paleta i mode clar/fosc per persona
 
-- **Estat:** esmenat per [0011](0011-paleta-entitat-mode-personal.md)
+- **Estat:** esmenat per [0011](0011-paleta-entitat-mode-personal.md) (qui tria la paleta) i per [0020](0020-paletes-aprovades.md) (hex i nom visible)
 - **Data:** 2026-09-18
 - **Relacionat:** [0006](0006-tailwind-daisy-pwa.md)
 
@@ -16,7 +16,7 @@ Esmenat per l’ADR [0011](0011-paleta-entitat-mode-personal.md): la paleta pass
 
 - Independència de tria de paleta entre responsable i coordinador: rebutjada a l’ADR 0011 (tothom veu la paleta de l’entitat).
 - Controls: **mode clar o fosc** al capçal; **paleta** al tauler del responsable.
-- Quatre paletes tancades (hex de la proposta; no selector lliure RGB):
+- Quatre paletes tancades (els hex vigents són els de l’ADR [0020](0020-paletes-aprovades.md); la taula següent és la decisió anterior):
 
   | Paleta | Primari | Secundari | Terciari | Fons clar |
   |---|---|---|---|---|

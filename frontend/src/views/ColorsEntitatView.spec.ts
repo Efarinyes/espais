@@ -69,7 +69,9 @@ describe("ColorsEntitatView", () => {
     expect(wrapper.findAll("#paleta-entitat-opcions [role='option']")).toHaveLength(4);
     expect(wrapper.findAll("#paleta-entitat-opcions button")).toHaveLength(0);
     expect(wrapper.findAll("#paleta-entitat-opcions .rounded-full")).toHaveLength(12);
-    expect(wrapper.get("#paleta-entitat-opcions").html()).toContain("rgb(249, 115, 22)");
+    expect(wrapper.get("#paleta-entitat-opcions").text()).toContain("Vinyes vora al mar");
+    expect(wrapper.get("#paleta-entitat-opcions").text()).not.toContain("muntanya");
+    expect(wrapper.get("#paleta-entitat-opcions").html()).toContain("rgb(194, 81, 22)");
     const citrics = wrapper
       .findAll("#paleta-entitat-opcions [role='option']")
       .find((opcio) => opcio.text().includes("Cítrics"));

@@ -22,3 +22,7 @@ frontend/node_modules/
 # Documents de treball locals: docs-audit-espais
 
 docs-audit-espais/
+
+# Dades locals de recerca cromàtica (Khroma)
+docs/ux/colors/research/
+

@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Espais — proposta de paletes</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --desk: #e6e1d8;
+      --ink: #241e18;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--desk);
+      color: var(--ink);
+      font: 16px/1.45 ui-sans-serif, "Avenir Next", "Segoe UI", sans-serif;
+    }
+    header, main { width: min(1180px, calc(100% - 32px)); margin: 0 auto; }
+    header { padding: 28px 0 8px; }
+    h1 { font-size: 28px; line-height: 1.2; margin: 0 0 8px; }
+    header p { margin: 0; max-width: 68ch; }
+    .familia { margin: 28px 0 8px; }
+    .familia h2 { font-size: 22px; margin: 0 0 4px; }
+    .familia > p { margin: 0 0 12px; max-width: 70ch; }
+    .modes { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media (max-width: 800px) { .modes { grid-template-columns: 1fr; } }
+    .mode-nom { font-size: 13px; letter-spacing: 0.04em; text-transform: uppercase; margin: 0 0 8px; }
+    .panel { border-radius: 16px; padding: 16px; background: var(--bg); color: var(--text); }
+    .card, .menu {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+    }
+    .card { padding: 14px; }
+    .menu {
+      background: var(--raised);
+      margin-top: 10px;
+      padding: 8px;
+    }
+    h3 { margin: 0; font-size: 22px; line-height: 1.25; color: var(--heading); }
+    .cos { margin: 8px 0 0; }
+    .muted { color: var(--muted); font-size: 14px; margin: 4px 0 0; }
+    .accions, .avisos { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    button, .xip, .triat {
+      min-height: 44px;
+      border-radius: 12px;
+      padding: 8px 14px;
+      font: 600 14px/1.2 inherit;
+    }
+    button { cursor: default; }
+    .primari {
+      background: var(--primary);
+      color: var(--on-primary);
+      border: 2px solid var(--primary-border);
+    }
+    .secundari {
+      background: var(--secondary);
+      color: var(--on-secondary);
+      border: 2px solid var(--secondary-border, transparent);
+    }
+    .xip {
+      display: inline-flex;
+      align-items: center;
+      background: var(--accent);
+      color: var(--on-accent);
+      border: 2px solid var(--accent-border, var(--accent));
+    }
+    .triat {
+      display: flex;
+      align-items: center;
+      margin-top: 10px;
+      background: var(--selected);
+      color: var(--on-selected);
+      outline: 2px solid var(--focus);
+      outline-offset: 0;
+    }
+    label { display: block; margin-top: 12px; font-size: 14px; font-weight: 600; }
+    input {
+      display: block;
+      width: 100%;
+      margin-top: 4px;
+      min-height: 44px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--raised);
+      color: var(--text);
+      padding: 8px 12px;
+      font: inherit;
+      box-shadow: 0 0 0 2px var(--focus);
+    }
+    .avis {
+      flex: 1 1 140px;
+      margin: 0;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--linia);
+      background: var(--suau);
+      color: var(--linia);
+      font-size: 14px;
+    }
+    .ok { --suau: var(--success-soft); --linia: var(--success); }
+    .av { --suau: var(--warning-soft); --linia: var(--warning); }
+    .er { --suau: var(--danger-soft); --linia: var(--danger); }
+    .in { --suau: var(--info-soft); --linia: var(--info); }
+    .perill {
+      background: var(--danger-solid);
+      color: var(--on-danger);
+      border: 2px solid transparent;
+    }
+    .clar {
+      --success: #146B38; --on-success: #ffffff; --success-soft: #c3e0cc;
+      --warning: #7a4e00; --on-warning: #ffffff; --warning-soft: #eed7a4;
+      --danger: #8e1d2a; --on-danger: #ffffff; --danger-solid: #c4272e; --danger-soft: #f3cdd2;
+      --info: #1e4e78; --on-info: #ffffff; --info-soft: #c9dcf0;
+    }
+    .fosc {
+      --success: #7dce9a; --on-success: #062214; --success-soft: #1e5238;
+      --warning: #f2c56a; --on-warning: #2a1c04; --warning-soft: #62481e;
+      --danger: #ffb4ba; --on-danger: #2a1216; --danger-solid: #e07a86; --danger-soft: #6a3840;
+      --info: #a9d2f2; --on-info: #062033; --info-soft: #20445c;
+    }
+    footer { width: min(1180px, calc(100% - 32px)); margin: 8px auto 40px; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Proposta de paletes</h1>
+    <p>El mateix contingut, a les quatre famílies i als dos modes. Els colors d’aquesta pàgina són els aprovats i implementats.</p>
+  </header>
+  <main>
+    <section class="familia">
+      <h2>Vinyes vora al mar</h2>
+      <p>Vinya, mar i pedra. La terracota només és el color dels títols. La nit és verda i blauverdosa, no marró.</p>
+      <div class="modes">
+        <div>
+          <p class="mode-nom">Clar</p>
+          <article class="panel clar" style="--bg:#F3F1EA;--surface:#F8F6F1;--raised:#FDFCFA;--text:#1E2A26;--muted:#54605A;--heading:#9A4E3A;--border:#7E8A82;--focus:#9A4E3A;--primary:#2F6B58;--on-primary:#FFFFFF;--primary-border:#2F6B58;--secondary:#2F7480;--on-secondary:#FFFFFF;--accent:#C9BBA6;--on-accent:#1E2A26;--accent-border:#6E6256;--selected:#DCE8E2;--on-selected:#9A4E3A">
+            <div class="card">
+              <h3>Sala 1</h3>
+              <p class="cos">Dilluns, 18:00–19:30. La reserva és de la coordinadora.</p>
+              <p class="muted">Aforament 10</p>
+              <div class="accions">
+                <button class="primari" type="button">Reserva</button>
+                <button class="secundari" type="button">Segona</button>
+                <span class="xip">Pedra</span>
+              </div>
+              <div class="triat">Franja triada</div>
+              <label>Nom de l’espai, amb focus<input value="Sala de dalt" /></label>
+            </div>
+            <div class="menu">Menú i diàleg, una superfície una mica més alta.</div>
+            <div class="avisos">
+              <p class="avis ok">S’ha desat.</p>
+              <p class="avis av">Revisa l’horari.</p>
+              <p class="avis er">Aquest camp és obligatori.</p>
+              <p class="avis in">La paleta la veu tota l’entitat.</p>
+              <button class="perill" type="button">Anul·la</button>
+            </div>
+          </article>
+        </div>
+        <div>
+          <p class="mode-nom">Fosc</p>
+          <article class="panel fosc" style="--bg:#142822;--surface:#1C342C;--raised:#244038;--text:#E7F3EC;--muted:#B7CDC2;--heading:#E4C2B4;--border:#6E9A8C;--focus:#E4C2B4;--primary:#4EAE8C;--on-primary:#0E2418;--primary-border:#4EAE8C;--secondary:#7EB8C8;--on-secondary:#0E242C;--accent:#E6DDD2;--on-accent:#241C16;--selected:#1E4A40;--on-selected:#E7F3EC">
+            <div class="card">
+              <h3>Sala 1</h3>
+              <p class="cos">Dilluns, 18:00–19:30. La reserva és de la coordinadora.</p>
+              <p class="muted">Aforament 10</p>
+              <div class="accions">
+                <button class="primari" type="button">Reserva</button>
+                <button class="secundari" type="button">Segona</button>
+                <span class="xip">Pedra</span>
+              </div>
+              <div class="triat">Franja triada</div>
+              <label>Nom de l’espai, amb focus<input value="Sala de dalt" /></label>
+            </div>
+            <div class="menu">Menú i diàleg, una superfície una mica més alta.</div>
+            <div class="avisos">
+              <p class="avis ok">S’ha desat.</p>
+              <p class="avis av">Revisa l’horari.</p>
+              <p class="avis er">Aquest camp és obligatori.</p>
+              <p class="avis in">La paleta la veu tota l’entitat.</p>
+              <button class="perill" type="button">Anul·la</button>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="familia">
+      <h2>Cítrics i sol</h2>
+      <p>Llimona, albercoc i fulla de cítric. La nit no és marró: la fruita il·lumina un fons fosc i quiet.</p>
+      <div class="modes">
+        <div>
+          <p class="mode-nom">Clar</p>
+          <article class="panel clar" style="--bg:#FFF6D4;--surface:#FFFBE8;--raised:#FFFEF6;--text:#2A240E;--muted:#5C5428;--heading:#A34808;--border:#7A6230;--focus:#A34808;--primary:#C25116;--on-primary:#FFFFFF;--primary-border:#A34808;--secondary:#9AD040;--on-secondary:#1E2408;--secondary-border:#3F7A14;--accent:#F0D030;--on-accent:#2A240E;--accent-border:#A34808;--selected:#FFE08A;--on-selected:#A34808">
+            <div class="card">
+              <h3>Sala 1</h3>
+              <p class="cos">Dilluns, 18:00–19:30. La reserva és de la coordinadora.</p>
+              <p class="muted">Aforament 10</p>
+              <div class="accions">
+                <button class="primari" type="button">Reserva</button>
+                <button class="secundari" type="button">Segona</button>
+                <span class="xip">Llimona</span>
+              </div>
+              <div class="triat">Franja triada</div>
+              <label>Nom de l’espai, amb focus<input value="Sala de dalt" /></label>
+            </div>
+            <div class="menu">Menú i diàleg, una superfície una mica més alta.</div>
+            <div class="avisos">
+              <p class="avis ok">S’ha desat.</p>
+              <p class="avis av">Revisa l’horari.</p>
+              <p class="avis er">Aquest camp és obligatori.</p>
+              <p class="avis in">La paleta la veu tota l’entitat.</p>
+              <button class="perill" type="button">Anul·la</button>
+            </div>
+          </article>
+        </div>
+        <div>
+          <p class="mode-nom">Fosc</p>
+          <article class="panel fosc" style="--bg:#1C2420;--surface:#24302A;--raised:#2C3A32;--text:#F7F6EE;--muted:#D5D2C0;--heading:#F6E27A;--border:#B0A080;--focus:#F6E27A;--primary:#F0A030;--on-primary:#2A1808;--primary-border:#F0A030;--secondary:#D6E85A;--on-secondary:#1E2208;--accent:#8FCB55;--on-accent:#14200C;--selected:#2A3828;--on-selected:#F7F6EE">
+            <div class="card">
+              <h3>Sala 1</h3>
+              <p class="cos">Dilluns, 18:00–19:30. La reserva és de la coordinadora.</p>
+              <p class="muted">Aforament 10</p>
+              <div class="accions">
+                <button class="primari" type="button">Reserva</button>
+                <button class="secundari" type="button">Segona</button>
+                <span class="xip">Llimona</span>
+              </div>
+              <div class="triat">Franja triada</div>
+              <label>Nom de l’espai, amb focus<input value="Sala de dalt" /></label>
+            </div>
+            <div class="menu">Menú i diàleg, una superfície una mica més alta.</div>
+            <div class="avisos">
+              <p class="avis ok">S’ha desat.</p>
+              <p class="avis av">Revisa l’horari.</p>
+              <p class="avis er">Aquest camp és obligatori.</p>
+              <p class="avis in">La paleta la veu tota l’entitat.</p>
+              <button class="perill" type="button">Anul·la</button>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="familia">
+      <h2>Camps i cereals</h2>
+      <p>Blat madur, argila i palla. El clar es manté. La nit és daurada i torrada, sense dominant verda.</p>
+      <div class="modes">
+        <div>
+          <p class="mode-nom">Clar</p>
+          <article class="panel clar" style="--bg:#F7F1DC;--surface:#FBF6E8;--raised:#FFFCF3;--text:#2A2416;--muted:#5C5344;--heading:#6A5018;--border:#8A7A58;--focus:#6A5018;--primary:#D4AE3A;--on-primary:#2A2416;--primary-border:#7A5418;--secondary:#8E5A38;--on-secondary:#FFFFFF;--accent:#E6D3A4;--on-accent:#2A2416;--accent-border:#7A5418;--selected:#F3E4B8;--on-selected:#6A5018">
+            <div class="card">
+              <h3>Sala 1</h3>
+              <p class="cos">Dilluns, 18:00–19:30. La reserva és de la coordinadora.</p>
+              <p class="muted">Aforament 10</p>
+              <div class="accions">
+                <button class="primari" type="button">Reserva</button>
+                <button class="secundari" type="button">Segona</button>
+                <span class="xip">Palla</span>
+              </div>
+              <div class="triat">Franja triada</div>
+              <label>Nom de l’espai, amb focus<input value="Sala de dalt" /></label>
+            </div>
+            <div class="menu">Menú i diàleg, una superfície una mica més alta.</div>
+            <div class="avisos">
+              <p class="avis ok">S’ha desat.</p>
+              <p class="avis av">Revisa l’horari.</p>
+              <p class="avis er">Aquest camp és obligatori.</p>
+              <p class="avis in">La paleta la veu tota l’entitat.</p>
+              <button class="perill" type="button">Anul·la</button>
+            </div>
+          </article>
+        </div>
+        <div>
+          <p class="mode-nom">Fosc</p>
+          <article class="panel fosc" style="--bg:#2C241C;--surface:#362C22;--raised:#403428;--text:#F7F1E6;--muted:#E0D0B8;--heading:#F0D7A0;--border:#C4A888;--focus:#F0D7A0;--primary:#E8C056;--on-primary:#2A1C08;--primary-border:#E8C056;--secondary:#D4924E;--on-secondary:#2A160C;--accent:#F0E0C4;--on-accent:#2A2014;--selected:#4A3C2C;--on-selected:#F7F1E6">
+            <div class="card">
+              <h3>Sala 1</h3>
+              <p class="cos">Dilluns, 18:00–19:30. La reserva és de la coordinadora.</p>
+              <p class="muted">Aforament 10</p>
+              <div class="accions">
+                <button class="primari" type="button">Reserva</button>
+                <button class="secundari" type="button">Segona</button>
+                <span class="xip">Palla</span>
+              </div>
+              <div class="triat">Franja triada</div>
+              <label>Nom de l’espai, amb focus<input value="Sala de dalt" /></label>
+            </div>
+            <div class="menu">Menú i diàleg, una superfície una mica més alta.</div>
+            <div class="avisos">
+              <p class="avis ok">S’ha desat.</p>
+              <p class="avis av">Revisa l’horari.</p>
+              <p class="avis er">Aquest camp és obligatori.</p>
+              <p class="avis in">La paleta la veu tota l’entitat.</p>
+              <button class="perill" type="button">Anul·la</button>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="familia">
+      <h2>Mar i cel</h2>
+      <p>Marí, cel i pissarra. La nit és un mar profund, no negre: el cel il·lumina i l’escuma queda en segon pla.</p>
+      <div class="modes">
+        <div>
+          <p class="mode-nom">Clar</p>
+          <article class="panel clar" style="--bg:#F3F6F6;--surface:#F8FBFB;--raised:#FFFFFF;--text:#1A2428;--muted:#4C5C64;--heading:#143E68;--border:#6A7C84;--focus:#143E68;--primary:#1B4F86;--on-primary:#F5F9FF;--primary-border:#143E68;--secondary:#2478A8;--on-secondary:#FFFFFF;--accent:#5B767E;--on-accent:#FFFFFF;--selected:#E3EEF4;--on-selected:#143E68">
+            <div class="card">
+              <h3>Sala 1</h3>
+              <p class="cos">Dilluns, 18:00–19:30. La reserva és de la coordinadora.</p>
+              <p class="muted">Aforament 10</p>
+              <div class="accions">
+                <button class="primari" type="button">Reserva</button>
+                <button class="secundari" type="button">Segona</button>
+                <span class="xip">Horitzó</span>
+              </div>
+              <div class="triat">Franja triada</div>
+              <label>Nom de l’espai, amb focus<input value="Sala de dalt" /></label>
+            </div>
+            <div class="menu">Menú i diàleg, una superfície una mica més alta.</div>
+            <div class="avisos">
+              <p class="avis ok">S’ha desat.</p>
+              <p class="avis av">Revisa l’horari.</p>
+              <p class="avis er">Aquest camp és obligatori.</p>
+              <p class="avis in">La paleta la veu tota l’entitat.</p>
+              <button class="perill" type="button">Anul·la</button>
+            </div>
+          </article>
+        </div>
+        <div>
+          <p class="mode-nom">Fosc</p>
+          <article class="panel fosc" style="--bg:#1C2A34;--surface:#243440;--raised:#2C3E4C;--text:#E8F1F5;--muted:#B4C6D2;--heading:#D7E8F4;--border:#8AA4B4;--focus:#D7E8F4;--primary:#7EBFDE;--on-primary:#0E2430;--primary-border:#7EBFDE;--secondary:#C5D5E0;--on-secondary:#12202A;--accent:#D5E2EA;--on-accent:#12202A;--selected:#34566A;--on-selected:#E8F1F5">
+            <div class="card">
+              <h3>Sala 1</h3>
+              <p class="cos">Dilluns, 18:00–19:30. La reserva és de la coordinadora.</p>
+              <p class="muted">Aforament 10</p>
+              <div class="accions">
+                <button class="primari" type="button">Reserva</button>
+                <button class="secundari" type="button">Segona</button>
+                <span class="xip">Horitzó</span>
+              </div>
+              <div class="triat">Franja triada</div>
+              <label>Nom de l’espai, amb focus<input value="Sala de dalt" /></label>
+            </div>
+            <div class="menu">Menú i diàleg, una superfície una mica més alta.</div>
+            <div class="avisos">
+              <p class="avis ok">S’ha desat.</p>
+              <p class="avis av">Revisa l’horari.</p>
+              <p class="avis er">Aquest camp és obligatori.</p>
+              <p class="avis in">La paleta la veu tota l’entitat.</p>
+              <button class="perill" type="button">Anul·la</button>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+  </main>
+  <footer>
+    <p>Els avisos d’èxit, avís, error i informació són els mateixos a les quatre famílies. El document complet és <code>PROPOSTA-PALETES.md</code>.</p>
+  </footer>
+</body>
+</html>

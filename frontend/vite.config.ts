@@ -17,8 +17,8 @@ const pwa =
             description: "Gestió d’ús i reserva d’espais de l’entitat. Ús intern i gratuït.",
             display: "standalone",
             start_url: "/",
-            background_color: "#F1F5F9",
-            theme_color: "#0B5ED7",
+            background_color: "#F3F6F6",
+            theme_color: "#1B4F86",
             icons: [
               { src: "icon-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
               { src: "icon-512.png", sizes: "512x512", type: "image/png", purpose: "any" },

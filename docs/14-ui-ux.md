@@ -13,12 +13,14 @@ Skill: `ui-ux-mobile`. Front: [11-stack.md](11-stack.md).
 
 ## Design tokens
 
-DaisyUI, ADR [0011](adr/0011-paleta-entitat-mode-personal.md) (esmena de [0010](adr/0010-aparença-paleta-mode.md)). Defecte **Mar i cel** clar. Lletra **Montserrat** (local, `@fontsource/montserrat`, pesos 400–700; no Google Fonts). Radi 12px, toc ≥ 44px (`min-h-11`). Perill maduixa `#D83A4B`. Daurats, grocs, cel clar i pedra amb text carbó, no blanc. El capçal només té Clar / Fosc; els colors de l’app es trien al tauler del responsable (columna lateral). La landing (sense sessió) usa Mar i cel.
+DaisyUI, ADR [0011](adr/0011-paleta-entitat-mode-personal.md) (esmena de [0010](adr/0010-aparença-paleta-mode.md)) i hex aprovats a l’ADR [0020](adr/0020-paletes-aprovades.md). Defecte **Mar i cel** clar. Lletra **Montserrat** (local, `@fontsource/montserrat`, pesos 400–700; no Google Fonts). Radi 12px, toc ≥ 44px (`min-h-11`). Èxit, avís, error i informació són comuns a les quatre famílies. Daurats, grocs, llimona i pedra porten text fosc, i una vora més fosca quan el farcit no es separa sol del fons. El capçal només té Clar / Fosc; els colors de l’app es trien al tauler del responsable (columna lateral). La landing (sense sessió) usa Mar i cel.
 
-- Mar i cel: primari `#0B5ED7`, secundari `#14B8A6`, terciari `#BFDBFE`, fons `#F1F5F9`.
-- Camps i cereals: primari `#F7B955`, secundari `#6B8E5A`, terciari `#C96F4A`, fons `#EAD9C6`.
-- Cítrics i sol: primari `#F97316`, secundari `#FACC15`, terciari `#4CAF50`, fons `#FFF7E6`.
-- Vinyes i muntanya al mar: primari `#9B2C3D`, secundari `#8B5CF6`, terciari `#D6C8B6`; mar profund `#0F4C75` a títols i mode fosc.
+- Mar i cel: primari `#1B4F86`, secundari `#2478A8`, accent `#5B767E`, fons `#F3F6F6`.
+- Camps i cereals: primari `#D4AE3A`, secundari `#8E5A38`, accent `#E6D3A4`, fons `#F7F1DC`.
+- Cítrics i sol: primari `#C25116`, secundari `#9AD040`, accent `#F0D030`, fons `#FFF6D4`.
+- Vinyes vora al mar: primari `#2F6B58`, secundari `#2F7480`, accent `#C9BBA6`, fons `#F3F1EA`. Els identificadors segueixen sent `vinyes` i `vinyes-dark`.
+
+Els hex complets, el mode fosc i els semàntics són a [`ux/colors/PROPOSTA-PALETES.md`](ux/colors/PROPOSTA-PALETES.md).
 
 Contrast WCAG AA en text normal. Focus visible. Labels lligades als inputs. Errors al costat del camp, no només toast.
 

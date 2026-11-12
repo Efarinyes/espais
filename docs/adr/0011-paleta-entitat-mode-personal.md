@@ -18,7 +18,7 @@ El mode clar/fosc continua sent una preferència de lectura al dispositiu; no ca
 - El coordinador amb l’app oberta recull un canvi de paleta en recarregar o en tornar a la pestanya (`GET /sessio`). Sense websockets a v1.
 - UI: el capçal només té Clar / Fosc. El tauler del responsable té el selector de paleta amb tocs de color; es tanca en triar. El coordinador no el veu. La landing no ofereix paleta.
 
-Les quatre paletes, els tokens Daisy (`data-theme`) i el contrast (text fosc sobre daurats, grocs, cel i pedra) resten els de l’ADR 0010.
+La separació entre paleta d’entitat i mode personal és la d’aquest ADR. Els hex i el nom visible «Vinyes vora al mar» són els de l’ADR [0020](0020-paletes-aprovades.md).
 
 ## Conseqüències
 

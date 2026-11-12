@@ -50,6 +50,7 @@ Punt de mapa. Llegeix [`SESSION.md`](../SESSION.md) abans de qualsevol capítol.
 - [adr/0017-contrasenya-i-intents-proposat.md](adr/0017-contrasenya-i-intents-proposat.md)
 - [adr/0018-recuperacio-de-compte.md](adr/0018-recuperacio-de-compte.md)
 - [adr/0019-recuperacio-sense-sessio.md](adr/0019-recuperacio-sense-sessio.md)
+- [adr/0020-paletes-aprovades.md](adr/0020-paletes-aprovades.md)
 
 ## Skills i rules
 

@@ -3,10 +3,10 @@ export const LEGACY_STORAGE_KEY = "espais.aparenca";
 export const SESSIO_STORAGE_KEY = "espais.sessio";
 
 export const PALETES = [
-  { id: "mar-cel", etiqueta: "Mar i cel", tocs: ["#0B5ED7", "#14B8A6", "#BFDBFE"] },
-  { id: "camps", etiqueta: "Camps i cereals", tocs: ["#F7B955", "#6B8E5A", "#C96F4A"] },
-  { id: "citrics", etiqueta: "Cítrics i sol", tocs: ["#F97316", "#FACC15", "#4CAF50"] },
-  { id: "vinyes", etiqueta: "Vinyes i muntanya al mar", tocs: ["#9B2C3D", "#8B5CF6", "#D6C8B6"] },
+  { id: "mar-cel", etiqueta: "Mar i cel", tocs: ["#1B4F86", "#2478A8", "#5B767E"] },
+  { id: "camps", etiqueta: "Camps i cereals", tocs: ["#D4AE3A", "#8E5A38", "#E6D3A4"] },
+  { id: "citrics", etiqueta: "Cítrics i sol", tocs: ["#C25116", "#9AD040", "#F0D030"] },
+  { id: "vinyes", etiqueta: "Vinyes vora al mar", tocs: ["#2F6B58", "#2F7480", "#C9BBA6"] },
 ] as const;
 
 export type PaletaId = (typeof PALETES)[number]["id"];

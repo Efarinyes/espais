@@ -9,6 +9,8 @@ Actualitza aquest arxiu al final de cada sessió. És el punt d’arrencada del 
 
 ## Darrera feina
 
+2026-11-12: les quatre paletes aprovades ja són als vuit temes de `frontend/src/styles.css`. El nom visible de `vinyes` és «Vinyes vora al mar»; els identificadors no canvien. La paleta segueix sent de l’entitat i el mode, del navegador. L’ADR és [0020](docs/adr/0020-paletes-aprovades.md). Els vuit colors de sala no s’han tocat. Vitest 240 i `vue-tsc` nets. Sense commit, sense push i sense VPS.
+
 2026-11-08: la fase d’UX, D1 i la prova E2E es dona per tancada. Queda pendent només D-PALETA: els hex publicats no es canvien fins que es decideixi. `feat/docker-caddy-sqlite` es puja a `origin` perquè qui opera el servidor pugui fer `git pull` i `docker compose up -d --build`, sense `down -v`. No s’ha tocat el VPS ni `main`. `backup/pre-ux-ui-2026-11-02` segueix a `436d97b`.
 
 2026-11-08: auditoria E2E amb Docker local, projecte `espais-e2e-d1-20261108`, només a `127.0.0.1:80` i `127.0.0.1:8025`. Volums propis. La base de desenvolupament i els volums `espais_*` no s’han tocat. En acabar, `docker compose -p espais-e2e-d1-20261108 down -v` ha esborrat només aquesta pila. Sense canvis de codi: no s’ha trobat cap defecte de D1 ni de permisos dins de l’abast. Sense push ni VPS. `backup/pre-ux-ui-2026-11-02` segueix a `436d97b`.
@@ -121,13 +123,13 @@ Desplegat al VPS (`6b455b9`) i provat amb Capgrossos, «Sala pilars». La vista 
 
 ## Següent tasca
 
-Sessió tancada el 2026-11-08. No hi ha feina de codi oberta. La propera sessió llegeix aquest fitxer i espera què es demani. La fase d’UX i D1 està tancada i ja és a `origin/feat/docker-caddy-sqlite` (`e4dc78f`). L’únic pendent de producte d’aquesta peça és D-PALETA: no es canvien els hex publicats fins que es decideixi. Qui opera el servidor publica amb `git pull` i `docker compose up -d --build`, sense `down -v`. No es fusiona a `main`. Les notes de més avall que diuen que D1 no s’ha de començar són anteriors a aquesta decisió.
+Les paletes aprovades ja són a l’app (ADR [0020](docs/adr/0020-paletes-aprovades.md)). El canvi és local i encara no s’ha de pujar ni desplegar fins que es demani. Qui opera el servidor publica amb `git pull` i `docker compose up -d --build`, sense `down -v`. No es fusiona a `main`.
 
 La feina de desplegament continua a `feat/docker-caddy-sqlite`: és la branca que el servidor desplega després del `git pull` i de regenerar els contenidors. `backup/alpha-funcional` (`9178e98`, també a `origin`) és el punt de retorn. `backup/pre-ux-ui-2026-11-02` (`436d97b`) no es mou. No es fusiona a `main` fins a la Beta, quan es canviï la configuració del servidor. No s’esborren `backup/alpha-funcional` ni `backup/pre-dockeritzacio`.
 
 L’assistència amb `mine: false`, el README, les capçaleres/OpenAPI, el registre (ADR 0016), la invitació per correu i la revocació en sortir (ADR 0014) ja són a `origin` i s’han vist a l’Alpha. No es refan. La verificació de correu segueix al backlog. L’ADR 0017 continua proposat, sense codi.
 
-No hi ha feina de codi oberta en aquesta sessió. La propera sessió llegeix aquest fitxer i espera què es demani. No es comencen soles les troballes que l’auditoria de la recuperació va deixar fora d’aquesta correcció (F-01, F-02, F-03, D-01, D-02). No es comença sola la decisió D1 del calendari, ni l’alineació de glossari, visió i fase 5, ni l’ADR 0017, ni les recomanacions «Després» de l’auditoria. `backup/alpha-funcional` no es mou fins que es demani.
+Les paletes aprovades ja són el codi de l’app (ADR 0020). No es comencen soles les troballes que l’auditoria de la recuperació va deixar fora d’aquesta correcció (F-01, F-02, F-03, D-01, D-02). No es comença sola la decisió D1 del calendari, ni l’alineació de glossari, visió i fase 5, ni l’ADR 0017, ni les recomanacions «Després» de l’auditoria. `backup/alpha-funcional` no es mou fins que es demani.
 
 2026-10-21, decisions del prompt 6 aplicades, sense fase nova: el registre continua obert i la verificació de correu segueix al backlog (`docs/05`), també a l’Alpha i sense SMTP. La invitació s’envia si hi ha `ESPAIS_SMTP_HOST`; si no n’hi ha o l’enviament falla, es conserva i el responsable veu l’enllaç (`docs/05`, `docs/08`). Port propi, no el `Notifier` d’anul·lació. Caducitat 14 dies. La resta del backlog d’invitacions (llista, revocació) no es reobre.
 
@@ -164,6 +166,7 @@ Cap. API de desenvolupament `http://127.0.0.1:8000`; front de desenvolupament `h
 - [0017](docs/adr/0017-contrasenya-i-intents-proposat.md) — proposat, no vigent (complexitat de contrasenya i límit d’intents; no implementat)
 - [0018](docs/adr/0018-recuperacio-de-compte.md) — acceptat, esmenat per 0019 (recuperació per correu; token al fragment; `session_version`; Mailpit a l’Alpha)
 - [0019](docs/adr/0019-recuperacio-sense-sessio.md) — acceptat (la recuperació no obre sessió; consum atòmic; 410; resposta abans de la feina; 401 esborra la sessió local; 72 bytes)
+- [0020](docs/adr/0020-paletes-aprovades.md) — acceptat (hex aprovats als vuit temes; nom visible «Vinyes vora al mar»; els identificadors `vinyes` i `vinyes-dark` no canvien)
 
 ## Notes
 
