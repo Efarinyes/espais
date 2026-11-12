@@ -9,7 +9,7 @@ Actualitza aquest arxiu al final de cada sessió. És el punt d’arrencada del 
 
 ## Darrera feina
 
-2026-11-12: el responsable tria el coordinador en un desplegable, no amb un camp de text. `GET /entitat/coordinadors` és només seu i no porta correu. Les reserves que ell veu porten l’id; les del coordinador, no. Els vuit colors de sala se separen i la casella pinta el mateix to que la llegenda. ADR [0021](docs/adr/0021-filtre-coordinador-i-colors-sala.md). Pytest 273 i Vitest 241. E2E local `espais-e2e-coordinadors`, 33 comprovacions, pila esborrada amb els volums.
+2026-11-12: Croses i Manilles es confonien perquè eren dos marrons. Els colors de sala passen a blau, teal, verd, llima, groc, vermell, fúcsia i porpra. El text sobre el groc i la llima és fosc. L’assignació per id d’espai no canvia.
 
 2026-11-08: la fase d’UX, D1 i la prova E2E es dona per tancada. Queda pendent només D-PALETA: els hex publicats no es canvien fins que es decideixi. `feat/docker-caddy-sqlite` es puja a `origin` perquè qui opera el servidor pugui fer `git pull` i `docker compose up -d --build`, sense `down -v`. No s’ha tocat el VPS ni `main`. `backup/pre-ux-ui-2026-11-02` segueix a `436d97b`.
 

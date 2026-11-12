@@ -15,7 +15,7 @@ Els vuit colors de sala, deixats fora de l’ADR [0020](0020-paletes-aprovades.m
 - `GET /entitat/coordinadors` el respon només el responsable: id i nom, sense correu, només el rol coordinador de la seva entitat. Una invitació no acceptada no hi surt.
 - La llista de reserves del responsable inclou `coordinator_id`. La del coordinador, no: una reserva aliena continua sense nom.
 - El tramat surt de l’id. Dos noms iguals no comparteixen patró.
-- Els vuit colors de sala continuen lligats a l’id de l’espai. El farcit de la casella és el mateix to que el quadrat de la llegenda. El text sobre el farcit queda a 4,5:1.
+- Els vuit colors de sala continuen lligats a l’id de l’espai. El farcit de la casella és el mateix to que el quadrat de la llegenda. El text sobre el farcit queda a 4,5:1. No hi ha dos marrons: or, taronja i marró es confonien a la llegenda.
 
 ## Conseqüències
 

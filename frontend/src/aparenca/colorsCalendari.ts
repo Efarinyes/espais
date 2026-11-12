@@ -1,12 +1,12 @@
 const PALETA = [
-  { main: "#2563EB", on: "#FFFFFF" },
+  { main: "#1D4ED8", on: "#FFFFFF" },
   { main: "#0F766E", on: "#FFFFFF" },
   { main: "#15803D", on: "#FFFFFF" },
-  { main: "#A16207", on: "#FFFFFF" },
-  { main: "#C2410C", on: "#FFFFFF" },
-  { main: "#B91C1C", on: "#FFFFFF" },
-  { main: "#BE185D", on: "#FFFFFF" },
-  { main: "#92400E", on: "#FFFFFF" },
+  { main: "#65A30D", on: "#1C1917" },
+  { main: "#EAB308", on: "#1C1917" },
+  { main: "#DC2626", on: "#FFFFFF" },
+  { main: "#C026D3", on: "#FFFFFF" },
+  { main: "#5B21B6", on: "#FFFFFF" },
 ] as const;
 
 function indexEstable(id: string): number {
