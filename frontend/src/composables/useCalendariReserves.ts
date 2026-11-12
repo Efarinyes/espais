@@ -1,4 +1,4 @@
-import { computed, ref, watch } from "vue";
+import { computed, ref, watch, type Ref } from "vue";
 import { useRoute } from "vue-router";
 import "temporal-polyfill/global";
 
@@ -7,10 +7,12 @@ import {
   DURADA_PER_DEFECTE_MINUTS,
   DURADES_RESERVA_MINUTS,
   classesReserva,
+  clauTramat,
   cobreixInstant,
   filaReserva,
   franjaDesDeInici,
   llegendaTramats,
+  patronsPerClaus,
   reservaVisible,
   titolReserva,
   valorRangAIso,
@@ -36,7 +38,7 @@ export type ModalCalendari =
   | { tipus: "detall"; reserva: ReservaDto }
   | { tipus: "confirmar-anulacio"; reserva: ReservaDto };
 
-export function useCalendariReserves() {
+export function useCalendariReserves(clausCoordinadors: Ref<readonly string[]> = ref([])) {
   const espaisApi = requireEspaisApi();
   const reservesApi = requireReservesApi();
   const sessio = useSessioStore();
@@ -110,6 +112,23 @@ export function useCalendariReserves() {
   }
 
   const reservesVisibles = computed(() => reservesCarregades.value.filter((item) => reservaVisible(item, ambitActual())));
+
+  function mapaTramats(extra: ReservaDto[] = []): Map<string, string> {
+    const claus = new Set<string>();
+    for (const id of clausCoordinadors.value) {
+      const net = id.trim();
+      if (net) {
+        claus.add(net);
+      }
+    }
+    for (const item of [...reservesCarregades.value, ...extra]) {
+      const clau = clauTramat(item);
+      if (clau) {
+        claus.add(clau);
+      }
+    }
+    return patronsPerClaus([...claus]);
+  }
   const filesLlista = computed(() =>
     [...reservesVisibles.value]
       .sort((a, b) => a.starts_at.localeCompare(b.starts_at) || a.id.localeCompare(b.id))
@@ -122,6 +141,7 @@ export function useCalendariReserves() {
             nom: reserva.coordinator_name?.trim() ?? "",
             clau: reserva.coordinator_id?.trim() || reserva.coordinator_name?.trim() || "",
           })),
+          mapaTramats(),
         )
       : [],
   );
@@ -271,8 +291,9 @@ export function useCalendariReserves() {
     const ambit = ambitActual();
     const visibles = llista.filter((item) => reservaVisible(item, ambit));
     const salaSeleccionada = rol === "coordinator" && ambit.espaiId !== "";
+    const patrons = mapaTramats(llista);
     return visibles.map((item) => {
-      const classes = classesReserva(item, rol);
+      const classes = classesReserva(item, rol, patrons);
       return {
         id: item.id,
         title: titolReserva(item, rol, salaSeleccionada),

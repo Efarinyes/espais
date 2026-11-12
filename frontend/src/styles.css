@@ -622,66 +622,77 @@ dialog.modal.modal-open .modal-box {
 }
 
 .llegenda-calendari__mostra {
-  width: 1.75rem;
-  height: 1.75rem;
+  width: 2rem;
+  height: 2rem;
   flex: none;
   border-radius: 0.25rem;
   background-color: var(--color-base-300);
 }
 
 .reserva-tramat-0 {
-  background-image: repeating-linear-gradient(
-    0deg,
-    transparent 0 7px,
-    color-mix(in oklab, var(--color-base-content) 70%, transparent) 7px 14px
+  background-image: radial-gradient(
+    circle,
+    color-mix(in oklab, var(--color-base-content) 82%, transparent) 0 4.5px,
+    transparent 5px
   );
+  background-size: 18px 18px;
+  background-repeat: repeat;
 }
 
 .reserva-tramat-1 {
-  background-image: repeating-linear-gradient(
-    90deg,
-    transparent 0 7px,
-    color-mix(in oklab, var(--color-base-content) 70%, transparent) 7px 14px
+  background-image: repeating-conic-gradient(
+    color-mix(in oklab, var(--color-base-content) 55%, transparent) 0% 25%,
+    transparent 0% 50%
   );
+  background-size: 16px 16px;
+  background-repeat: repeat;
 }
 
 .reserva-tramat-2 {
   background-image: radial-gradient(
     circle,
-    color-mix(in oklab, var(--color-base-content) 75%, transparent) 0 4px,
-    transparent 4.5px
+    transparent 0 3.5px,
+    color-mix(in oklab, var(--color-base-content) 85%, transparent) 4px 6px,
+    transparent 6.5px
   );
-  background-size: 14px 14px;
+  background-size: 18px 18px;
+  background-repeat: repeat;
 }
 
 .reserva-tramat-3 {
-  background-image: repeating-conic-gradient(
-    color-mix(in oklab, var(--color-base-content) 55%, transparent) 0% 25%,
-    transparent 0% 50%
-  );
-  background-size: 14px 14px;
+  background-image:
+    linear-gradient(
+      to right,
+      transparent 0 7px,
+      color-mix(in oklab, var(--color-base-content) 80%, transparent) 7px 9px,
+      transparent 9px 18px
+    ),
+    linear-gradient(
+      to bottom,
+      transparent 0 7px,
+      color-mix(in oklab, var(--color-base-content) 80%, transparent) 7px 9px,
+      transparent 9px 18px
+    );
+  background-size: 18px 18px;
+  background-repeat: repeat;
 }
 
 .reserva-tramat-4 {
   background-image: repeating-linear-gradient(
     45deg,
-    transparent 0 11px,
-    color-mix(in oklab, var(--color-base-content) 75%, transparent) 11px 18px
+    transparent 0 14px,
+    color-mix(in oklab, var(--color-base-content) 85%, transparent) 14px 18px
   );
+  background-repeat: repeat;
 }
 
 .reserva-tramat-5 {
-  background-image:
-    repeating-linear-gradient(
-      0deg,
-      transparent 0 12px,
-      color-mix(in oklab, var(--color-base-content) 70%, transparent) 12px 15px
-    ),
-    repeating-linear-gradient(
-      90deg,
-      transparent 0 12px,
-      color-mix(in oklab, var(--color-base-content) 70%, transparent) 12px 15px
-    );
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent 0 8px,
+    color-mix(in oklab, var(--color-base-content) 85%, transparent) 8px 10px
+  );
+  background-repeat: repeat;
 }
 
 .calendari-espais:not([data-dies-oberts~="0"]) .sx__monday,

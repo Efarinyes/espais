@@ -45,6 +45,8 @@ type CalendariIntern = {
   };
 };
 
+const coordinadors = ref<CoordinadorDto[]>([]);
+
 const {
   esResponsable,
   potReservar,
@@ -110,12 +112,11 @@ const {
   potRegistrarAssistencia,
   darrerRang,
   okReprogramacio,
-} = useCalendariReserves();
+} = useCalendariReserves(computed(() => coordinadors.value.map((persona) => persona.id)));
 
 const aparenca = useAparencaStore();
 const sessio = useSessioStore();
 const identity = requireIdentityApi();
-const coordinadors = ref<CoordinadorDto[]>([]);
 const errorCoordinadors = ref("");
 const router = useRouter();
 const route = useRoute();

@@ -5,7 +5,7 @@ import { defineComponent } from "vue";
 import { createMemoryHistory, createRouter } from "vue-router";
 import { flushPromises, mount } from "@vue/test-utils";
 
-import { classeTramat } from "../calendari";
+import { classeTramat, patronsPerClaus } from "../calendari";
 import { useCalendariReserves } from "./useCalendariReserves";
 import { ApiError } from "../services/http";
 import { espaisApiKey, type EspaiDto, type EspaisApi } from "../services/espais";
@@ -326,6 +326,42 @@ describe("useCalendariReserves", () => {
     ]);
     expect(vistes.find((event) => event.title === "Ocupat")?.people).toBeUndefined();
     expect(wrapperCoord.vm.llegendaCoordinadors).toEqual([]);
+  });
+
+  it("el filtre d’una persona no li torna el tramat que xocava amb una altra", async () => {
+    const perPatro = new Map<string, string>();
+    let primera = "";
+    let segona = "";
+    for (let i = 0; i < 300 && segona === ""; i += 1) {
+      const id = `c-${i}`;
+      const sol = classeTramat(id);
+      const altre = perPatro.get(sol);
+      if (altre) {
+        primera = altre;
+        segona = id;
+      } else {
+        perPatro.set(sol, id);
+      }
+    }
+    const [petit, gran] = [primera, segona].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
+    const mapa = patronsPerClaus([petit, gran]);
+    const wrapper = await muntar(
+      {
+        llistar: async () => [
+          reserva({ id: "r1", coordinator_id: petit, coordinator_name: "Petit" }),
+          reserva({ id: "r2", coordinator_id: gran, coordinator_name: "Gran" }),
+        ],
+      },
+      { coordinador: gran },
+      sessioResp,
+    );
+    await wrapper.vm.carregarEspais();
+    const items = await wrapper.vm.carregarReserves("2026-09-07T22:00:00Z", "2026-09-14T22:00:00Z");
+    const events = wrapper.vm.eventsDeReserves(items);
+    expect(mapa.get(gran)).not.toBe(classeTramat(gran));
+    expect(events).toHaveLength(1);
+    expect(events[0]?._options?.additionalClasses).toEqual([mapa.get(gran)]);
+    expect(wrapper.vm.llegendaCoordinadors.map((entrada) => entrada.classe)).toEqual([mapa.get(gran)]);
   });
 
   it("el responsable filtra per ?espai= sense poder crear, i la llista segueix el mateix àmbit", async () => {

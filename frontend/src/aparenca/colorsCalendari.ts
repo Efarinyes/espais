@@ -32,10 +32,34 @@ export type ColorCalendari = {
   darkColors: { main: string; container: string; onContainer: string };
 };
 
+function ordenarIds(ids: Iterable<string>): string[] {
+  return [...new Set(ids)].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
+}
+
+/** El to preferit surt de l’id. Si dues sales de la llista el voldrien, la d’id més gran passa al següent to lliure. */
+function indexosPerSales(ids: readonly string[]): Map<string, number> {
+  const assignats = new Map<string, number>();
+  const usats = new Set<number>();
+  for (const id of ordenarIds(ids)) {
+    let index = indexEstable(id);
+    if (usats.size < PALETA.length) {
+      let voltes = 0;
+      while (usats.has(index) && voltes < PALETA.length) {
+        index = (index + 1) % PALETA.length;
+        voltes += 1;
+      }
+      usats.add(index);
+    }
+    assignats.set(id, index);
+  }
+  return assignats;
+}
+
 export function calendarisPerEspais(espais: { id: string }[]): Record<string, ColorCalendari> {
+  const indexos = indexosPerSales(espais.map((espai) => espai.id));
   return Object.fromEntries(
     espais.map((espai) => {
-      const to = PALETA[indexEstable(espai.id)];
+      const to = PALETA[indexos.get(espai.id) ?? indexEstable(espai.id)];
       const colors = { main: to.main, container: to.main, onContainer: to.on };
       return [
         espai.id,

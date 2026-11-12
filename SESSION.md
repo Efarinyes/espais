@@ -9,7 +9,7 @@ Actualitza aquest arxiu al final de cada sessió. És el punt d’arrencada del 
 
 ## Darrera feina
 
-2026-11-12: els sis tramats de coordinador deixen de ser ratlles semblants. Ara són franges horitzontals, verticals, punts grossos, escacat, diagonal ampla i reixat.
+2026-11-12: Sala Croses i Sala Manilles eren el mateix blau `#1D4ED8`, i els dos coordinadors el mateix tramat vertical. Dins l’entitat, si dues sales o dos coordinadors voldrien el mateix senyal, l’id més gran passa al següent lliure (ADR 0022). Una de les dues sales passa a vermell; Sala pilars es queda teal. Els dibuixos són punts, escacat, anells, creus, una diagonal i ratlles horitzontals fines.
 
 2026-11-08: la fase d’UX, D1 i la prova E2E es dona per tancada. Queda pendent només D-PALETA: els hex publicats no es canvien fins que es decideixi. `feat/docker-caddy-sqlite` es puja a `origin` perquè qui opera el servidor pugui fer `git pull` i `docker compose up -d --build`, sense `down -v`. No s’ha tocat el VPS ni `main`. `backup/pre-ux-ui-2026-11-02` segueix a `436d97b`.
 
@@ -167,7 +167,8 @@ Cap. API de desenvolupament `http://127.0.0.1:8000`; front de desenvolupament `h
 - [0018](docs/adr/0018-recuperacio-de-compte.md) — acceptat, esmenat per 0019 (recuperació per correu; token al fragment; `session_version`; Mailpit a l’Alpha)
 - [0019](docs/adr/0019-recuperacio-sense-sessio.md) — acceptat (la recuperació no obre sessió; consum atòmic; 410; resposta abans de la feina; 401 esborra la sessió local; 72 bytes)
 - [0020](docs/adr/0020-paletes-aprovades.md) — acceptat (hex aprovats als vuit temes; nom visible «Vinyes vora al mar»; els identificadors `vinyes` i `vinyes-dark` no canvien)
-- [0021](docs/adr/0021-filtre-coordinador-i-colors-sala.md) — acceptat (desplegable de coordinador; colors de sala separats)
+- [0021](docs/adr/0021-filtre-coordinador-i-colors-sala.md) — acceptat; esmenat per 0022 en el xoc de to i de patró (desplegable de coordinador; colors de sala separats)
+- [0022](docs/adr/0022-sales-i-tramats-sense-xoc.md) — acceptat (dins l’entitat, l’id més gran passa al següent to o patró lliure)
 
 ## Notes
 

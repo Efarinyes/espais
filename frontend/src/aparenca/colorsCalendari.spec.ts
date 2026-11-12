@@ -34,6 +34,34 @@ describe("colorsCalendari", () => {
     expect(calendaris.s1.colorName).not.toBe(calendaris.s2.colorName);
   });
 
+  it("dues sales que caurien al mateix to en reben dos, i l’id petit es queda el seu", () => {
+    const perTo = new Map<string, string>();
+    let primera = "";
+    let segona = "";
+    for (let i = 0; i < 200 && segona === ""; i += 1) {
+      const id = `sala-${i}`;
+      const sol = calendarisPerEspais([{ id }])[id].lightColors.main;
+      const altre = perTo.get(sol);
+      if (altre) {
+        primera = altre;
+        segona = id;
+      } else {
+        perTo.set(sol, id);
+      }
+    }
+    expect(segona).not.toBe("");
+    const [petit, gran] = [primera, segona].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
+    const junts = calendarisPerEspais([{ id: gran }, { id: petit }]);
+    const solPetit = calendarisPerEspais([{ id: petit }])[petit].lightColors.main;
+    const solGran = calendarisPerEspais([{ id: gran }])[gran].lightColors.main;
+    expect(junts[petit].lightColors.main).toBe(solPetit);
+    expect(junts[gran].lightColors.main).not.toBe(solGran);
+    expect(junts[petit].lightColors.main).not.toBe(junts[gran].lightColors.main);
+    const reves = calendarisPerEspais([{ id: petit }, { id: gran }]);
+    expect(reves[petit].lightColors.main).toBe(junts[petit].lightColors.main);
+    expect(reves[gran].lightColors.main).toBe(junts[gran].lightColors.main);
+  });
+
   it("manté el color de cada espai si la llista arriba en un altre ordre", () => {
     const endavant = calendarisPerEspais([{ id: "sala-a" }, { id: "sala-b" }, { id: "sala-c" }]);
     const enrere = calendarisPerEspais([{ id: "sala-c" }, { id: "sala-a" }, { id: "sala-b" }]);

@@ -32,17 +32,49 @@ export type PersonaTramat = {
   clau: string;
 };
 
-/** La mateixa persona conserva el patró. La clau és l’id; si no n’hi ha, el nom. Sis patrons: es poden repetir. */
-export function classeTramat(clau: string): string {
+function indexTramat(clau: string): number {
   let hash = 2166136261;
   for (const char of clau.trim()) {
     hash ^= char.codePointAt(0) ?? 0;
     hash = Math.imul(hash, 16777619);
   }
-  return `reserva-tramat-${(hash >>> 0) % NOMBRE_TRAMATS}`;
+  return (hash >>> 0) % NOMBRE_TRAMATS;
 }
 
-export function llegendaTramats(persones: PersonaTramat[]): EntradaTramat[] {
+/** Patró preferit d’una sola clau. Dins l’entitat, el que es pinta és `patronsPerClaus`. */
+export function classeTramat(clau: string): string {
+  return `reserva-tramat-${indexTramat(clau)}`;
+}
+
+function ordenarClaus(claus: readonly string[]): string[] {
+  return [...new Set(claus.map((clau) => clau.trim()).filter(Boolean))].sort((a, b) =>
+    a < b ? -1 : a > b ? 1 : 0,
+  );
+}
+
+/** Si dues claus voldrien el mateix patró, la més gran passa al següent lliure. */
+export function patronsPerClaus(claus: readonly string[]): Map<string, string> {
+  const usats = new Set<number>();
+  const resultat = new Map<string, string>();
+  for (const clau of ordenarClaus(claus)) {
+    let index = indexTramat(clau);
+    if (usats.size < NOMBRE_TRAMATS) {
+      let voltes = 0;
+      while (usats.has(index) && voltes < NOMBRE_TRAMATS) {
+        index = (index + 1) % NOMBRE_TRAMATS;
+        voltes += 1;
+      }
+      usats.add(index);
+    }
+    resultat.set(clau, `reserva-tramat-${index}`);
+  }
+  return resultat;
+}
+
+export function llegendaTramats(
+  persones: PersonaTramat[],
+  patrons?: ReadonlyMap<string, string>,
+): EntradaTramat[] {
   const perClau = new Map<string, string>();
   for (const persona of persones) {
     const nom = persona.nom.trim();
@@ -52,9 +84,10 @@ export function llegendaTramats(persones: PersonaTramat[]): EntradaTramat[] {
     }
     perClau.set(clau, nom);
   }
+  const mapa = patrons ?? patronsPerClaus([...perClau.keys()]);
   return [...perClau.entries()]
     .sort((a, b) => a[1].localeCompare(b[1], "ca") || a[0].localeCompare(b[0]))
-    .map(([clau, nom]) => ({ nom, classe: classeTramat(clau) }));
+    .map(([clau, nom]) => ({ nom, classe: mapa.get(clau) ?? classeTramat(clau) }));
 }
 
 export type AmbitVista = {
@@ -210,10 +243,17 @@ export function clauTramat(item: ReservaDto): string {
   return item.coordinator_id?.trim() || item.coordinator_name?.trim() || "";
 }
 
-export function classesReserva(item: ReservaDto, role: RolSessio): string[] {
+export function classesReserva(
+  item: ReservaDto,
+  role: RolSessio,
+  patrons?: ReadonlyMap<string, string>,
+): string[] {
   if (role === "responsible") {
     const clau = clauTramat(item);
-    return clau ? [classeTramat(clau)] : [];
+    if (!clau) {
+      return [];
+    }
+    return [patrons?.get(clau) ?? classeTramat(clau)];
   }
   return [item.mine ? "reserva-propia" : "reserva-ocupada"];
 }
