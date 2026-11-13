@@ -2,7 +2,7 @@
 
 Paletes aprovades i implementades. El nom visible de la primera família és **Vinyes vora al mar**. Els identificadors segueixen sent `vinyes` i `vinyes-dark`. Mar i cel queda amb els hex aprovats, sense cap canvi posterior.
 
-Els hex d’aquest document són els de l’aplicació. La previsualització és [`proposta-paletes.html`](proposta-paletes.html): el mateix contingut a les quatre famílies i als dos modes, sense dependències.
+Els hex d’aquest document són els de l’aplicació.
 
 Els contrastos s’han calculat amb la luminància relativa de WCAG 2.2, la mateixa fórmula que `frontend/src/aparenca/contrast.ts`. Text normal: 4,5:1. Vora, focus i límit d’un control: 3:1. Cap parell d’aquesta proposta que porti text o que faci de límit queda per sota.
 

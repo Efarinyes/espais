@@ -63,7 +63,6 @@ const {
   espaisDeLlegenda,
   espaiDeRutaInvalid,
   calendaris,
-  llegendaCoordinadors,
   estatLectura,
   avisRefresc,
   carregant,
@@ -112,7 +111,7 @@ const {
   potRegistrarAssistencia,
   darrerRang,
   okReprogramacio,
-} = useCalendariReserves(computed(() => coordinadors.value.map((persona) => persona.id)));
+} = useCalendariReserves();
 
 const aparenca = useAparencaStore();
 const sessio = useSessioStore();
@@ -728,12 +727,6 @@ async function reintentar() {
         <li v-for="espai in espaisDeLlegenda" :key="espai.id">
           <span class="llegenda-calendari__mostra" :style="{ backgroundColor: colorSala(espai.id) }" />
           <span>{{ espai.name }}</span>
-        </li>
-      </ul>
-      <ul v-if="esResponsable && llegendaCoordinadors.length > 0" class="llegenda-calendari" aria-label="Coordinadors">
-        <li v-for="entrada in llegendaCoordinadors" :key="entrada.nom">
-          <span class="llegenda-calendari__mostra" :class="entrada.classe" />
-          <span>{{ entrada.nom }}</span>
         </li>
       </ul>
       <LlistaReserves

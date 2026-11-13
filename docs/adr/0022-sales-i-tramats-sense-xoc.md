@@ -1,6 +1,6 @@
 # ADR 0022 — Sales i tramats sense xoc dins l’entitat
 
-- **Estat:** acceptat
+- **Estat:** acceptat; el tramat de coordinador queda retirat per [0023](0023-coordinador-pel-nom.md). El color de sala sense xoc continua vigent.
 - **Data:** 2026-11-12
 - **Relacionat:** [0021](0021-filtre-coordinador-i-colors-sala.md)
 - **Esmena:** [0021](0021-filtre-coordinador-i-colors-sala.md), només el xoc de to i el xoc de patró
@@ -15,7 +15,8 @@ Josep Oriol i Oriol Ferrer portaven el mateix tramat, unes ratlles verticals que
 
 - El to preferit d’una sala continua sent el residu de l’id. Entre les sales actives de l’entitat, si dues el voldrien i encara queda un to lliure, la de l’id més gran en ordre de text passa al següent to lliure. Amb més de vuit sales, el to es pot repetir. L’ordre en què arriba la llista no reparteix colors.
 - El patró preferit d’un coordinador continua sent el residu de l’id. Entre els coordinadors de l’entitat, si dos el voldrien i encara queda un patró lliure, el de l’id més gran passa al següent patró lliure. Amb més de sis, el patró es pot repetir. El filtre de la vista no el canvia.
-- Els sis dibuixos són figures diferents: punts, escacat, anells, creus, una diagonal i ratlles horitzontals fines. El color de la sala es continua veient. El tramat de «Ocupat» no és cap d’aquests sis.
+- Els sis dibuixos són línies fines i poc denses (horitzontal, vertical, dues diagonals, punts petits i una reixeta oberta). El color de la sala es continua veient. El tramat de «Ocupat» no és cap d’aquests sis.
+- Els vuit tons de sala són apagats. No hi ha violeta ni blau elèctric. El mateix hex serveix en clar i en fosc.
 
 ## Conseqüències
 

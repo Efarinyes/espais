@@ -622,77 +622,11 @@ dialog.modal.modal-open .modal-box {
 }
 
 .llegenda-calendari__mostra {
-  width: 2rem;
-  height: 2rem;
+  width: 1.5rem;
+  height: 1.5rem;
   flex: none;
   border-radius: 0.25rem;
   background-color: var(--color-base-300);
-}
-
-.reserva-tramat-0 {
-  background-image: radial-gradient(
-    circle,
-    color-mix(in oklab, var(--color-base-content) 82%, transparent) 0 4.5px,
-    transparent 5px
-  );
-  background-size: 18px 18px;
-  background-repeat: repeat;
-}
-
-.reserva-tramat-1 {
-  background-image: repeating-conic-gradient(
-    color-mix(in oklab, var(--color-base-content) 55%, transparent) 0% 25%,
-    transparent 0% 50%
-  );
-  background-size: 16px 16px;
-  background-repeat: repeat;
-}
-
-.reserva-tramat-2 {
-  background-image: radial-gradient(
-    circle,
-    transparent 0 3.5px,
-    color-mix(in oklab, var(--color-base-content) 85%, transparent) 4px 6px,
-    transparent 6.5px
-  );
-  background-size: 18px 18px;
-  background-repeat: repeat;
-}
-
-.reserva-tramat-3 {
-  background-image:
-    linear-gradient(
-      to right,
-      transparent 0 7px,
-      color-mix(in oklab, var(--color-base-content) 80%, transparent) 7px 9px,
-      transparent 9px 18px
-    ),
-    linear-gradient(
-      to bottom,
-      transparent 0 7px,
-      color-mix(in oklab, var(--color-base-content) 80%, transparent) 7px 9px,
-      transparent 9px 18px
-    );
-  background-size: 18px 18px;
-  background-repeat: repeat;
-}
-
-.reserva-tramat-4 {
-  background-image: repeating-linear-gradient(
-    45deg,
-    transparent 0 14px,
-    color-mix(in oklab, var(--color-base-content) 85%, transparent) 14px 18px
-  );
-  background-repeat: repeat;
-}
-
-.reserva-tramat-5 {
-  background-image: repeating-linear-gradient(
-    0deg,
-    transparent 0 8px,
-    color-mix(in oklab, var(--color-base-content) 85%, transparent) 8px 10px
-  );
-  background-repeat: repeat;
 }
 
 .calendari-espais:not([data-dies-oberts~="0"]) .sx__monday,
@@ -802,15 +736,13 @@ dialog.modal.modal-open .modal-box {
 }
 
 .calendari-espais .sx__time-grid-event-title {
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
+  display: block;
   overflow: hidden;
-  font-size: var(--tipus-secundari);
-  font-weight: 600;
+  font-size: 0.75rem;
+  font-weight: 500;
   line-height: 1.25;
-  overflow-wrap: anywhere;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .calendari-espais .sx__time-grid-event-time,

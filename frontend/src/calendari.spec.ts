@@ -3,12 +3,9 @@ import { describe, expect, it } from "vitest";
 
 import {
   arrodoneixClicAFranja,
-  classeTramat,
   classesReserva,
-  patronsPerClaus,
   etiquetaPeriode,
   filaReserva,
-  llegendaTramats,
   parseCompteAssistencia,
   nomAccessibleReserva,
   rangVisible,
@@ -62,46 +59,14 @@ describe("calendari", () => {
     expect(nom).toContain("10:00");
   });
 
-  it("separa dos coordinadors que voldrien el mateix tramat i l’id petit es queda el seu", () => {
-    const llegenda = llegendaTramats([
-      { nom: "Núria", clau: "nuria" },
-      { nom: "Carla", clau: "carla" },
-      { nom: "Carla", clau: "carla" },
-      { nom: "  ", clau: "" },
-    ]);
-    expect(llegenda.map((entrada) => entrada.nom)).toEqual(["Carla", "Núria"]);
-    const homonims = llegendaTramats([
-      { nom: "Anna", clau: "a1" },
-      { nom: "Anna", clau: "a2" },
-    ]);
-    expect(homonims).toHaveLength(2);
-    expect(homonims[0]?.classe).not.toBe(homonims[1]?.classe);
-
-    const perPatro = new Map<string, string>();
-    let primera = "";
-    let segona = "";
-    for (let i = 0; i < 300 && segona === ""; i += 1) {
-      const id = `c-${i}`;
-      const sol = classeTramat(id);
-      const altre = perPatro.get(sol);
-      if (altre) {
-        primera = altre;
-        segona = id;
-      } else {
-        perPatro.set(sol, id);
-      }
-    }
-    const [petit, gran] = [primera, segona].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
-    const junts = patronsPerClaus([gran, petit]);
-    expect(junts.get(petit)).toBe(classeTramat(petit));
-    expect(junts.get(gran)).not.toBe(classeTramat(gran));
-    expect(junts.get(petit)).not.toBe(junts.get(gran));
-    expect(patronsPerClaus([petit, gran]).get(gran)).toBe(junts.get(gran));
-    const itemGran = { ...reserva, coordinator_id: gran, coordinator_name: "Gran" };
-    expect(classesReserva(itemGran, "responsible", junts)).toEqual([junts.get(gran)]);
-    expect(classesReserva({ ...itemGran, coordinator_id: petit }, "responsible")).toEqual([
-      classeTramat(petit),
-    ]);
+  it("el responsable identifica el coordinador pel nom, sense cap classe de tramat", () => {
+    const anna = { ...reserva, coordinator_id: "a1", coordinator_name: "Anna Costa" };
+    const nuria = { ...reserva, coordinator_id: "n1", coordinator_name: "Núria Serra" };
+    expect(titolReserva(anna, "responsible")).toBe("Anna Costa");
+    expect(titolReserva(nuria, "responsible")).toBe("Núria Serra");
+    expect(classesReserva(anna, "responsible")).toEqual([]);
+    expect(classesReserva(nuria, "responsible")).toEqual([]);
+    expect(nomAccessibleReserva(anna, "responsible")).toContain("Anna Costa");
   });
 
   it("amb sala, el coordinador només veu aquella sala i ignora el filtre de persona", () => {
@@ -128,10 +93,9 @@ describe("calendari", () => {
     expect(reservaVisible(nuria, ambit)).toBe(false);
     expect(reservaVisible(anna2, { ...ambit, espaiId: "s1", coordinadorId: "" })).toBe(false);
     expect(reservaVisible(anna1, { ...ambit, espaiId: "s1", coordinadorId: "a1" })).toBe(true);
-    expect(classesReserva(anna1, "responsible")).toEqual([classeTramat("a1")]);
-    expect(classesReserva({ ...anna1, coordinator_id: "a2", coordinator_name: "Anna Costa" }, "responsible")).not.toEqual(
-      classesReserva(anna1, "responsible"),
-    );
+    expect(classesReserva(anna1, "responsible")).toEqual([]);
+    expect(titolReserva(anna1, "responsible")).toBe("Anna Costa");
+    expect(titolReserva({ ...anna1, coordinator_name: "Anna Soler" }, "responsible")).toBe("Anna Soler");
   });
 
   it("la fila de llista no revela el coordinador aliè", () => {

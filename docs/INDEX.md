@@ -53,6 +53,7 @@ Punt de mapa. Llegeix [`SESSION.md`](../SESSION.md) abans de qualsevol capítol.
 - [adr/0020-paletes-aprovades.md](adr/0020-paletes-aprovades.md)
 - [adr/0021-filtre-coordinador-i-colors-sala.md](adr/0021-filtre-coordinador-i-colors-sala.md)
 - [adr/0022-sales-i-tramats-sense-xoc.md](adr/0022-sales-i-tramats-sense-xoc.md)
+- [adr/0023-coordinador-pel-nom.md](adr/0023-coordinador-pel-nom.md)
 
 ## Skills i rules
 

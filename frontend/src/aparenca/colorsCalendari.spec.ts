@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { calendarisPerEspais } from "./colorsCalendari";
-import { relacioContrast } from "./contrast";
+import { luminancia, relacioContrast } from "./contrast";
 
 function toHue(hex: string): number {
   const color = hex.replace("#", "");
@@ -72,27 +72,32 @@ describe("colorsCalendari", () => {
   });
 
   it("els vuit colors se separen i el text de la casella arriba a 4,5:1", () => {
+    const esperats = ["#8E4038", "#2F6A5C", "#A9C48A", "#3E5270", "#E0A06A", "#4E6A38", "#D4A0B8", "#8FB0C4"];
     const mains = new Set<string>();
+    const vistos = new Map<string, string>();
     for (let i = 0; i < 400 && mains.size < 8; i += 1) {
       const id = `espai-${i}`;
-      mains.add(calendarisPerEspais([{ id }])[id].lightColors.main);
+      const main = calendarisPerEspais([{ id }])[id].lightColors.main;
+      mains.add(main);
+      vistos.set(main, id);
     }
-    expect(mains.size).toBe(8);
+    expect([...mains].sort()).toEqual([...esperats].sort());
     expect(mains.has("#8B5CF6")).toBe(false);
-    expect(mains.has("#0B5ED7")).toBe(false);
-    expect(mains.has("#92400E")).toBe(false);
-    expect(mains.has("#A16207")).toBe(false);
-    expect(mains.has("#C2410C")).toBe(false);
-    const tons = [...mains].map(toHue);
-    expect(tons.filter((to) => to >= 250 && to <= 310).length).toBeLessThanOrEqual(1);
+    expect(mains.has("#6D28D9")).toBe(false);
+    expect(mains.has("#1D4ED8")).toBe(false);
+    expect(mains.has("#DC2626")).toBe(false);
+    const tons = [...mains].map((hex) => ({ hex, to: toHue(hex), llum: luminancia(hex) }));
+    expect(tons.filter((to) => to.to >= 250 && to.to <= 310)).toEqual([]);
     for (let i = 0; i < tons.length; i += 1) {
       for (let j = i + 1; j < tons.length; j += 1) {
-        const gir = Math.abs(tons[i] - tons[j]) % 360;
-        expect(Math.min(gir, 360 - gir)).toBeGreaterThanOrEqual(28);
+        const gir = Math.abs(tons[i].to - tons[j].to) % 360;
+        const separats = Math.abs(tons[i].llum - tons[j].llum) >= 0.2;
+        if (!separats) {
+          expect(Math.min(gir, 360 - gir)).toBeGreaterThanOrEqual(40);
+        }
       }
     }
-    for (let i = 0; i < 40; i += 1) {
-      const id = `sala-${i}`;
+    for (const id of vistos.values()) {
       const colors = calendarisPerEspais([{ id }])[id];
       expect(colors.darkColors.container).toBe(colors.lightColors.main);
       expect(colors.lightColors.container).toBe(colors.lightColors.main);

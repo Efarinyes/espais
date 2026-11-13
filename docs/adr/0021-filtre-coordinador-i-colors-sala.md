@@ -14,7 +14,7 @@ Els vuit colors de sala, deixats fora de l’ADR [0020](0020-paletes-aprovades.m
 - El responsable tria un coordinador de l’entitat en un desplegable. La primera opció és «Tots». El valor de la URL és `?coordinador=` amb l’id. El coordinador no veu el desplegable i un `?coordinador=` a la seva URL s’esborra.
 - `GET /entitat/coordinadors` el respon només el responsable: id i nom, sense correu, només el rol coordinador de la seva entitat. Una invitació no acceptada no hi surt.
 - La llista de reserves del responsable inclou `coordinator_id`. La del coordinador, no: una reserva aliena continua sense nom.
-- El tramat surt de l’id. Dos noms iguals no comparteixen patró. L’ADR [0022](0022-sales-i-tramats-sense-xoc.md) esmena el cas en què dos ids diferents cauen al mateix patró.
+- El tramat de coordinador queda retirat per l’ADR [0023](0023-coordinador-pel-nom.md): el responsable llegeix el nom a la reserva.
 - Els vuit colors de sala continuen lligats a l’id de l’espai. El farcit de la casella és el mateix to que el quadrat de la llegenda. El text sobre el farcit queda a 4,5:1. No hi ha dos marrons ni dos porpres. L’ADR 0022 esmena el cas en què dues sales cauen al mateix to.
 
 ## Conseqüències

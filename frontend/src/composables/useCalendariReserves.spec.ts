@@ -5,7 +5,6 @@ import { defineComponent } from "vue";
 import { createMemoryHistory, createRouter } from "vue-router";
 import { flushPromises, mount } from "@vue/test-utils";
 
-import { classeTramat, patronsPerClaus } from "../calendari";
 import { useCalendariReserves } from "./useCalendariReserves";
 import { ApiError } from "../services/http";
 import { espaisApiKey, type EspaiDto, type EspaisApi } from "../services/espais";
@@ -279,10 +278,10 @@ describe("useCalendariReserves", () => {
     expect(event.title).toBe("Carla");
     expect(event.calendarId).toBe("s1");
     expect(event.people).toEqual(["Carla"]);
-    expect(event._options?.additionalClasses).toEqual([classeTramat("Carla")]);
+    expect(event._options?.additionalClasses).toBeUndefined();
   });
 
-  it("el responsable distingeix els coordinadors pel tramat i el coordinador no", async () => {
+  it("el responsable distingeix els coordinadors pel nom i el coordinador no", async () => {
     const wrapperResp = await muntar(
       {
         llistar: async () => [
@@ -298,12 +297,8 @@ describe("useCalendariReserves", () => {
     const items = await wrapperResp.vm.carregarReserves("2026-09-07T22:00:00Z", "2026-09-14T22:00:00Z");
     const events = wrapperResp.vm.eventsDeReserves(items);
     expect(events.map((event) => event.calendarId)).toEqual(["s1", "s2"]);
-    expect(events.map((event) => event._options?.additionalClasses?.[0])).toEqual([
-      classeTramat("Núria"),
-      classeTramat("Carla"),
-    ]);
-    expect(classeTramat("Núria")).not.toBe(classeTramat("Carla"));
-    expect(wrapperResp.vm.llegendaCoordinadors.map((entrada) => entrada.nom)).toEqual(["Carla", "Núria"]);
+    expect(events.map((event) => event.title)).toEqual(["Núria", "Carla"]);
+    expect(events.every((event) => event._options?.additionalClasses == null)).toBe(true);
 
     const wrapperCoord = await muntar(
       {
@@ -325,43 +320,25 @@ describe("useCalendariReserves", () => {
       ["reserva-ocupada"],
     ]);
     expect(vistes.find((event) => event.title === "Ocupat")?.people).toBeUndefined();
-    expect(wrapperCoord.vm.llegendaCoordinadors).toEqual([]);
   });
 
-  it("el filtre d’una persona no li torna el tramat que xocava amb una altra", async () => {
-    const perPatro = new Map<string, string>();
-    let primera = "";
-    let segona = "";
-    for (let i = 0; i < 300 && segona === ""; i += 1) {
-      const id = `c-${i}`;
-      const sol = classeTramat(id);
-      const altre = perPatro.get(sol);
-      if (altre) {
-        primera = altre;
-        segona = id;
-      } else {
-        perPatro.set(sol, id);
-      }
-    }
-    const [petit, gran] = [primera, segona].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
-    const mapa = patronsPerClaus([petit, gran]);
+  it("el filtre d’una persona mostra el seu nom i cap classe de tramat", async () => {
     const wrapper = await muntar(
       {
         llistar: async () => [
-          reserva({ id: "r1", coordinator_id: petit, coordinator_name: "Petit" }),
-          reserva({ id: "r2", coordinator_id: gran, coordinator_name: "Gran" }),
+          reserva({ id: "r1", coordinator_id: "petit", coordinator_name: "Petit" }),
+          reserva({ id: "r2", coordinator_id: "gran", coordinator_name: "Gran" }),
         ],
       },
-      { coordinador: gran },
+      { coordinador: "gran" },
       sessioResp,
     );
     await wrapper.vm.carregarEspais();
     const items = await wrapper.vm.carregarReserves("2026-09-07T22:00:00Z", "2026-09-14T22:00:00Z");
     const events = wrapper.vm.eventsDeReserves(items);
-    expect(mapa.get(gran)).not.toBe(classeTramat(gran));
     expect(events).toHaveLength(1);
-    expect(events[0]?._options?.additionalClasses).toEqual([mapa.get(gran)]);
-    expect(wrapper.vm.llegendaCoordinadors.map((entrada) => entrada.classe)).toEqual([mapa.get(gran)]);
+    expect(events[0]?.title).toBe("Gran");
+    expect(events[0]?._options?.additionalClasses).toBeUndefined();
   });
 
   it("el responsable filtra per ?espai= sense poder crear, i la llista segueix el mateix àmbit", async () => {

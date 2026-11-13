@@ -8,7 +8,7 @@
 
 L’ADR 0010 fixava els hex de les quatre famílies. L’ADR 0011 va deixar la paleta a l’entitat i el mode clar/fosc al navegador, i va mantenir aquells hex. La decisió D-PALETA els havia deixat quiets fins a una aprovació.
 
-Les quatre famílies s’han aprovat. La font dels valors és [`docs/ux/colors/PROPOSTA-PALETES.md`](../ux/colors/PROPOSTA-PALETES.md) i la previsualització [`docs/ux/colors/proposta-paletes.html`](../ux/colors/proposta-paletes.html).
+Les quatre famílies s’han aprovat. La font dels valors és [`docs/ux/colors/PROPOSTA-PALETES.md`](../ux/colors/PROPOSTA-PALETES.md).
 
 ## Decisió
 
