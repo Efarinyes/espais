@@ -9,7 +9,7 @@ Actualitza aquest arxiu al final de cada sessió. És el punt d’arrencada del 
 
 ## Darrera feina
 
-2026-11-13: al calendari del responsable la sala és el color i el coordinador és el nom (ADR 0023). Sense tramat ni llegenda de coordinadors. El nom fa 0,75 rem, pes 500, i es talla amb punts suspensius. E2E Docker `espais-e2e-visual-20261113`, 48 comprovacions. Les captures no es conserven al repositori. Pila i volums de prova esborrats. `espais.sqlite3` i els volums `espais_*` no s’han tocat. La branca es puja a `origin` perquè qui opera el servidor faci `git pull` i `docker compose up -d --build`, sense `down -v`.
+2026-11-13: solució acceptada i sessió tancada. Al calendari del responsable la sala és el color i el coordinador és el nom (ADR 0023). Sense tramat ni llegenda de coordinadors. El nom fa 0,75 rem, pes 500, i es talla amb punts suspensius. E2E Docker `espais-e2e-visual-20261113`, 48 comprovacions. Les captures no es conserven al repositori. Pila i volums de prova esborrats. `espais.sqlite3` i els volums `espais_*` no s’han tocat. El codi és a `origin/feat/docker-caddy-sqlite`, commit `d89d9d9`. Qui opera el servidor el publica amb `git pull` i `docker compose up -d --build`, sense `down -v`. No s’ha tocat el VPS ni `main`.
 
 2026-11-08: la fase d’UX, D1 i la prova E2E es dona per tancada. Queda pendent només D-PALETA: els hex publicats no es canvien fins que es decideixi. `feat/docker-caddy-sqlite` es puja a `origin` perquè qui opera el servidor pugui fer `git pull` i `docker compose up -d --build`, sense `down -v`. No s’ha tocat el VPS ni `main`. `backup/pre-ux-ui-2026-11-02` segueix a `436d97b`.
 
@@ -123,7 +123,7 @@ Desplegat al VPS (`6b455b9`) i provat amb Capgrossos, «Sala pilars». La vista 
 
 ## Següent tasca
 
-Les paletes (ADR [0020](docs/adr/0020-paletes-aprovades.md)) i el desplegable de coordinador amb els colors de sala (ADR [0021](docs/adr/0021-filtre-coordinador-i-colors-sala.md)) són a `feat/docker-caddy-sqlite`. Qui opera el servidor publica amb `git pull` i `docker compose up -d --build`, sense `down -v`. No es fusiona a `main`.
+Prova de camp del calendari a `d89d9d9`: qui opera el servidor fa `git pull` i `docker compose up -d --build`, sense `down -v`. La sala es reconeix pel color i el coordinador pel nom (ADR [0023](docs/adr/0023-coordinador-pel-nom.md)). No es reobre el tramat ni la llegenda de coordinadors. No es fusiona a `main`.
 
 La feina de desplegament continua a `feat/docker-caddy-sqlite`: és la branca que el servidor desplega després del `git pull` i de regenerar els contenidors. `backup/alpha-funcional` (`9178e98`, també a `origin`) és el punt de retorn. `backup/pre-ux-ui-2026-11-02` (`436d97b`) no es mou. No es fusiona a `main` fins a la Beta, quan es canviï la configuració del servidor. No s’esborren `backup/alpha-funcional` ni `backup/pre-dockeritzacio`.
 
