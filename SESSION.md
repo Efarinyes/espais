@@ -9,7 +9,7 @@ Actualitza aquest arxiu al final de cada sessió. És el punt d’arrencada del 
 
 ## Darrera feina
 
-2026-11-15: autorització centralitzada, sense ADR nou. El rol continua sortint de la membership a cada petició. Les accions viuen a `app/domain/authorization.py` i les pantalles a `frontend/src/autoritzacio.ts`. Una ruta privada no es pinta fins que `GET /sessio` confirma el rol. `/avisos` és només del coordinador: el responsable rep 403. Pytest 286, Vitest 270 i `vue-tsc` nets. E2E Docker del projecte `espais-e2e-autoritzacio`, a `127.0.0.1:8090`, 27 comprovacions; la pila i els seus volums s’han esborrat. `espais.sqlite3` i els volums `espais_*` no s’han tocat. El codi és `eecda4f`, a `origin/feat/docker-caddy-sqlite`. No es fusiona a `main`. El VPS encara no el serveix: qui l’opera el publica amb `git pull` i `docker compose up -d --build`, sense `down -v`.
+2026-11-15: sessió tancada. Autorització centralitzada, sense ADR nou. El rol continua sortint de la membership a cada petició. Les accions viuen a `app/domain/authorization.py` i les pantalles a `frontend/src/autoritzacio.ts`. Una ruta privada no es pinta fins que `GET /sessio` confirma el rol. `/avisos` és només del coordinador: el responsable rep 403. Pytest 286, Vitest 270 i `vue-tsc` nets. E2E Docker del projecte `espais-e2e-autoritzacio`, a `127.0.0.1:8090`, 27 comprovacions; la pila i els seus volums s’han esborrat. `espais.sqlite3` i els volums `espais_*` no s’han tocat. El codi de l’app és `eecda4f`, ja a `origin/feat/docker-caddy-sqlite` (la punta remota, abans d’aquesta nota, és `58ee3ca`). No es fusiona a `main`. El VPS encara no el serveix: qui l’opera el publica amb `git pull` i `docker compose up -d --build`, sense `down -v`.
 
 2026-11-15: sessió tancada. Qui fa servir l’app confirma que l’avís es veu a Safari i, amb l’id `nota-funcio`, també a Brave amb EasyList Cookie activada. El codi és `e450a71`, a `origin/feat/docker-caddy-sqlite`, i el servidor ja el serveix. No es fusiona a `main`. Sense ADR: el canvi d’id és deute d’implementació ja aplicat, anotat a `docs/14-ui-ux.md`. Queda sense inventar: adreça postal, NIF, correu de contacte i la informació de l’article 13 del RGPD.
 
@@ -131,7 +131,7 @@ Desplegat al VPS (`6b455b9`) i provat amb Capgrossos, «Sala pilars». La vista 
 
 ## Següent tasca
 
-L’autorització de rutes i d’endpoints queda tancada. No es reobre. No es fusiona a `main` ni es fa push fins que es demani.
+L’autorització de rutes i d’endpoints queda tancada. No es reobre. Ja és a `origin/feat/docker-caddy-sqlite`. El pas següent, només quan qui opera el servidor ho faci, és `git pull` i `docker compose up -d --build`, sense `down -v`. No es fusiona a `main`.
 
 L’avís i la política de cookies queden tancats. No es reobren. No es fusiona a `main`.
 
