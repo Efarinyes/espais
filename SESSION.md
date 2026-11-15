@@ -9,6 +9,8 @@ Actualitza aquest arxiu al final de cada sessió. És el punt d’arrencada del 
 
 ## Darrera feina
 
+2026-11-15: autorització centralitzada, sense ADR nou. El rol continua sortint de la membership a cada petició. Les accions viuen a `app/domain/authorization.py` i les pantalles a `frontend/src/autoritzacio.ts`. Una ruta privada no es pinta fins que `GET /sessio` confirma el rol. `/avisos` és només del coordinador: el responsable rep 403. Pytest 286, Vitest 270 i `vue-tsc` nets. E2E Docker del projecte `espais-e2e-autoritzacio`, a `127.0.0.1:8090`, 27 comprovacions; la pila i els seus volums s’han esborrat. `espais.sqlite3` i els volums `espais_*` no s’han tocat. Sense push ni fusió a `main`.
+
 2026-11-15: sessió tancada. Qui fa servir l’app confirma que l’avís es veu a Safari i, amb l’id `nota-funcio`, també a Brave amb EasyList Cookie activada. El codi és `e450a71`, a `origin/feat/docker-caddy-sqlite`, i el servidor ja el serveix. No es fusiona a `main`. Sense ADR: el canvi d’id és deute d’implementació ja aplicat, anotat a `docs/14-ui-ux.md`. Queda sense inventar: adreça postal, NIF, correu de contacte i la informació de l’article 13 del RGPD.
 
 2026-11-15: l’avís de la landing deixa de dir-se `#avis-cookies`. Brave, amb EasyList Cookie activa per defecte, amaga aquest id. El quadre ara és `#nota-funcio`; l’id, el títol accessible i les classes no contenen la paraula cookie. El text visible i la clau `espais.avis-cookies` es queden. Cap regla general d’aquesta llista coincideix amb les classes de Tailwind del quadre. Les regles que amaguen un text amb «cookies» van lligades a altres dominis.
@@ -128,6 +130,8 @@ Navegador local, entitat de prova «Entitat Graella» (`graella.resp@example.com
 Desplegat al VPS (`6b455b9`) i provat amb Capgrossos, «Sala pilars». La vista dia del divendres ja anava de 19:30 a 24:00. La setmana començava a les 07:30 perquè dissabte i diumenge tenien mal posada l’hora d’inici (les 08:00): era un error de dades, no de codi. Amb l’horari de la sala corregit, el calendari funciona com s’esperava, per al coordinador i per al responsable. La graella de la setmana fa servir l’obertura més d’hora de tots els dies: és el comportament volgut.
 
 ## Següent tasca
+
+L’autorització de rutes i d’endpoints queda tancada. No es reobre. No es fusiona a `main` ni es fa push fins que es demani.
 
 L’avís i la política de cookies queden tancats. No es reobren. No es fusiona a `main`.
 

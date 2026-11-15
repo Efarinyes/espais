@@ -1,7 +1,8 @@
 import { createRouter, createWebHistory } from "vue-router";
 
+import { calVerificarSessio, decisioAcces, esPrivada, metaDeRuta } from "../autoritzacio";
 import TaulerLayout from "../components/TaulerLayout.vue";
-import { destiDespresSessio } from "../navegacio";
+import { refrescarSessio } from "../confirmacioSessio";
 import { useSessioStore } from "../stores/sessio";
 import AcceptaInvitacioView from "../views/AcceptaInvitacioView.vue";
 import AnalisiView from "../views/AnalisiView.vue";
@@ -18,9 +19,6 @@ import PoliticaCookiesView from "../views/PoliticaCookiesView.vue";
 import RecuperarAccesView from "../views/RecuperarAccesView.vue";
 import RegistreView from "../views/RegistreView.vue";
 
-const metaAuth = { requiresAuth: true };
-const metaResp = { requiresAuth: true, requiresResponsible: true };
-
 export const router = createRouter({
   history: createWebHistory(),
   scrollBehavior(to) {
@@ -31,12 +29,12 @@ export const router = createRouter({
   },
   routes: [
     { path: "/", name: "inici", component: IniciView },
-    { path: "/registre", name: "registre", component: RegistreView, meta: { guestOnly: true } },
+    { path: "/registre", name: "registre", component: RegistreView, meta: metaDeRuta("registre") },
     {
       path: "/iniciar-sessio",
       name: "iniciar-sessio",
       component: IniciSessioView,
-      meta: { guestOnly: true },
+      meta: metaDeRuta("iniciar-sessio"),
     },
     {
       path: "/recuperar",
@@ -52,60 +50,70 @@ export const router = createRouter({
       path: "/espais",
       component: TaulerLayout,
       children: [
-        { path: "", name: "espais", component: EspaisView, meta: metaAuth },
-        { path: "nou", name: "espai-nou", component: EspaiNouView, meta: metaResp },
-        { path: ":id", name: "espai-editar", component: EspaiEditarView, meta: metaResp },
+        { path: "", name: "espais", component: EspaisView, meta: metaDeRuta("espais") },
+        { path: "nou", name: "espai-nou", component: EspaiNouView, meta: metaDeRuta("espai-nou") },
+        { path: ":id", name: "espai-editar", component: EspaiEditarView, meta: metaDeRuta("espai-editar") },
       ],
     },
     {
       path: "/calendari",
       component: TaulerLayout,
-      children: [{ path: "", name: "calendari", component: CalendariView, meta: metaAuth }],
+      children: [{ path: "", name: "calendari", component: CalendariView, meta: metaDeRuta("calendari") }],
     },
     {
       path: "/avisos",
       component: TaulerLayout,
-      children: [{ path: "", name: "avisos", component: AvisosView, meta: metaAuth }],
+      children: [{ path: "", name: "avisos", component: AvisosView, meta: metaDeRuta("avisos") }],
     },
     {
       path: "/analisi",
       component: TaulerLayout,
-      children: [{ path: "", name: "analisi", component: AnalisiView, meta: metaResp }],
+      children: [{ path: "", name: "analisi", component: AnalisiView, meta: metaDeRuta("analisi") }],
     },
     {
       path: "/coordinadors/convidar",
       component: TaulerLayout,
       children: [
-        { path: "", name: "convidar-coordinador", component: ConvidaCoordinadorView, meta: metaResp },
+        {
+          path: "",
+          name: "convidar-coordinador",
+          component: ConvidaCoordinadorView,
+          meta: metaDeRuta("convidar-coordinador"),
+        },
       ],
     },
     {
       path: "/entitat/colors",
       component: TaulerLayout,
-      children: [{ path: "", name: "colors-entitat", component: ColorsEntitatView, meta: metaResp }],
+      children: [
+        { path: "", name: "colors-entitat", component: ColorsEntitatView, meta: metaDeRuta("colors-entitat") },
+      ],
     },
     {
       path: "/invitar/:token",
       name: "acceptar-invitacio",
       component: AcceptaInvitacioView,
-      meta: { guestOnly: true },
+      meta: metaDeRuta("acceptar-invitacio"),
     },
   ],
 });
 
-router.beforeEach((to) => {
+function estatSessio() {
   const sessio = useSessioStore();
-  if (to.name === "inici" && sessio.iniciada) {
-    return destiDespresSessio(sessio.role);
+  return { iniciada: sessio.iniciada, confirmada: sessio.confirmada, role: sessio.role };
+}
+
+router.beforeEach(async (to) => {
+  const sessio = useSessioStore();
+  if (calVerificarSessio(to.name, sessio)) {
+    const resultat = await refrescarSessio();
+    if (resultat === "error" && esPrivada(to.name) && to.name !== "inici") {
+      return { name: "inici" };
+    }
   }
-  if (to.meta.requiresAuth && !sessio.iniciada) {
-    return { name: "iniciar-sessio" };
+  const desti = decisioAcces(to.name, estatSessio());
+  if (desti !== true && desti.name === to.name) {
+    return true;
   }
-  if (to.meta.requiresResponsible && sessio.role !== "responsible") {
-    return destiDespresSessio(sessio.role);
-  }
-  if (to.meta.guestOnly && sessio.iniciada) {
-    return destiDespresSessio(sessio.role);
-  }
-  return true;
+  return desti;
 });

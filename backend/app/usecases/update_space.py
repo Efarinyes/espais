@@ -5,7 +5,8 @@ from __future__ import annotations
 from dataclasses import dataclass, replace
 from uuid import UUID
 
-from app.domain.errors import DuplicateSpaceNameError, ForbiddenError, SpaceNotFoundError
+from app.domain.authorization import Accio, exigir_rol
+from app.domain.errors import DuplicateSpaceNameError, SpaceNotFoundError
 from app.domain.identity import MembershipRole
 from app.domain.space import (
     AvailabilityWindow,
@@ -42,8 +43,7 @@ class UpdateSpace:
         self._uow = uow
 
     def execute(self, command: UpdateSpaceCommand) -> UpdateSpaceResult:
-        if command.actor_role != MembershipRole.RESPONSIBLE:
-            raise ForbiddenError("només el responsable pot definir espais")
+        exigir_rol(command.actor_role, Accio.DEFINIR_ESPAI)
 
         space = self._uow.spaces.get_by_id(command.entity_id, command.space_id)
         if space is None:

@@ -22,6 +22,7 @@ Skill: `testing-quality`. Contracte: **cap cas d’ús sense test**.
 - `ArchiveNotification`: només el destinatari; només avisos ja llegits; tenant A no arxiva B.
 - `PurgeArchivedNotifications`: elimina només arxivats de fa ≥ 3 setmanes; no toca no llegits ni llegits sense arxivar.
 - `GetUsageSummary`: només el responsable; tenant A no veu B; `cancelled` no entra a ocupació; assistència sense zero silenciós.
+- Autorització: la política de rols; cada ruta privada del router; `401` sense sessió, `403` sense permís, `404` en un recurs d’una altra entitat; sessió revocada o amb `session_version` antiga; el rol es rellegeix de la membership.
 - Recuperació de compte (ADR [0018](adr/0018-recuperacio-de-compte.md), [0019](adr/0019-recuperacio-sense-sessio.md)): resposta idèntica amb compte o sense; només el hash a la base; una hora; un sol ús, també amb dues confirmacions alhora (SQLite); una demanda nova anul·la l’anterior; límits per compte i per IP; correu caigut sense token viu ni dades al log; cap sessió nova; les anteriors cauen per als dos rols i el rol es manté.
 
 ## Eines
@@ -44,6 +45,16 @@ docker compose -p espais-e2e down         # els volums espais-e2e_* queden fins 
 ```
 
 El projecte `espais-e2e` té volums propis i no toca els de la pila habitual. Necessita lliures els ports 80, 443 i 8025. Si el 8025 és ocupat (per exemple, pel túnel cap al Mailpit del VPS), cal un fitxer de Compose addicional que el canviï i `ESPAIS_E2E_MAILPIT=http://127.0.0.1:<port>`. `ESPAIS_E2E_CAPTURES=<directori>` desa captures.
+
+## E2E d’autorització
+
+`tools/e2e-autoritzacio.mjs` comprova, contra una pila local pròpia, que una URL privada sense sessió va a iniciar sessió, que cada rol entra a les seves rutes i a les compartides, que el rol desat al navegador no guanya al del servidor, i que un token tancat rep 401. El coordinador rep 403 a l’anàlisi i el responsable a la safata d’avisos. El port és `127.0.0.1:8090` per no ocupar el 80 de la pila habitual. Els volums són els del projecte `espais-e2e-autoritzacio`.
+
+```bash
+docker compose -p espais-e2e-autoritzacio -f compose.yaml -f tools/compose.e2e-autoritzacio.yaml up -d --build --wait
+ESPAIS_E2E_APP=http://127.0.0.1:8090 node tools/e2e-autoritzacio.mjs
+docker compose -p espais-e2e-autoritzacio -f compose.yaml -f tools/compose.e2e-autoritzacio.yaml down -v
+```
 
 ## E2E de l’avís de cookies
 

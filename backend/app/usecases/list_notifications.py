@@ -6,6 +6,8 @@ from dataclasses import dataclass
 from datetime import datetime
 from uuid import UUID
 
+from app.domain.authorization import Accio, exigir_rol
+from app.domain.identity import MembershipRole
 from app.domain.notification import Notification, NotificationType
 from app.ports.reservations import ReservationUnitOfWork
 
@@ -14,6 +16,7 @@ from app.ports.reservations import ReservationUnitOfWork
 class ListNotificationsQuery:
     entity_id: UUID
     actor_user_id: UUID
+    actor_role: MembershipRole
 
 
 @dataclass(frozen=True)
@@ -57,5 +60,6 @@ class ListNotifications:
         self._uow = uow
 
     def execute(self, query: ListNotificationsQuery) -> list[NotificationListItem]:
+        exigir_rol(query.actor_role, Accio.LLEGIR_AVISOS)
         items = self._uow.notifications.list_for_user(query.entity_id, query.actor_user_id)
         return [_to_item(item) for item in items if item.archived_at is None]

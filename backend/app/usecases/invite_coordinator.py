@@ -8,11 +8,21 @@ from datetime import datetime, timedelta
 from typing import Literal
 from uuid import UUID
 
-from app.domain.errors import DuplicateEmailError, ForbiddenError, InvalidRegistrationError
+from app.domain.authorization import Accio, exigir_rol
+from app.domain.errors import DuplicateEmailError, InvalidRegistrationError
 from app.domain.identity import MembershipRole
 from app.domain.invitation import Invitation
-from app.ports.identity import Clock, IdentityUnitOfWork, IdGenerator, InvitationTokenGenerator
-from app.ports.invitation_mail import InvitationMailer, InvitationMessage, NoInvitationMailer
+from app.ports.identity import (
+    Clock,
+    IdentityUnitOfWork,
+    IdGenerator,
+    InvitationTokenGenerator,
+)
+from app.ports.invitation_mail import (
+    InvitationMailer,
+    InvitationMessage,
+    NoInvitationMailer,
+)
 from app.usecases.mail_failure import log_mail_failure
 
 logger = logging.getLogger(__name__)
@@ -53,8 +63,7 @@ class InviteCoordinator:
         self._mailer = mailer if mailer is not None else NoInvitationMailer()
 
     def execute(self, command: InviteCoordinatorCommand) -> InviteCoordinatorResult:
-        if command.actor_role != MembershipRole.RESPONSIBLE:
-            raise ForbiddenError()
+        exigir_rol(command.actor_role, Accio.CONVIDAR_COORDINADOR)
 
         email = command.email.strip().lower()
         if not email:

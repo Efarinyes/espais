@@ -20,15 +20,21 @@ from app.domain.identity import MembershipRole
 from app.domain.notification import NotificationType
 from app.domain.reservation import ReservationStatus
 from app.domain.space import Space, default_week_windows
+from app.usecases.archive_notification import (
+    ArchiveNotification,
+    ArchiveNotificationCommand,
+)
 from app.usecases.cancel_reservation_by_responsible import (
     CancelReservationByResponsible,
     CancelReservationByResponsibleCommand,
 )
 from app.usecases.create_reservation import CreateReservation, CreateReservationCommand
-from app.usecases.archive_notification import ArchiveNotification, ArchiveNotificationCommand
 from app.usecases.list_notifications import ListNotifications, ListNotificationsQuery
 from app.usecases.list_reservations import ListReservations, ListReservationsQuery
-from app.usecases.mark_notification_read import MarkNotificationRead, MarkNotificationReadCommand
+from app.usecases.mark_notification_read import (
+    MarkNotificationRead,
+    MarkNotificationReadCommand,
+)
 
 MADRID = ZoneInfo("Europe/Madrid")
 ENTITY_A = UUID(int=10)
@@ -210,14 +216,33 @@ def test_un_error_smtp_no_escriu_l_adreca_al_log(caplog: pytest.LogCaptureFixtur
 def test_coordinator_lists_own_notifications() -> None:
     canceller, uow, _mail, reservation_id = _setup()
     canceller.execute(_command(reservation_id))
-    items = ListNotifications(uow).execute(ListNotificationsQuery(entity_id=ENTITY_A, actor_user_id=USER_A))
+    items = ListNotifications(uow).execute(ListNotificationsQuery(
+        entity_id=ENTITY_A, actor_user_id=USER_A, actor_role=MembershipRole.COORDINATOR
+    ))
     assert len(items) == 1
     assert items[0].space_name == "Sala 1"
     assert items[0].read_at is None
-    empty = ListNotifications(uow).execute(ListNotificationsQuery(entity_id=ENTITY_A, actor_user_id=USER_B))
+    empty = ListNotifications(uow).execute(ListNotificationsQuery(
+        entity_id=ENTITY_A, actor_user_id=USER_B, actor_role=MembershipRole.COORDINATOR
+    ))
     assert empty == []
-    other = ListNotifications(uow).execute(ListNotificationsQuery(entity_id=ENTITY_B, actor_user_id=USER_A))
+    other = ListNotifications(uow).execute(ListNotificationsQuery(
+        entity_id=ENTITY_B, actor_user_id=USER_A, actor_role=MembershipRole.COORDINATOR
+    ))
     assert other == []
+
+
+def test_responsible_cannot_list_notifications() -> None:
+    canceller, uow, _mail, reservation_id = _setup()
+    canceller.execute(_command(reservation_id))
+    with pytest.raises(ForbiddenError):
+        ListNotifications(uow).execute(
+            ListNotificationsQuery(
+                entity_id=ENTITY_A,
+                actor_user_id=USER_B,
+                actor_role=MembershipRole.RESPONSIBLE,
+            )
+        )
 
 
 def test_coordinator_marks_notification_read() -> None:
@@ -228,6 +253,7 @@ def test_coordinator_marks_notification_read() -> None:
         MarkNotificationReadCommand(
             entity_id=ENTITY_A,
             actor_user_id=USER_A,
+            actor_role=MembershipRole.COORDINATOR,
             notification_id=cancelled.notification.id,
         )
     )
@@ -246,6 +272,7 @@ def test_cannot_mark_someone_elses_notification() -> None:
             MarkNotificationReadCommand(
                 entity_id=ENTITY_A,
                 actor_user_id=USER_B,
+                actor_role=MembershipRole.COORDINATOR,
                 notification_id=cancelled.notification.id,
             )
         )
@@ -254,6 +281,7 @@ def test_cannot_mark_someone_elses_notification() -> None:
             MarkNotificationReadCommand(
                 entity_id=ENTITY_B,
                 actor_user_id=USER_A,
+                actor_role=MembershipRole.COORDINATOR,
                 notification_id=cancelled.notification.id,
             )
         )
@@ -266,6 +294,7 @@ def test_coordinator_archives_read_notification() -> None:
         MarkNotificationReadCommand(
             entity_id=ENTITY_A,
             actor_user_id=USER_A,
+            actor_role=MembershipRole.COORDINATOR,
             notification_id=cancelled.notification.id,
         )
     )
@@ -273,6 +302,7 @@ def test_coordinator_archives_read_notification() -> None:
         ArchiveNotificationCommand(
             entity_id=ENTITY_A,
             actor_user_id=USER_A,
+            actor_role=MembershipRole.COORDINATOR,
             notification_id=cancelled.notification.id,
         )
     )
@@ -280,7 +310,9 @@ def test_coordinator_archives_read_notification() -> None:
     stored = uow.notifications.get_by_id(ENTITY_A, cancelled.notification.id)
     assert stored is not None
     assert stored.archived_at is not None
-    inbox = ListNotifications(uow).execute(ListNotificationsQuery(entity_id=ENTITY_A, actor_user_id=USER_A))
+    inbox = ListNotifications(uow).execute(ListNotificationsQuery(
+        entity_id=ENTITY_A, actor_user_id=USER_A, actor_role=MembershipRole.COORDINATOR
+    ))
     assert inbox == []
 
 
@@ -292,13 +324,16 @@ def test_cannot_archive_unread_notification() -> None:
             ArchiveNotificationCommand(
                 entity_id=ENTITY_A,
                 actor_user_id=USER_A,
+                actor_role=MembershipRole.COORDINATOR,
                 notification_id=cancelled.notification.id,
             )
         )
     stored = uow.notifications.get_by_id(ENTITY_A, cancelled.notification.id)
     assert stored is not None
     assert stored.archived_at is None
-    inbox = ListNotifications(uow).execute(ListNotificationsQuery(entity_id=ENTITY_A, actor_user_id=USER_A))
+    inbox = ListNotifications(uow).execute(ListNotificationsQuery(
+        entity_id=ENTITY_A, actor_user_id=USER_A, actor_role=MembershipRole.COORDINATOR
+    ))
     assert len(inbox) == 1
 
 
@@ -309,6 +344,7 @@ def test_cannot_archive_someone_elses_notification() -> None:
         MarkNotificationReadCommand(
             entity_id=ENTITY_A,
             actor_user_id=USER_A,
+            actor_role=MembershipRole.COORDINATOR,
             notification_id=cancelled.notification.id,
         )
     )
@@ -318,6 +354,7 @@ def test_cannot_archive_someone_elses_notification() -> None:
             ArchiveNotificationCommand(
                 entity_id=ENTITY_A,
                 actor_user_id=USER_B,
+                actor_role=MembershipRole.COORDINATOR,
                 notification_id=cancelled.notification.id,
             )
         )
@@ -326,6 +363,7 @@ def test_cannot_archive_someone_elses_notification() -> None:
             ArchiveNotificationCommand(
                 entity_id=ENTITY_B,
                 actor_user_id=USER_A,
+                actor_role=MembershipRole.COORDINATOR,
                 notification_id=cancelled.notification.id,
             )
         )

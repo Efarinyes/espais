@@ -14,7 +14,8 @@ const { obert, alternar, tancar } = useMenuMobil(contingut, boto, panell);
 </script>
 
 <template>
-  <div class="w-full px-4 py-6 lg:flex lg:items-start lg:gap-8">
+  <p v-if="!sessio.confirmada" class="px-4 py-6" role="status">S’està verificant la sessió…</p>
+  <div v-else class="w-full px-4 py-6 lg:flex lg:items-start lg:gap-8">
     <aside v-if="sessio.iniciada" class="mb-6 lg:mb-0 lg:w-60 lg:shrink-0">
       <div class="lg:hidden">
         <button

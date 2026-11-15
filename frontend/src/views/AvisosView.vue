@@ -4,9 +4,7 @@ import { onMounted } from "vue";
 import { dataHoraMadrid } from "../utils/formatData";
 import { useAvisos } from "../composables/useAvisos";
 import { titolAvis } from "../services/avisos";
-import { useSessioStore } from "../stores/sessio";
 
-const sessio = useSessioStore();
 const { avisos, carregant, error, seleccionat, arxivant, carregar, obrir, arxivar } = useAvisos();
 
 onMounted(() => {
@@ -17,10 +15,7 @@ onMounted(() => {
 <template>
   <main class="mx-auto w-full max-w-md">
     <h1 class="titol-pantalla">Avisos</h1>
-    <p v-if="sessio.role === 'responsible'" class="mt-2 text-base-content/80">
-      Quan canvies o anul·les una reserva, l’avís el rep el coordinador, no aquesta llista.
-    </p>
-    <p v-else class="mt-2 text-base-content/80">
+    <p class="mt-2 text-base-content/80">
       Canvis que el responsable ha fet a les teves reserves. Pots arxivar els ja llegits; s’esborren al cap de tres setmanes.
     </p>
 
@@ -36,10 +31,7 @@ onMounted(() => {
     >
       <div class="card-body">
         <h2 id="buit-avisos" class="card-title">No tens avisos</h2>
-        <p v-if="sessio.role === 'responsible'">
-          L’avís in-app i el correu van al coordinador de la reserva.
-        </p>
-        <p v-else>Quan el responsable anul·li o reprogrami una reserva teva, t’apareixerà aquí.</p>
+        <p>Quan el responsable anul·li o reprogrami una reserva teva, t’apareixerà aquí.</p>
       </div>
     </section>
 

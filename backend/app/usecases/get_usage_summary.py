@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from uuid import UUID
 
-from app.domain.errors import ForbiddenError
+from app.domain.authorization import Accio, exigir_rol
 from app.domain.identity import MembershipRole
 from app.domain.occupancy import available_hours, occupancy_ratio, overlap_hours
 from app.domain.reservation import ReservationStatus, as_utc
@@ -68,8 +68,7 @@ class GetUsageSummary:
         self._uow = uow
 
     def execute(self, query: GetUsageSummaryQuery) -> UsageSummary:
-        if query.actor_role != MembershipRole.RESPONSIBLE:
-            raise ForbiddenError("només el responsable pot veure l’anàlisi d’ús")
+        exigir_rol(query.actor_role, Accio.VEURE_ANALISI)
 
         starts_at = as_utc(query.starts_at)
         ends_at = as_utc(query.ends_at)

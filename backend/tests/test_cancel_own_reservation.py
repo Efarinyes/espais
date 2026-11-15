@@ -10,7 +10,10 @@ from app.domain.errors import ForbiddenError
 from app.domain.identity import MembershipRole
 from app.domain.reservation import ReservationStatus
 from app.domain.space import Space, default_week_windows
-from app.usecases.cancel_own_reservation import CancelOwnReservation, CancelOwnReservationCommand
+from app.usecases.cancel_own_reservation import (
+    CancelOwnReservation,
+    CancelOwnReservationCommand,
+)
 from app.usecases.create_reservation import CreateReservation, CreateReservationCommand
 from app.usecases.list_notifications import ListNotifications, ListNotificationsQuery
 
@@ -64,7 +67,9 @@ def test_coordinator_cancels_own_reservation_without_notice() -> None:
     )
     assert result.reservation.status == ReservationStatus.CANCELLED
     avisos = ListNotifications(uow).execute(
-        ListNotificationsQuery(entity_id=ENTITY_A, actor_user_id=USER_A)
+        ListNotificationsQuery(
+            entity_id=ENTITY_A, actor_user_id=USER_A, actor_role=MembershipRole.COORDINATOR
+        )
     )
     assert avisos == []
 

@@ -8,7 +8,11 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
 from app.api.deps import NotificationsHttp, get_notifications_http, require_session
-from app.domain.errors import NotificationNotFoundError, NotificationNotReadError
+from app.domain.errors import (
+    ForbiddenError,
+    NotificationNotFoundError,
+    NotificationNotReadError,
+)
 from app.domain.notification import NotificationType
 from app.usecases.archive_notification import ArchiveNotificationCommand
 from app.usecases.list_notifications import ListNotificationsQuery, NotificationListItem
@@ -57,9 +61,16 @@ def list_avisos(
     view: Annotated[SessionView, Depends(require_session)],
     notifications: Annotated[NotificationsHttp, Depends(get_notifications_http)],
 ) -> list[AvisResponse]:
-    items = notifications.list.execute(
-        ListNotificationsQuery(entity_id=view.entity_id, actor_user_id=view.user_id)
-    )
+    try:
+        items = notifications.list.execute(
+            ListNotificationsQuery(
+                entity_id=view.entity_id,
+                actor_user_id=view.user_id,
+                actor_role=view.role,
+            )
+        )
+    except ForbiddenError as exc:
+        raise HTTPException(status_code=403, detail=str(exc)) from None
     return [_to_response(item) for item in items]
 
 
@@ -74,9 +85,12 @@ def mark_avis_llegit(
             MarkNotificationReadCommand(
                 entity_id=view.entity_id,
                 actor_user_id=view.user_id,
+                actor_role=view.role,
                 notification_id=notification_id,
             )
         )
+    except ForbiddenError as exc:
+        raise HTTPException(status_code=403, detail=str(exc)) from None
     except NotificationNotFoundError:
         raise HTTPException(status_code=404, detail="aquest avís no existeix") from None
     notification = result.notification
@@ -109,9 +123,12 @@ def archive_avis(
             ArchiveNotificationCommand(
                 entity_id=view.entity_id,
                 actor_user_id=view.user_id,
+                actor_role=view.role,
                 notification_id=notification_id,
             )
         )
+    except ForbiddenError as exc:
+        raise HTTPException(status_code=403, detail=str(exc)) from None
     except NotificationNotFoundError:
         raise HTTPException(status_code=404, detail="aquest avís no existeix") from None
     except NotificationNotReadError:

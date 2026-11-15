@@ -50,16 +50,30 @@ No pot:
 | Anul·lar com a responsable (amb avís) | sí | no |
 | Anul·lar la seva | sí | sí |
 | Anàlisi | sí | no |
+| Llegir avisos | no | sí |
 
 ## Autenticació
 
 Sessió per compte (email + contrasenya a v1). Totes les rutes de negoci exigeixen membership a l’entitat del recurs.
 
 - Un sol login per als dos rols (`POST /sessio`). El rol no el tria ningú: surt de la membership a la base, a cada petició (`ResolveSession`). No el porta el token ni el decideix el navegador.
-- Cada cas d’ús restringit comprova el rol i respon 403. La guarda del router de l’SPA només amaga pantalles: canviar la ruta o el `localStorage` no dona cap permís.
+- La política d’accions viu a `app/domain/authorization.py`. Cada cas d’ús restringit la consulta i respon 403. El recurs d’una altra entitat, o un avís que no és del coordinador, respon 404.
+- La política de pantalles viu a `frontend/src/autoritzacio.ts` i la guarda del router l’aplica. No n’hi ha prou d’amagar el menú. Una ruta privada no es pinta fins que `GET /sessio` confirma el rol. Canviar la ruta o el `localStorage` no dona cap permís: el servidor continua sent l’autoritat.
 - El token de sessió és un HMAC amb `sub`, `exp` i `ver`. `require_session` el rebutja si està revocat (ADR [0014](adr/0014-revocar-token-en-sortir.md)) o si `ver` no és el `session_version` de l’usuari.
 - Recuperar la contrasenya (responsable o coordinador) puja `session_version`: totes les sessions anteriors cauen i no se n’obre cap de nova (ADR [0018](adr/0018-recuperacio-de-compte.md), [0019](adr/0019-recuperacio-sense-sessio.md)). El rol i els permisos no canvien.
 - Si el servidor respon 401 a `GET /sessio`, l’SPA esborra la sessió del navegador i porta a «Inicia sessió».
+
+## Rutes
+
+| Ruta | Accés |
+|---|---|
+| `/`, `/recuperar`, `/politica-de-cookies` | pública |
+| `/registre`, `/iniciar-sessio`, `/invitar/:token` | només sense sessió confirmada |
+| `/espais`, `/calendari` | responsable i coordinador |
+| `/espais/nou`, `/espais/:id`, `/analisi`, `/coordinadors/convidar`, `/entitat/colors` | responsable |
+| `/avisos` | coordinador |
+
+Qui té sessió i obre `/` va a `/espais`. Una ruta exclusiva denegada també hi torna. `/recuperar` i la política de cookies es queden obertes encara que hi hagi sessió.
 
 ## Backlog de rols
 

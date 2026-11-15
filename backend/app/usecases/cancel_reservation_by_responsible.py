@@ -6,8 +6,8 @@ import logging
 from dataclasses import dataclass, replace
 from uuid import UUID
 
+from app.domain.authorization import Accio, exigir_rol
 from app.domain.errors import (
-    ForbiddenError,
     InvalidCancellationError,
     ReservationNotFoundError,
     SpaceNotFoundError,
@@ -64,8 +64,7 @@ class CancelReservationByResponsible:
         self._ids = ids
 
     def execute(self, command: CancelReservationByResponsibleCommand) -> CancelReservationByResponsibleResult:
-        if command.actor_role != MembershipRole.RESPONSIBLE:
-            raise ForbiddenError("només el responsable pot anul·lar una reserva amb avís al coordinador")
+        exigir_rol(command.actor_role, Accio.ANULAR_AMB_AVIS)
 
         reservation = self._uow.reservations.get_by_id(command.entity_id, command.reservation_id)
         if reservation is None:

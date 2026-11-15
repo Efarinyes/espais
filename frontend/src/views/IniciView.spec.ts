@@ -112,6 +112,32 @@ describe("IniciView", () => {
     expect(wrapper.text()).not.toContain("Convida coordinadors");
   });
 
+  it("amb una sessió desada i sense confirmar no mostra ni la landing ni el nom de l’entitat", () => {
+    localStorage.setItem(
+      "espais.sessio",
+      JSON.stringify({
+        token: "tok",
+        entityId: "e1",
+        entityName: "AAVV Barri A",
+        userName: "Anna",
+        role: "responsible",
+        typology: null,
+        palette: "mar-cel",
+      }),
+    );
+    const pinia = createPinia();
+    setActivePinia(pinia);
+    const router = createRouter({
+      history: createMemoryHistory(),
+      routes: [{ path: "/", name: "inici", component: IniciView }],
+    });
+    const wrapper = mount(IniciView, { global: { plugins: [pinia, router] } });
+    expect(wrapper.text()).toContain("No s’ha pogut verificar la sessió");
+    expect(wrapper.text()).not.toContain("AAVV Barri A");
+    expect(wrapper.text()).not.toContain("Qui té la sala");
+    expect(router.currentRoute.value.name).not.toBe("espais");
+  });
+
   it("envia el coordinador al tauler d’espais", async () => {
     const { wrapper, router } = muntar({ ...sessioAnna, role: "coordinator", user_name: "Carla" });
     await flushPromises();

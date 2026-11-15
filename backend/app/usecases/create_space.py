@@ -5,7 +5,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from uuid import UUID
 
-from app.domain.errors import DuplicateSpaceNameError, ForbiddenError
+from app.domain.authorization import Accio, exigir_rol
+from app.domain.errors import DuplicateSpaceNameError
 from app.domain.identity import MembershipRole
 from app.domain.space import (
     AvailabilityWindow,
@@ -43,8 +44,7 @@ class CreateSpace:
         self._ids = ids
 
     def execute(self, command: CreateSpaceCommand) -> CreateSpaceResult:
-        if command.actor_role != MembershipRole.RESPONSIBLE:
-            raise ForbiddenError("només el responsable pot definir espais")
+        exigir_rol(command.actor_role, Accio.DEFINIR_ESPAI)
 
         name, capacity, equipment = validate_space_fields(
             command.name, command.capacity, command.equipment

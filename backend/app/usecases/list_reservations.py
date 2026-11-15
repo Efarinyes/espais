@@ -7,6 +7,12 @@ from datetime import datetime
 from uuid import UUID
 
 from app.domain.attendance import attendance_flags
+from app.domain.authorization import (
+    Accio,
+    exigir_rol,
+    mostra_id_de_coordinador,
+    mostra_nom_de_coordinador,
+)
 from app.domain.identity import MembershipRole
 from app.domain.reservation import ReservationStatus, as_utc
 from app.ports.reservations import ReservationUnitOfWork
@@ -46,6 +52,7 @@ class ListReservations:
         self._uow = uow
 
     def execute(self, query: ListReservationsQuery) -> list[ReservationListItem]:
+        exigir_rol(query.actor_role, Accio.VEURE_RESERVES)
         starts_at = as_utc(query.starts_at)
         ends_at = as_utc(query.ends_at)
         reservations = self._uow.reservations.list_in_range(
@@ -70,7 +77,7 @@ class ListReservations:
             if space is None:
                 continue
             mine = reservation.coordinator_id == query.actor_user_id
-            show_name = query.actor_role == MembershipRole.RESPONSIBLE or mine
+            show_name = mostra_nom_de_coordinador(query.actor_role, propi=mine)
             record = records.get(reservation.id)
             count = record.count if record is not None else None
             exceeds, below = attendance_flags(count, space.capacity, space.min_attendance)
@@ -86,7 +93,7 @@ class ListReservations:
                     coordinator_name=reservation.coordinator_name if show_name else None,
                     coordinator_id=(
                         reservation.coordinator_id
-                        if query.actor_role == MembershipRole.RESPONSIBLE
+                        if mostra_id_de_coordinador(query.actor_role)
                         else None
                     ),
                     attendance_count=count,

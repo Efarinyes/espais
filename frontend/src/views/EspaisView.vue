@@ -2,6 +2,7 @@
 import { computed } from "vue";
 import { RouterLink } from "vue-router";
 
+import { potAccedir } from "../autoritzacio";
 import EspaiTargeta from "../components/EspaiTargeta.vue";
 import { useLlistaEspais } from "../composables/useLlistaEspais";
 import { useSessioStore } from "../stores/sessio";
@@ -9,7 +10,7 @@ import { useSessioStore } from "../stores/sessio";
 const sessio = useSessioStore();
 const { espais, carregant, error } = useLlistaEspais();
 
-const esResponsable = computed(() => sessio.role === "responsible");
+const esResponsable = computed(() => potAccedir("espai-nou", sessio.role));
 const llistaAmpla = computed(() => !error.value && !carregant.value && espais.value.length > 0);
 </script>
 

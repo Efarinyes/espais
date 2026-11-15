@@ -1,0 +1,10 @@
+# Pila de la prova d’autorització. No publica 80 ni 443 i no fa servir els volums espais_*.
+services:
+  web:
+    environment:
+      ESPAIS_DOMAIN: http://127.0.0.1:8090
+    ports: !override
+      - "127.0.0.1:8090:8090"
+  mailpit:
+    ports: !override
+      - "127.0.0.1:18025:8025"

@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from uuid import UUID
 
-from app.domain.errors import ForbiddenError
+from app.domain.authorization import Accio, exigir_rol
 from app.domain.identity import MembershipRole
 from app.ports.identity import IdentityUnitOfWork
 
@@ -27,8 +27,7 @@ class ListEntityCoordinators:
         self._uow = uow
 
     def execute(self, query: ListEntityCoordinatorsQuery) -> list[CoordinatorListItem]:
-        if query.actor_role != MembershipRole.RESPONSIBLE:
-            raise ForbiddenError("només el responsable pot veure els coordinadors")
+        exigir_rol(query.actor_role, Accio.VEURE_COORDINADORS)
         items: list[CoordinatorListItem] = []
         for membership in self._uow.memberships.list_by_entity_id(query.entity_id):
             if membership.role != MembershipRole.COORDINATOR:

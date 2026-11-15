@@ -6,7 +6,12 @@ from dataclasses import dataclass
 from uuid import UUID
 
 from app.domain.attendance import AttendanceRecord, attendance_flags
-from app.domain.errors import ForbiddenError, InvalidAttendanceError, ReservationNotFoundError, SpaceNotFoundError
+from app.domain.authorization import Accio, exigir_recurs_propi
+from app.domain.errors import (
+    InvalidAttendanceError,
+    ReservationNotFoundError,
+    SpaceNotFoundError,
+)
 from app.domain.identity import MembershipRole
 from app.domain.reservation import Reservation, ReservationStatus
 from app.ports.attendance import AttendanceStrategy
@@ -53,9 +58,11 @@ class RecordAttendance:
             raise ReservationNotFoundError()
         if reservation.status == ReservationStatus.CANCELLED:
             raise InvalidAttendanceError("no es pot registrar assistència d’una reserva anul·lada")
-        es_responsable = command.actor_role == MembershipRole.RESPONSIBLE
-        if not es_responsable and reservation.coordinator_id != command.actor_user_id:
-            raise ForbiddenError("només qui ha fet la reserva pot registrar-ne l’assistència")
+        exigir_recurs_propi(
+            command.actor_role,
+            Accio.REGISTRAR_ASSISTENCIA,
+            propi=reservation.coordinator_id == command.actor_user_id,
+        )
 
         space = self._uow.spaces.get_by_id(command.entity_id, reservation.space_id)
         if space is None:

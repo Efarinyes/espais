@@ -6,7 +6,8 @@ from dataclasses import dataclass
 from datetime import datetime
 from uuid import UUID
 
-from app.domain.errors import ForbiddenError, ReservationOverlapError, SpaceNotFoundError
+from app.domain.authorization import Accio, exigir_rol
+from app.domain.errors import ReservationOverlapError, SpaceNotFoundError
 from app.domain.identity import MembershipRole
 from app.domain.reservation import (
     Reservation,
@@ -46,8 +47,7 @@ class CreateReservation:
         self._ids = ids
 
     def execute(self, command: CreateReservationCommand) -> CreateReservationResult:
-        if command.actor_role == MembershipRole.RESPONSIBLE:
-            raise ForbiddenError("el responsable no crea reserves; reprograma o anul·la les dels coordinadors")
+        exigir_rol(command.actor_role, Accio.CREAR_RESERVA)
         starts_at = as_utc(command.starts_at)
         ends_at = as_utc(command.ends_at)
         validate_interval_order(starts_at, ends_at)

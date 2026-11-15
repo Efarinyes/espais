@@ -2,6 +2,7 @@ import { defineStore } from "pinia";
 import { computed, ref } from "vue";
 
 import { PALETA_PER_DEFECTE, paletaDe, type PaletaId } from "../aparenca";
+import { esRolConegut } from "../autoritzacio";
 import type { SessioDto } from "../services/identitat";
 
 const STORAGE_KEY = "espais.sessio";
@@ -38,6 +39,7 @@ export const useSessioStore = defineStore("sessio", () => {
   const role = ref(desada?.role ?? "");
   const typology = ref<string | null>(desada?.typology ?? null);
   const palette = ref<PaletaId>(desada?.palette ?? PALETA_PER_DEFECTE);
+  const confirmada = ref(desada?.token ? false : true);
 
   const iniciada = computed(() => token.value.length > 0 && entityId.value.length > 0);
 
@@ -59,16 +61,25 @@ export const useSessioStore = defineStore("sessio", () => {
   }
 
   function aplicarVista(view: Omit<SessioDto, "token">) {
+    if (!esRolConegut(view.role)) {
+      sortir();
+      return;
+    }
     entityId.value = view.entity_id;
     entityName.value = view.entity_name;
     userName.value = view.user_name;
     role.value = view.role;
     typology.value = view.typology;
     palette.value = paletaDe(view.palette);
+    confirmada.value = true;
     persistir();
   }
 
   function iniciar(dto: SessioDto) {
+    if (!esRolConegut(dto.role)) {
+      sortir();
+      return;
+    }
     token.value = dto.token;
     aplicarVista(dto);
   }
@@ -86,6 +97,7 @@ export const useSessioStore = defineStore("sessio", () => {
     role.value = "";
     typology.value = null;
     palette.value = PALETA_PER_DEFECTE;
+    confirmada.value = true;
     persistir();
   }
 
@@ -97,6 +109,7 @@ export const useSessioStore = defineStore("sessio", () => {
     role,
     typology,
     palette,
+    confirmada,
     iniciada,
     iniciar,
     aplicarVista,

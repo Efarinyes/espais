@@ -2,6 +2,7 @@
 import { computed, ref } from "vue";
 import { RouterLink, useRoute, useRouter } from "vue-router";
 
+import { potAccedir } from "../autoritzacio";
 import { useComptadorAvisos } from "../composables/useAvisos";
 import { requireIdentityApi } from "../services/identitat";
 import { useSessioStore } from "../stores/sessio";
@@ -18,7 +19,9 @@ const { noLlegits } = useComptadorAvisos();
 const tancant = ref(false);
 const errorTancament = ref("");
 
-const esResponsable = computed(() => sessio.role === "responsible");
+const veuEstadistiques = computed(() => potAccedir("analisi", sessio.role));
+const veuAvisos = computed(() => potAccedir("avisos", sessio.role));
+const veuAdministracio = computed(() => potAccedir("convidar-coordinador", sessio.role));
 const esEspais = computed(() => ruta.path.startsWith("/espais"));
 const esColors = computed(() => ruta.path.startsWith("/entitat/colors"));
 const esConvida = computed(() => ruta.path.startsWith("/coordinadors/convidar"));
@@ -73,7 +76,7 @@ async function sortir() {
             Calendari
           </RouterLink>
         </li>
-        <li v-if="esResponsable">
+        <li v-if="veuEstadistiques">
           <RouterLink
             class="min-h-11"
             to="/analisi"
@@ -82,7 +85,7 @@ async function sortir() {
             Estadístiques
           </RouterLink>
         </li>
-        <li v-if="!esResponsable">
+        <li v-if="veuAvisos">
           <RouterLink class="min-h-11" to="/avisos" :aria-current="esAvisos ? 'page' : undefined">
             Avisos
             <span
@@ -95,7 +98,7 @@ async function sortir() {
           </RouterLink>
         </li>
       </ul>
-      <div v-if="esResponsable" class="border-t border-base-content/20">
+      <div v-if="veuAdministracio" class="border-t border-base-content/20">
         <p id="grup-administracio" class="px-4 pt-4 text-sm font-medium text-base-content/70">Administració</p>
         <ul class="menu w-full p-2" aria-labelledby="grup-administracio">
           <li>

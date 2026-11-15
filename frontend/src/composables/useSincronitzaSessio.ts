@@ -1,35 +1,49 @@
-import { inject, onMounted, onUnmounted, watch } from "vue";
+import { onMounted, onUnmounted, watch } from "vue";
 import { useRouter } from "vue-router";
 
 import { PALETA_PER_DEFECTE } from "../aparenca";
-import { ApiError } from "../services/http";
-import { identityApiKey } from "../services/identitat";
+import { decisioAcces, esPrivada } from "../autoritzacio";
+import { refrescarSessio } from "../confirmacioSessio";
 import { useAparencaStore } from "../stores/aparenca";
 import { useSessioStore } from "../stores/sessio";
 
 export function useSincronitzaSessio() {
-  const api = inject(identityApiKey, null);
   const sessio = useSessioStore();
   const aparenca = useAparencaStore();
   const router = useRouter();
 
-  async function refrescar() {
-    if (!api || !sessio.iniciada) {
-      return;
-    }
+  async function enReprendre() {
     if (typeof document !== "undefined" && document.visibilityState === "hidden") {
       return;
     }
-    try {
-      const view = await api.obtenirSessio(sessio.token);
-      sessio.aplicarVista(view);
-    } catch (err) {
-      if (!(err instanceof ApiError) || err.status !== 401) {
-        return;
+    const rolAbans = sessio.role;
+    const confirmadaAbans = sessio.confirmada;
+    const resultat = await refrescarSessio();
+    await router.isReady();
+    const actual = router.currentRoute.value.name;
+    if (resultat === "tancada") {
+      const desti = decisioAcces(actual, {
+        iniciada: sessio.iniciada,
+        confirmada: sessio.confirmada,
+        role: sessio.role,
+      });
+      if (desti !== true && desti.name !== actual) {
+        await router.replace(desti);
       }
-      sessio.sortir();
-      if (router.currentRoute.value.meta.requiresAuth) {
-        await router.replace({ name: "iniciar-sessio" });
+      return;
+    }
+    if (resultat === "error" && !sessio.confirmada && esPrivada(actual) && actual !== "inici") {
+      await router.replace({ name: "inici" });
+      return;
+    }
+    if (resultat === "ok" && (!confirmadaAbans || sessio.role !== rolAbans)) {
+      const desti = decisioAcces(actual, {
+        iniciada: sessio.iniciada,
+        confirmada: sessio.confirmada,
+        role: sessio.role,
+      });
+      if (desti !== true && desti.name !== actual) {
+        await router.replace(desti);
       }
     }
   }
@@ -43,13 +57,13 @@ export function useSincronitzaSessio() {
   );
 
   onMounted(() => {
-    void refrescar();
-    window.addEventListener("focus", refrescar);
-    document.addEventListener("visibilitychange", refrescar);
+    void enReprendre();
+    window.addEventListener("focus", enReprendre);
+    document.addEventListener("visibilitychange", enReprendre);
   });
 
   onUnmounted(() => {
-    window.removeEventListener("focus", refrescar);
-    document.removeEventListener("visibilitychange", refrescar);
+    window.removeEventListener("focus", enReprendre);
+    document.removeEventListener("visibilitychange", enReprendre);
   });
 }

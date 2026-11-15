@@ -2,6 +2,7 @@ import { createApp } from "vue";
 import { createPinia } from "pinia";
 
 import App from "./App.vue";
+import { configuraConfirmacioSessio } from "./confirmacioSessio";
 import { router } from "./router";
 import { createAnalisiApi, analisiApiKey } from "./services/analisi";
 import { createAvisosApi, avisosApiKey } from "./services/avisos";
@@ -12,10 +13,12 @@ import { createDisparadorPolling, disparadorCalendariKey } from "./calendariLive
 import "./styles.css";
 
 const apiBase = "/api";
+const identitat = createIdentityApi(apiBase);
+configuraConfirmacioSessio((token) => identitat.obtenirSessio(token));
 
 const app = createApp(App);
 app.use(createPinia());
-app.provide(identityApiKey, createIdentityApi(apiBase));
+app.provide(identityApiKey, identitat);
 app.provide(espaisApiKey, createEspaisApi(apiBase));
 app.provide(reservesApiKey, createReservesApi(apiBase));
 app.provide(avisosApiKey, createAvisosApi(apiBase));

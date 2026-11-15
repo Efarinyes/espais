@@ -46,7 +46,7 @@ El coordinador és qui avisa els participants; l’app no té la llista.
 
 ## UI
 
-- Indicador de no llegits a la navegació del coordinador.
+- Indicador de no llegits a la navegació del coordinador. La ruta `/avisos` i `GET /avisos` són només del coordinador: el responsable rep 403.
 - Llista d’avisos; marcar com a llegit en obrir.
 - El coordinador pot **arxivar** un avís ja llegit: surt de la safata. No es poden arxivar els no llegits. No hi ha restaurar.
 - Els avisos arxivats s’**eliminen automàticament al cap de 3 setmanes** (`PurgeArchivedNotifications`, ADR [0009](adr/0009-purga-avisos-arxivats.md)). Els no arxivats no es toquen.

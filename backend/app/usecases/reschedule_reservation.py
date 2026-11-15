@@ -7,8 +7,8 @@ from dataclasses import dataclass, replace
 from datetime import datetime
 from uuid import UUID
 
+from app.domain.authorization import Accio, exigir_recurs_propi
 from app.domain.errors import (
-    ForbiddenError,
     InvalidReservationError,
     ReservationNotFoundError,
     ReservationOverlapError,
@@ -84,13 +84,12 @@ class RescheduleReservation:
         if reservation.status == ReservationStatus.CANCELLED:
             raise InvalidReservationError("no es pot reprogramar una reserva anul·lada")
 
-        es_responsable = command.actor_role == MembershipRole.RESPONSIBLE
-        es_propia = (
-            command.actor_role == MembershipRole.COORDINATOR
-            and reservation.coordinator_id == command.actor_user_id
+        exigir_recurs_propi(
+            command.actor_role,
+            Accio.REPROGRAMAR,
+            propi=reservation.coordinator_id == command.actor_user_id,
         )
-        if not es_responsable and not es_propia:
-            raise ForbiddenError("no pots reprogramar aquesta reserva")
+        es_responsable = command.actor_role == MembershipRole.RESPONSIBLE
 
         space = self._uow.spaces.get_by_id(command.entity_id, reservation.space_id)
         if space is None:

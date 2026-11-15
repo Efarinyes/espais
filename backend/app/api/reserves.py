@@ -8,6 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
 
 from app.api.deps import ReservationsHttp, get_reservations_http, require_session
+from app.domain.authorization import Accio, mostra_nom_de_coordinador, permet
 from app.domain.errors import (
     ForbiddenError,
     InvalidAttendanceError,
@@ -17,10 +18,11 @@ from app.domain.errors import (
     ReservationOverlapError,
     SpaceNotFoundError,
 )
-from app.domain.identity import MembershipRole
 from app.domain.reservation import ReservationStatus
 from app.usecases.cancel_own_reservation import CancelOwnReservationCommand
-from app.usecases.cancel_reservation_by_responsible import CancelReservationByResponsibleCommand
+from app.usecases.cancel_reservation_by_responsible import (
+    CancelReservationByResponsibleCommand,
+)
 from app.usecases.create_reservation import CreateReservationCommand
 from app.usecases.list_reservations import ListReservationsQuery, ReservationListItem
 from app.usecases.record_attendance import RecordAttendanceCommand
@@ -184,7 +186,7 @@ def record_attendance(
 
     reservation = result.reservation
     mine = reservation.coordinator_id == view.user_id
-    show_name = view.role == MembershipRole.RESPONSIBLE or mine
+    show_name = mostra_nom_de_coordinador(view.role, propi=mine)
     return ReservationResponse(
         id=reservation.id,
         space_id=reservation.space_id,
@@ -211,7 +213,7 @@ def cancel_reservation(
 ) -> ReservationResponse:
     payload = body or CancelReservationRequest()
     try:
-        if view.role == MembershipRole.COORDINATOR:
+        if permet(view.role, Accio.ANULAR_PROPIA):
             result = reservations.cancel_own.execute(
                 CancelOwnReservationCommand(
                     entity_id=view.entity_id,

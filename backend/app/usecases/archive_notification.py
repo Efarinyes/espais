@@ -5,7 +5,9 @@ from __future__ import annotations
 from dataclasses import dataclass, replace
 from uuid import UUID
 
+from app.domain.authorization import Accio, exigir_rol
 from app.domain.errors import NotificationNotFoundError, NotificationNotReadError
+from app.domain.identity import MembershipRole
 from app.domain.notification import Notification
 from app.ports.identity import Clock
 from app.ports.reservations import ReservationUnitOfWork
@@ -15,6 +17,7 @@ from app.ports.reservations import ReservationUnitOfWork
 class ArchiveNotificationCommand:
     entity_id: UUID
     actor_user_id: UUID
+    actor_role: MembershipRole
     notification_id: UUID
 
 
@@ -29,6 +32,7 @@ class ArchiveNotification:
         self._clock = clock
 
     def execute(self, command: ArchiveNotificationCommand) -> ArchiveNotificationResult:
+        exigir_rol(command.actor_role, Accio.LLEGIR_AVISOS)
         notification = self._uow.notifications.get_by_id(command.entity_id, command.notification_id)
         if notification is None or notification.user_id != command.actor_user_id:
             raise NotificationNotFoundError()

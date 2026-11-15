@@ -5,8 +5,8 @@ from __future__ import annotations
 from dataclasses import dataclass, replace
 from uuid import UUID
 
+from app.domain.authorization import Accio, exigir_recurs_propi, exigir_rol
 from app.domain.errors import (
-    ForbiddenError,
     InvalidCancellationError,
     ReservationNotFoundError,
     SpaceNotFoundError,
@@ -37,14 +37,16 @@ class CancelOwnReservation:
         self._uow = uow
 
     def execute(self, command: CancelOwnReservationCommand) -> CancelOwnReservationResult:
-        if command.actor_role != MembershipRole.COORDINATOR:
-            raise ForbiddenError("només el coordinador pot anul·lar la seva reserva")
+        exigir_rol(command.actor_role, Accio.ANULAR_PROPIA)
 
         reservation = self._uow.reservations.get_by_id(command.entity_id, command.reservation_id)
         if reservation is None:
             raise ReservationNotFoundError()
-        if reservation.coordinator_id != command.actor_user_id:
-            raise ForbiddenError("només pots anul·lar les teves reserves")
+        exigir_recurs_propi(
+            command.actor_role,
+            Accio.ANULAR_PROPIA,
+            propi=reservation.coordinator_id == command.actor_user_id,
+        )
         if reservation.status == ReservationStatus.CANCELLED:
             raise InvalidCancellationError("aquesta reserva ja està anul·lada")
 

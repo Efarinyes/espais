@@ -5,7 +5,8 @@ from __future__ import annotations
 from dataclasses import dataclass, replace
 from uuid import UUID
 
-from app.domain.errors import ForbiddenError, InvalidPaletteError, SessionNotFoundError
+from app.domain.authorization import Accio, exigir_rol
+from app.domain.errors import InvalidPaletteError, SessionNotFoundError
 from app.domain.identity import ENTITY_PALETTES, MembershipRole
 from app.ports.identity import IdentityUnitOfWork
 
@@ -27,8 +28,7 @@ class UpdateEntityPalette:
         self._uow = uow
 
     def execute(self, command: UpdateEntityPaletteCommand) -> UpdateEntityPaletteResult:
-        if command.actor_role != MembershipRole.RESPONSIBLE:
-            raise ForbiddenError("només el responsable pot canviar els colors de l’entitat")
+        exigir_rol(command.actor_role, Accio.CANVIAR_PALETA)
 
         palette = command.palette.strip()
         if palette not in ENTITY_PALETTES:

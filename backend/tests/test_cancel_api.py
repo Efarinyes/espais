@@ -84,8 +84,8 @@ def test_responsible_cancels_and_coordinator_reads_aviso(sqlite_session_factory)
     assert avisos.json()[0]["read_at"] is None
     avis_id = avisos.json()[0]["id"]
 
-    empty_resp = client.get("/avisos", headers=headers_resp)
-    assert empty_resp.json() == []
+    denied_resp = client.get("/avisos", headers=headers_resp)
+    assert denied_resp.status_code == 403
 
     marked = client.post(f"/avisos/{avis_id}/llegit", headers=headers_coord)
     assert marked.status_code == 200
@@ -169,6 +169,6 @@ def test_other_entity_cannot_cancel_or_read_aviso(sqlite_session_factory) -> Non
     avisos = client.get("/avisos", headers=headers_coord)
     assert avisos.status_code == 200
     avis_id = avisos.json()[0]["id"]
-    assert client.get("/avisos", headers=headers_b).json() == []
-    assert client.post(f"/avisos/{avis_id}/llegit", headers=headers_b).status_code == 404
-    assert client.post(f"/avisos/{avis_id}/arxivat", headers=headers_b).status_code == 404
+    assert client.get("/avisos", headers=headers_b).status_code == 403
+    assert client.post(f"/avisos/{avis_id}/llegit", headers=headers_b).status_code == 403
+    assert client.post(f"/avisos/{avis_id}/arxivat", headers=headers_b).status_code == 403
