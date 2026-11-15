@@ -9,6 +9,8 @@ Actualitza aquest arxiu al final de cada sessió. És el punt d’arrencada del 
 
 ## Darrera feina
 
+2026-11-15: sessió tancada. Qui fa servir l’app confirma que l’avís es veu a Safari i, amb l’id `nota-funcio`, també a Brave amb EasyList Cookie activada. El codi és `e450a71`, a `origin/feat/docker-caddy-sqlite`, i el servidor ja el serveix. No es fusiona a `main`. Sense ADR: el canvi d’id és deute d’implementació ja aplicat, anotat a `docs/14-ui-ux.md`. Queda sense inventar: adreça postal, NIF, correu de contacte i la informació de l’article 13 del RGPD.
+
 2026-11-15: l’avís de la landing deixa de dir-se `#avis-cookies`. Brave, amb EasyList Cookie activa per defecte, amaga aquest id. El quadre ara és `#nota-funcio`; l’id, el títol accessible i les classes no contenen la paraula cookie. El text visible i la clau `espais.avis-cookies` es queden. Cap regla general d’aquesta llista coincideix amb les classes de Tailwind del quadre. Les regles que amaguen un text amb «cookies» van lligades a altres dominis.
 
 2026-11-15: avís informatiu de cookies a la landing i política a `/politica-de-cookies`. No hi ha galetes HTTP, ni analítica, ni scripts de tercers. El navegador desa `espais.mode` (clar o fosc), `espais.sessio` només en entrar (el codi val 7 dies), la memòria cau del service worker amb els fitxers de l’app, i `espais.avis-cookies` amb el valor `tancat` quan es tanca l’avís. Una clau antiga `espais.aparenca` només es llegeix, si encara hi és. Tot queda exempt de consentiment (article 22.2 de la Llei 34/2002 i guia de l’AEPD de maig de 2024). L’avís es pot tancar i no torna a sortir; no hi ha botó d’acceptar ni de rebutjar. El peu enllaça la política. No s’han inventat adreça, NIF ni correu: al peu només consta Eduard Farinyes, i no hi ha política de privacitat amb l’article 13 del RGPD. Vitest 255. E2E Docker `espais-e2e-cookies`, 23 comprovacions. Pila i volums de prova esborrats. `espais.sqlite3` i els volums `espais_*` no s’han tocat. El codi és a `origin/feat/docker-caddy-sqlite`, commit `d209310`. Aquesta màquina no té host SSH del VPS: no s’ha fet `git pull` allà ni s’ha tocat `main`.
@@ -127,9 +129,9 @@ Desplegat al VPS (`6b455b9`) i provat amb Capgrossos, «Sala pilars». La vista 
 
 ## Següent tasca
 
-Publicar `feat/docker-caddy-sqlite` al VPS: `git pull` i `docker compose up -d --build`, sense `down -v`. Comprovar a `https://espais.duckdns.org` l’avís de la landing, l’enllaç a `/politica-de-cookies` i que tancar-lo no el torna a mostrar. Aquesta màquina no té un host SSH del servidor. No es fusiona a `main`.
+L’avís i la política de cookies queden tancats. No es reobren. No es fusiona a `main`.
 
-La prova de camp del calendari (ADR [0023](docs/adr/0023-coordinador-pel-nom.md)) va amb la mateixa publicació: la sala es reconeix pel color i el coordinador pel nom. No es reobre el tramat ni la llegenda de coordinadors.
+La prova de camp del calendari (ADR [0023](docs/adr/0023-coordinador-pel-nom.md)) segueix pendent si encara no s’ha vist al servidor actualitzat: la sala es reconeix pel color i el coordinador pel nom. No es reobre el tramat ni la llegenda de coordinadors.
 
 La feina de desplegament continua a `feat/docker-caddy-sqlite`: és la branca que el servidor desplega després del `git pull` i de regenerar els contenidors. `backup/alpha-funcional` (`9178e98`, també a `origin`) és el punt de retorn. `backup/pre-ux-ui-2026-11-02` (`436d97b`) no es mou. No es fusiona a `main` fins a la Beta, quan es canviï la configuració del servidor. No s’esborren `backup/alpha-funcional` ni `backup/pre-dockeritzacio`.
 
