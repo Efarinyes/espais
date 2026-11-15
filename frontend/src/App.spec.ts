@@ -37,6 +37,7 @@ function muntar(dto?: SessioDto) {
       { path: "/avisos", name: "avisos", component: { template: "<div />" } },
       { path: "/analisi", name: "analisi", component: { template: "<div />" } },
       { path: "/coordinadors/convidar", name: "convidar-coordinador", component: { template: "<div />" } },
+      { path: "/politica-de-cookies", name: "politica-cookies", component: { template: "<div />" } },
     ],
   });
   const avisosApi: AvisosApi = {
@@ -110,6 +111,7 @@ describe("App", () => {
     expect(acces.get("a[href='/iniciar-sessio']").text()).toContain("Inicia sessió");
     expect(acces.get("a[href='/registre']").text()).toContain("Registra l’entitat");
     expect(wrapper.get("footer").text()).toMatch(/© \d{4} Eduard Farinyes · Codi obert/);
+    expect(wrapper.get("footer a[href='/politica-de-cookies']").text()).toBe("Política de cookies");
   });
 
   it("mostra Clar i Fosc al capçal, sense paleta", () => {

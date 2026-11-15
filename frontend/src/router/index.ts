@@ -14,6 +14,7 @@ import EspaiNouView from "../views/EspaiNouView.vue";
 import EspaisView from "../views/EspaisView.vue";
 import IniciSessioView from "../views/IniciSessioView.vue";
 import IniciView from "../views/IniciView.vue";
+import PoliticaCookiesView from "../views/PoliticaCookiesView.vue";
 import RecuperarAccesView from "../views/RecuperarAccesView.vue";
 import RegistreView from "../views/RegistreView.vue";
 
@@ -22,6 +23,12 @@ const metaResp = { requiresAuth: true, requiresResponsible: true };
 
 export const router = createRouter({
   history: createWebHistory(),
+  scrollBehavior(to) {
+    if (to.name === "politica-cookies") {
+      return { top: 0 };
+    }
+    return false;
+  },
   routes: [
     { path: "/", name: "inici", component: IniciView },
     { path: "/registre", name: "registre", component: RegistreView, meta: { guestOnly: true } },
@@ -35,6 +42,11 @@ export const router = createRouter({
       path: "/recuperar",
       name: "recuperar-acces",
       component: RecuperarAccesView,
+    },
+    {
+      path: "/politica-de-cookies",
+      name: "politica-cookies",
+      component: PoliticaCookiesView,
     },
     {
       path: "/espais",

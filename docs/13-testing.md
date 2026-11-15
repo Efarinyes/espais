@@ -45,6 +45,16 @@ docker compose -p espais-e2e down         # els volums espais-e2e_* queden fins 
 
 El projecte `espais-e2e` té volums propis i no toca els de la pila habitual. Necessita lliures els ports 80, 443 i 8025. Si el 8025 és ocupat (per exemple, pel túnel cap al Mailpit del VPS), cal un fitxer de Compose addicional que el canviï i `ESPAIS_E2E_MAILPIT=http://127.0.0.1:<port>`. `ESPAIS_E2E_CAPTURES=<directori>` desa captures.
 
+## E2E de l’avís de cookies
+
+`tools/e2e-cookies.mjs` obre la landing contra una pila local, sense Mailpit ni alta d’entitat. Comprova l’avís, l’enllaç a la política, el tancament, la persistència en recarregar i que no hi ha galetes HTTP. Ho fa a 390 px i a 1280 px. Es nega a córrer si l’app no és a `localhost`.
+
+```bash
+docker compose -p espais-e2e up -d --build
+node tools/e2e-cookies.mjs
+docker compose -p espais-e2e down
+```
+
 ## TDD
 
 A cada fase de negoci: primer el test del cas d’ús, després implementació, després API i UI.

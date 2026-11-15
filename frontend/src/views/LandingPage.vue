@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import AvisCookies from "../components/AvisCookies.vue";
 import { useHeroFons } from "../composables/useHeroFons";
 
 const { heros, index, pausat, reduccio, togglePausa } = useHeroFons();
@@ -118,4 +119,5 @@ const passes = [
       </ul>
     </section>
   </main>
+  <AvisCookies />
 </template>

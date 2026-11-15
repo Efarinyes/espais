@@ -19,6 +19,7 @@ const coordinador: SessioDto = { ...responsable, token: "tok-coord", user_id: "u
 
 describe("guardes del router", () => {
   beforeEach(async () => {
+    window.scrollTo = () => undefined;
     localStorage.clear();
     setActivePinia(createPinia());
     await router.push("/");
@@ -43,6 +44,17 @@ describe("guardes del router", () => {
     expect(router.currentRoute.value.name).toBe("analisi");
     await router.push("/coordinadors/convidar");
     expect(router.currentRoute.value.name).toBe("convidar-coordinador");
+  });
+
+  it("la política de cookies s’obre sense sessió", async () => {
+    await router.push("/politica-de-cookies");
+    expect(router.currentRoute.value.name).toBe("politica-cookies");
+  });
+
+  it("la política de cookies s’obre encara que hi hagi una sessió", async () => {
+    useSessioStore().iniciar(responsable);
+    await router.push("/politica-de-cookies");
+    expect(router.currentRoute.value.name).toBe("politica-cookies");
   });
 
   it("l’enllaç de recuperació s’obre encara que hi hagi una sessió al navegador", async () => {

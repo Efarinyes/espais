@@ -69,6 +69,7 @@ function muntar(dto?: SessioDto, api: EspaisApi = apiBuit) {
       { path: "/espais", name: "espais", component: { template: "<div>tauler-espais</div>" } },
       { path: "/calendari", name: "calendari", component: { template: "<div />" } },
       { path: "/analisi", name: "analisi", component: { template: "<div />" } },
+      { path: "/politica-de-cookies", name: "politica-cookies", component: { template: "<p>politica</p>" } },
     ],
   });
   const wrapper = mount(IniciView, {

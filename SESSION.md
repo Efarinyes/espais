@@ -9,6 +9,8 @@ Actualitza aquest arxiu al final de cada sessió. És el punt d’arrencada del 
 
 ## Darrera feina
 
+2026-11-15: avís informatiu de cookies a la landing i política a `/politica-de-cookies`. No hi ha galetes HTTP, ni analítica, ni scripts de tercers. El navegador desa `espais.mode` (clar o fosc), `espais.sessio` només en entrar (el codi val 7 dies), la memòria cau del service worker amb els fitxers de l’app, i `espais.avis-cookies` amb el valor `tancat` quan es tanca l’avís. Una clau antiga `espais.aparenca` només es llegeix, si encara hi és. Tot queda exempt de consentiment (article 22.2 de la Llei 34/2002 i guia de l’AEPD de maig de 2024). L’avís es pot tancar i no torna a sortir; no hi ha botó d’acceptar ni de rebutjar. El peu enllaça la política. No s’han inventat adreça, NIF ni correu: al peu només consta Eduard Farinyes, i no hi ha política de privacitat amb l’article 13 del RGPD. Vitest 255. E2E Docker `espais-e2e-cookies`, 23 comprovacions. Pila i volums de prova esborrats. `espais.sqlite3` i els volums `espais_*` no s’han tocat.
+
 2026-11-13: solució acceptada i sessió tancada. Al calendari del responsable la sala és el color i el coordinador és el nom (ADR 0023). Sense tramat ni llegenda de coordinadors. El nom fa 0,75 rem, pes 500, i es talla amb punts suspensius. E2E Docker `espais-e2e-visual-20261113`, 48 comprovacions. Les captures no es conserven al repositori. Pila i volums de prova esborrats. `espais.sqlite3` i els volums `espais_*` no s’han tocat. El codi és a `origin/feat/docker-caddy-sqlite`, commit `d89d9d9`. Qui opera el servidor el publica amb `git pull` i `docker compose up -d --build`, sense `down -v`. No s’ha tocat el VPS ni `main`.
 
 2026-11-08: la fase d’UX, D1 i la prova E2E es dona per tancada. Queda pendent només D-PALETA: els hex publicats no es canvien fins que es decideixi. `feat/docker-caddy-sqlite` es puja a `origin` perquè qui opera el servidor pugui fer `git pull` i `docker compose up -d --build`, sense `down -v`. No s’ha tocat el VPS ni `main`. `backup/pre-ux-ui-2026-11-02` segueix a `436d97b`.
@@ -123,7 +125,9 @@ Desplegat al VPS (`6b455b9`) i provat amb Capgrossos, «Sala pilars». La vista 
 
 ## Següent tasca
 
-Prova de camp del calendari a `d89d9d9`: qui opera el servidor fa `git pull` i `docker compose up -d --build`, sense `down -v`. La sala es reconeix pel color i el coordinador pel nom (ADR [0023](docs/adr/0023-coordinador-pel-nom.md)). No es reobre el tramat ni la llegenda de coordinadors. No es fusiona a `main`.
+Publicar `feat/docker-caddy-sqlite` al VPS: `git pull` i `docker compose up -d --build`, sense `down -v`. Comprovar a `https://espais.duckdns.org` l’avís de la landing, l’enllaç a `/politica-de-cookies` i que tancar-lo no el torna a mostrar. Aquesta màquina no té un host SSH del servidor. No es fusiona a `main`.
+
+La prova de camp del calendari (ADR [0023](docs/adr/0023-coordinador-pel-nom.md)) va amb la mateixa publicació: la sala es reconeix pel color i el coordinador pel nom. No es reobre el tramat ni la llegenda de coordinadors.
 
 La feina de desplegament continua a `feat/docker-caddy-sqlite`: és la branca que el servidor desplega després del `git pull` i de regenerar els contenidors. `backup/alpha-funcional` (`9178e98`, també a `origin`) és el punt de retorn. `backup/pre-ux-ui-2026-11-02` (`436d97b`) no es mou. No es fusiona a `main` fins a la Beta, quan es canviï la configuració del servidor. No s’esborren `backup/alpha-funcional` ni `backup/pre-dockeritzacio`.
 
