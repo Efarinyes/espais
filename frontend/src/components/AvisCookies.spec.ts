@@ -23,13 +23,20 @@ describe("AvisCookies", () => {
 
   it("a la primera visita informa i enllaça la política, sense acceptar ni rebutjar", () => {
     const { wrapper } = muntar();
-    const avis = wrapper.get("#avis-cookies");
+    const avis = wrapper.get("#nota-funcio");
     expect(avis.text()).toContain("No mesurem visites ni fem servir cookies de tercers");
     expect(avis.get("a").text()).toBe("Política de cookies");
     expect(avis.get("a").attributes("href")).toBe("/politica-de-cookies");
     expect(avis.get("button").text()).toBe("Tanca l’avís");
     expect(avis.text()).not.toContain("Accepta");
     expect(avis.text()).not.toContain("Rebutja");
+    expect(avis.attributes("id")).not.toMatch(/cookie/i);
+    expect(avis.attributes("class") ?? "").not.toMatch(/cookie/i);
+    expect(avis.get("h2").attributes("id")).not.toMatch(/cookie/i);
+    for (const node of avis.findAll("a, button")) {
+      expect(node.attributes("class") ?? "").not.toMatch(/cookie/i);
+      expect(node.attributes("id") ?? "").not.toMatch(/cookie/i);
+    }
     expect(localStorage.getItem(CLAU_AVIS_COOKIES)).toBeNull();
   });
 
@@ -44,9 +51,9 @@ describe("AvisCookies", () => {
   it("tancar amaga l’avís i el manté tancat en tornar a muntar", async () => {
     const { wrapper } = muntar();
     await wrapper.get("button").trigger("click");
-    expect(wrapper.find("#avis-cookies").exists()).toBe(false);
+    expect(wrapper.find("#nota-funcio").exists()).toBe(false);
     expect(localStorage.getItem(CLAU_AVIS_COOKIES)).toBe("tancat");
     const segona = muntar();
-    expect(segona.wrapper.find("#avis-cookies").exists()).toBe(false);
+    expect(segona.wrapper.find("#nota-funcio").exists()).toBe(false);
   });
 });

@@ -31,7 +31,7 @@ describe("LandingPage", () => {
   });
 
   it("mostra l’avís de cookies amb enllaç a la política", () => {
-    const avis = muntar().get("#avis-cookies");
+    const avis = muntar().get("#nota-funcio");
     expect(avis.get("a").attributes("href")).toBe("/politica-de-cookies");
     expect(avis.get("button").text()).toBe("Tanca l’avís");
   });

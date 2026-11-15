@@ -93,9 +93,9 @@ async function comprovarMida(amplada, alcada, nom) {
     mobile: amplada < 800,
   });
   await go(`${APP}/`);
-  await waitFor("!!document.querySelector('#avis-cookies')", `${nom}: avís visible`);
+  await waitFor("!!document.querySelector('#nota-funcio')", `${nom}: avís visible`);
   const mida = await ev(`(() => {
-    const avis = document.querySelector("#avis-cookies");
+    const avis = document.querySelector("#nota-funcio");
     const boto = avis.querySelector("button");
     const enllac = avis.querySelector("a");
     const doc = document.documentElement;
@@ -158,7 +158,7 @@ try {
   check((await ev("localStorage.getItem('espais.sessio')")) === null, "mòbil: la landing no obre sessió");
   check((await ev("localStorage.getItem('espais.avis-cookies')")) === null, "mòbil: l’avís encara no s’ha desat");
 
-  await ev(`document.querySelector("#avis-cookies a").click()`);
+  await ev(`document.querySelector("#nota-funcio a").click()`);
   await waitFor("location.pathname === '/politica-de-cookies'", "política");
   const politica = await ev("document.querySelector('main').innerText");
   check(politica.includes("espais.sessio") && politica.includes("Eduard Farinyes"), "la política descriu la sessió i qui informa");
@@ -167,21 +167,21 @@ try {
     await ev("document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1"),
     "política: sense desplaçament horitzontal",
   );
-  check((await ev("document.querySelector('#avis-cookies')")) === null, "la política no obliga a decidir per llegir-la");
+  check((await ev("document.querySelector('#nota-funcio')")) === null, "la política no obliga a decidir per llegir-la");
   check((await ev("localStorage.getItem('espais.avis-cookies')")) === null, "consultar la política no desa el tancament");
 
   await ev(`document.querySelector("a[href='/']").click()`);
-  await waitFor("location.pathname === '/' && !!document.querySelector('#avis-cookies')", "tornada a la landing");
+  await waitFor("location.pathname === '/' && !!document.querySelector('#nota-funcio')", "tornada a la landing");
 
-  await ev(`document.querySelector("#avis-cookies button").click()`);
-  await waitFor("!document.querySelector('#avis-cookies')", "avís tancat");
+  await ev(`document.querySelector("#nota-funcio button").click()`);
+  await waitFor("!document.querySelector('#nota-funcio')", "avís tancat");
   check((await ev("localStorage.getItem('espais.avis-cookies')")) === "tancat", "el tancament queda desat");
   check((await cookiesHttp()).length === 0, "després de tancar segueix sense galetes HTTP");
 
   await send("Page.reload", { ignoreCache: true });
   await waitFor("document.readyState === 'complete' && !!document.querySelector('#contingut')", "recàrrega");
   await sleep(400);
-  check((await ev("document.querySelector('#avis-cookies')")) === null, "després de recarregar l’avís no torna");
+  check((await ev("document.querySelector('#nota-funcio')")) === null, "després de recarregar l’avís no torna");
   check((await ev("localStorage.getItem('espais.avis-cookies')")) === "tancat", "la visita posterior conserva el tancament");
 
   await ev("localStorage.removeItem('espais.avis-cookies')");
