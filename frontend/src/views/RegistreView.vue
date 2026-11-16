@@ -3,19 +3,42 @@ import { RouterLink } from "vue-router";
 
 import { useRegistre } from "../composables/useRegistre";
 
-const { camps, errorsCamp, errorGlobal, enviant, enviar } = useRegistre();
+const { camps, errorsCamp, errorGlobal, enviant, reenviant, pendent, missatge, lliurament, enviar, reenviar } =
+  useRegistre();
 </script>
 
 <template>
   <main class="mx-auto w-full max-w-md px-4 py-6">
     <h1 class="titol-pantalla">Registra l’entitat</h1>
-    <p class="mt-2 text-base-content/80">Un sol pas: dades de l’entitat i del primer responsable. Sense cobrament.</p>
+    <p class="mt-2 text-base-content/80">
+      Un sol pas: dades de l’entitat i del primer responsable. Sense cobrament. Després cal verificar el correu per
+      entrar.
+    </p>
 
     <div v-if="errorGlobal" class="alert alert-error mt-6" role="alert">
       <span>{{ errorGlobal }}</span>
     </div>
 
-    <form class="mt-6 space-y-4" @submit.prevent="enviar">
+    <template v-if="pendent">
+      <div
+        class="alert mt-6"
+        :class="lliurament === 'sent' ? 'alert-success' : 'alert-warning'"
+        role="status"
+      >
+        <span>{{ missatge }}</span>
+      </div>
+      <button class="btn btn-primary min-h-11 w-full mt-4" type="button" :disabled="reenviant" @click="reenviar">
+        {{ reenviant ? "Enviant…" : "Torna a enviar el correu" }}
+      </button>
+      <p class="mt-6">
+        <RouterLink class="link link-primary" to="/verificar">Ja tens l’enllaç? Verifica el correu</RouterLink>
+      </p>
+      <p class="mt-3">
+        <RouterLink class="link link-primary" to="/iniciar-sessio">Ja has verificat el correu? Inicia sessió</RouterLink>
+      </p>
+    </template>
+
+    <form v-else class="mt-6 space-y-4" @submit.prevent="enviar">
       <fieldset class="fieldset">
         <label class="label" for="entity_name">Nom de l’entitat</label>
         <input

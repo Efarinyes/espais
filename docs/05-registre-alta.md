@@ -19,12 +19,14 @@ No hi ha enum tancat de tipologies. Exemples: «club de futbol sala», «associa
 Formulari unique
   → nom entitat, tipologia
   → nom responsable, email, contrasenya
-  → RegisterEntity (atòmic)
-  → sessió iniciada com a responsable
+  → RegisterEntity (atòmic, provisional)
+  → correu amb enllaç de verificació
+  → ConfirmEmailVerification activa el compte i l’entitat
+  → inici de sessió com a responsable
   → pantalla d’inici: “Defineix el primer espai” + “Convida coordinadors” (secundari)
 ```
 
-`RegisterEntity` crea en una transacció: entitat, usuari, membership `responsible`. Si falla un pas, no queda entitat òrfena.
+`RegisterEntity` crea en una transacció: entitat, usuari, membership `responsible`. El compte i l’entitat queden provisionals (`email_verified_at` i `activated_at` buits) fins que el responsable obre l’enllaç. Si falla un pas de l’alta, no queda entitat òrfena. La verificació és un cas d’ús a part i no obre sessió (ADR [0024](adr/0024-verificacio-correu-responsable.md)).
 
 ## Validacions
 
@@ -52,9 +54,10 @@ El responsable no “entra buit” sense guia:
 | Cas | Comportament |
 |---|---|
 | Email ja registrat | No es crea un segon compte. La resposta no diu que el correu existeix: cal revisar les dades o iniciar sessió. La recuperació no s’ofereix aquí (ADR [0016](adr/0016-registre-no-confirma-email.md)); l’enllaç és a «Inicia sessió» (ADR [0018](adr/0018-recuperacio-de-compte.md)). |
+| Correu sense verificar | El compte i l’entitat existeixen, però no s’hi pot entrar. L’enllaç és d’un sol ús, dura 24 hores i es pot tornar a demanar (ADR [0024](adr/0024-verificacio-correu-responsable.md)). |
 | Doble submit del formulari | Idempotència: no dues entitats |
-| Registre a mitges (crash) | Transacció: zero o tot |
-| Responsable sense espais | App usable; empty state; no pot haver-hi reserves |
+| Registre a mitges (crash) | Transacció: zero o tot a l’alta. Si el correu no surt, el compte provisional es conserva i es pot reenviar l’enllaç. |
+| Responsable sense espais | App usable un cop verificat el correu; empty state; no pot haver-hi reserves |
 
 ## Backlog (documentat, no v1)
 
@@ -63,7 +66,7 @@ El responsable no “entra buit” sense guia:
 - Unió / fusió d’entitats.
 - Coordinador o responsable en més d’una entitat.
 - Alta d’entitat per un operador de plataforma.
-- Verificació d’email obligatòria abans d’usar l’app. Continua al backlog, també a l’Alpha pública. Sense SMTP no es bloqueja l’ús, ni en desenvolupament ni al VPS.
+- Verificació d’email del coordinador per un flux propi. El coordinador queda verificat en acceptar la invitació, perquè el correu ja ha arribat a la seva bústia.
 
 ## Anti-patrons
 

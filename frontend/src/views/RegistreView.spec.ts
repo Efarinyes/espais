@@ -17,7 +17,7 @@ const sessioBuida: SessioDto = {
 };
 
 const api: IdentityApi = {
-  registrar: async () => sessioBuida,
+  registrar: async () => ({ detall: "T’hem enviat un correu.", lliurament: "sent" }),
   iniciarSessio: async () => sessioBuida,
   obtenirSessio: async () => sessioBuida,
   actualitzarPaleta: async (_token, palette) => ({ palette }),
@@ -35,7 +35,9 @@ const api: IdentityApi = {
   acceptarInvitacio: async () => sessioBuida,
   tancarSessio: async () => undefined,
   demanarRecuperacio: async () => ({ detall: "Si aquest correu té un compte, rebràs un enllaç." }),
-  confirmarRecuperacio: async () => sessioBuida,
+  confirmarRecuperacio: async () => ({ detall: "La contrasenya s’ha actualitzat." }),
+  demanarVerificacio: async () => ({ detall: "Si aquest correu té un registre pendent, rebràs un enllaç." }),
+  confirmarVerificacio: async () => ({ detall: "El correu s’ha verificat." }),
 };
 
 describe("RegistreView", () => {

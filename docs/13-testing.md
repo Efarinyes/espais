@@ -24,6 +24,7 @@ Skill: `testing-quality`. Contracte: **cap cas d’ús sense test**.
 - `GetUsageSummary`: només el responsable; tenant A no veu B; `cancelled` no entra a ocupació; assistència sense zero silenciós.
 - Autorització: la política de rols; cada ruta privada del router; `401` sense sessió, `403` sense permís, `404` en un recurs d’una altra entitat; sessió revocada o amb `session_version` antiga; el rol es rellegeix de la membership.
 - Recuperació de compte (ADR [0018](adr/0018-recuperacio-de-compte.md), [0019](adr/0019-recuperacio-sense-sessio.md)): resposta idèntica amb compte o sense; només el hash a la base; una hora; un sol ús, també amb dues confirmacions alhora (SQLite); una demanda nova anul·la l’anterior; límits per compte i per IP; correu caigut sense token viu ni dades al log; cap sessió nova; les anteriors cauen per als dos rols i el rol es manté.
+- Verificació del responsable (ADR [0024](adr/0024-verificacio-correu-responsable.md)): alta sense sessió; compte i entitat provisionals; només el hash; 24 hores; un sol ús, també amb dues confirmacions alhora; un reenviament anul·la l’anterior; el reenviament respon igual amb compte o sense i té els mateixos límits, comptats a part; correu caigut sense token viu; la confirmació activa els dos i no obre sessió; una contrasenya correcta abans de verificar respon 403 i una d’incorrecta continua sent 401; la recuperació no verifica el correu; el coordinador entra per la invitació.
 
 ## Eines
 
@@ -33,7 +34,7 @@ Skill: `testing-quality`. Contracte: **cap cas d’ús sense test**.
 
 ## E2E de la recuperació
 
-`tools/e2e-recuperacio.mjs` recorre la recuperació del responsable i del coordinador amb un Chrome, Brave o Chromium en mode headless, a mida de mòbil, contra una pila Docker **local** amb Mailpit. Fa l’alta, la invitació i l’acceptació pel correu, la demanda, l’enllaç, el canvi, el login amb la contrasenya nova, el rebuig de la sessió antiga i de l’enllaç usat, i la recàrrega. No imprimeix tokens. Es nega a córrer si l’app o Mailpit no són a `localhost`: crea entitats de prova.
+L’alta dels scripts E2E que registren un responsable llegeix el correu de verificació a Mailpit (`tools/verificar-alta.mjs`) i entra després de confirmar-lo. `tools/e2e-recuperacio.mjs` recorre la recuperació del responsable i del coordinador amb un Chrome, Brave o Chromium en mode headless, a mida de mòbil, contra una pila Docker **local** amb Mailpit. Fa l’alta, la invitació i l’acceptació pel correu, la demanda, l’enllaç, el canvi, el login amb la contrasenya nova, el rebuig de la sessió antiga i de l’enllaç usat, i la recàrrega. No imprimeix tokens. Es nega a córrer si l’app o Mailpit no són a `localhost`: crea entitats de prova.
 
 ```bash
 # .env local: ESPAIS_DOMAIN=http://localhost, un ESPAIS_SECRET propi,

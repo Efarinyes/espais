@@ -4,16 +4,19 @@ from app.adapters.memory.identity import (
     PlainPasswordHasher,
     SequentialIdGenerator,
 )
-from app.domain.errors import InvalidCredentialsError
+from app.domain.errors import EmailNotVerifiedError, InvalidCredentialsError
 from app.domain.identity import MembershipRole
 from app.usecases.authenticate_user import AuthenticateUser, AuthenticateUserCommand
 from app.usecases.register_entity import RegisterEntity, RegisterEntityCommand
 from app.usecases.resolve_session import ResolveSession
+from tests.activar import activar_en_memoria
 
 
 def _register(
     uow: InMemoryIdentityUnitOfWork,
     ids: SequentialIdGenerator | None = None,
+    *,
+    verificat: bool = True,
     **overrides: object,
 ) -> tuple:
     data: dict[str, object] = {
@@ -25,9 +28,12 @@ def _register(
     }
     data.update(overrides)
     generator = ids or SequentialIdGenerator()
-    return RegisterEntity(
+    result = RegisterEntity(
         uow, FixedClock(), generator, PlainPasswordHasher()
     ).execute(RegisterEntityCommand(**data))  # type: ignore[arg-type]
+    if verificat:
+        activar_en_memoria(uow, str(data["email"]))
+    return result
 
 
 def test_authenticate_returns_entity_of_the_membership() -> None:
@@ -43,6 +49,27 @@ def test_authenticate_returns_entity_of_the_membership() -> None:
     assert view.user_name == "Anna"
     assert view.typology == "associació de veïns"
     assert view.palette == "mar-cel"
+
+
+def test_unverified_account_cannot_start_a_session() -> None:
+    uow = InMemoryIdentityUnitOfWork()
+    _register(uow, verificat=False)
+    try:
+        AuthenticateUser(uow, PlainPasswordHasher()).execute(
+            AuthenticateUserCommand(email="anna@example.com", password="wrongpass")
+        )
+    except InvalidCredentialsError:
+        pass
+    else:
+        raise AssertionError("expected InvalidCredentialsError")
+    try:
+        AuthenticateUser(uow, PlainPasswordHasher()).execute(
+            AuthenticateUserCommand(email="anna@example.com", password="secret123")
+        )
+    except EmailNotVerifiedError:
+        pass
+    else:
+        raise AssertionError("expected EmailNotVerifiedError")
 
 
 def test_wrong_password_does_not_reveal_account() -> None:

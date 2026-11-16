@@ -76,6 +76,7 @@ class RegisterEntity:
             typology=typology,
             created_at=now,
             palette=DEFAULT_ENTITY_PALETTE,
+            activated_at=None,
         )
         user = User(
             id=user_id,
@@ -83,6 +84,7 @@ class RegisterEntity:
             email=email,
             password_hash=self._hasher.hash(command.password),
             created_at=now,
+            email_verified_at=None,
         )
         membership = Membership(
             id=membership_id,

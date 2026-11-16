@@ -38,7 +38,7 @@ Amb `ESPAIS_DOMAIN=http://localhost`, Caddy respon per HTTP al port 80. El nom `
 | `ESPAIS_DOMAIN` | `http://localhost` en local. Al VPS, el domini públic sense esquema. |
 | `ESPAIS_SECRET` | Secret HMAC de sessió. Obligatori: Compose posa `ESPAIS_ENV=production`. |
 | `DATABASE_URL` | Dins el contenidor: `sqlite:////data/espais.sqlite3`. Compose ja el fixa. |
-| `ESPAIS_SMTP_HOST` | Buit: els avisos queden al log i la invitació es mostra com a enllaç. A l’Alpha amb Mailpit: `mailpit`. Un valor ja escrit no es canvia sol. |
+| `ESPAIS_SMTP_HOST` | Buit: els avisos queden al log i la invitació es mostra com a enllaç. La verificació del registre no mostra l’enllaç: sense SMTP el compte queda provisional (ADR [0024](adr/0024-verificacio-correu-responsable.md)). A l’Alpha amb Mailpit: `mailpit`. Un valor ja escrit no es canvia sol. |
 | `ESPAIS_SMTP_PORT` | Mailpit: `1025`. Un relay futur: el port del proveïdor, sovint `587`. Un `587` ja escrit al `.env` no passa a `1025` sol. |
 | `ESPAIS_SMTP_FROM` | Remitent. El domini de l’app i el del remitent poden ser diferents. |
 | `ESPAIS_SMTP_STARTTLS` | Buit amb Mailpit. `1` quan el relay ho demani. |

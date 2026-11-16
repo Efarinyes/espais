@@ -19,7 +19,7 @@ const sessioAnna: SessioDto = {
 };
 
 const identityBuit: IdentityApi = {
-  registrar: async () => sessioAnna,
+  registrar: async () => ({ detall: "T’hem enviat un correu.", lliurament: "sent" }),
   iniciarSessio: async () => sessioAnna,
   obtenirSessio: async () => sessioAnna,
   actualitzarPaleta: async (_token, palette) => ({ palette }),
@@ -37,7 +37,9 @@ const identityBuit: IdentityApi = {
   acceptarInvitacio: async () => sessioAnna,
   tancarSessio: async () => undefined,
   demanarRecuperacio: async () => ({ detall: "Si aquest correu té un compte, rebràs un enllaç." }),
-  confirmarRecuperacio: async () => sessioAnna,
+  confirmarRecuperacio: async () => ({ detall: "La contrasenya s’ha actualitzat." }),
+  demanarVerificacio: async () => ({ detall: "Si aquest correu té un registre pendent, rebràs un enllaç." }),
+  confirmarVerificacio: async () => ({ detall: "El correu s’ha verificat." }),
 };
 
 function muntar() {

@@ -6,6 +6,7 @@ from datetime import datetime
 from typing import Protocol
 from uuid import UUID
 
+from app.domain.email_verification import EmailVerification
 from app.domain.identity import Entity, Membership, User
 from app.domain.invitation import Invitation
 from app.domain.password_reset import PasswordReset, RecoveryAttempt
@@ -93,6 +94,20 @@ class PasswordResetRepository(Protocol):
     def invalidate_unused(self, user_id: UUID, now: datetime) -> None: ...
 
 
+class EmailVerificationRepository(Protocol):
+    def add(self, verification: EmailVerification) -> None: ...
+
+    def save(self, verification: EmailVerification) -> None: ...
+
+    def get_by_token_hash(self, token_hash: str) -> EmailVerification | None: ...
+
+    def consume(self, token_hash: str, now: datetime) -> EmailVerification | None:
+        """Marca el token com a usat només si encara no ho estava i no ha caducat."""
+        ...
+
+    def invalidate_unused(self, user_id: UUID, now: datetime) -> None: ...
+
+
 class RecoveryAttemptRepository(Protocol):
     def add(self, attempt: RecoveryAttempt) -> None: ...
 
@@ -109,6 +124,7 @@ class IdentityUnitOfWork(Protocol):
     memberships: MembershipRepository
     invitations: InvitationRepository
     password_resets: PasswordResetRepository
+    email_verifications: EmailVerificationRepository
     recovery_attempts: RecoveryAttemptRepository
 
     def commit(self) -> None: ...

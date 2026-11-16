@@ -18,6 +18,8 @@ Un sol formulari atòmic: entitat (nom + tipologia lliure) + primer responsable.
 - [ ] Empty state: CTA “defineix el primer espai”
 - [ ] Invitació de coordinadors per token; no bloqueja el registre
 - [ ] v1: un usuari, una entitat (error si l’email ja té membership)
+- [ ] El responsable queda provisional fins a verificar el correu; la confirmació no obre sessió (ADR 0024)
+- [ ] El coordinador no passa pel registre: l’acceptació de la invitació ja verifica el correu
 - [ ] Tests dels casos de [05-registre-alta.md](../../../docs/05-registre-alta.md)
 
 ## No fer a v1

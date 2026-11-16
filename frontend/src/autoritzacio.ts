@@ -2,6 +2,7 @@ export const POLITICA_RUTES = {
   inici: "publica",
   "politica-cookies": "publica",
   "recuperar-acces": "publica",
+  "verificar-correu": "publica",
   registre: "convidat",
   "iniciar-sessio": "convidat",
   "acceptar-invitacio": "convidat",

@@ -29,6 +29,7 @@ from app.usecases.request_password_reset import (
     RequestPasswordResetCommand,
     blind_hash,
 )
+from tests.activar import activar_en_memoria
 
 
 class CapturingMailer:
@@ -65,6 +66,7 @@ def _registre(uow: InMemoryIdentityUnitOfWork, ids: SequentialIdGenerator) -> No
             password="secret123",
         )
     )
+    activar_en_memoria(uow, "anna@example.com")
 
 
 def _demanar(
@@ -258,6 +260,7 @@ def test_el_coordinador_recupera_igual_i_les_sessions_anteriors_cauen() -> None:
         email="carla@example.com",
         password_hash=PlainPasswordHasher().hash("secret123"),
         created_at=clock.now(),
+        email_verified_at=clock.now(),
     )
     uow.users.add(coordinador)
     uow.memberships.add(

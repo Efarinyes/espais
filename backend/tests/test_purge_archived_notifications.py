@@ -16,6 +16,7 @@ from app.domain.notification import (
 )
 from app.main import create_app
 from app.usecases.purge_archived_notifications import PurgeArchivedNotifications
+from tests.alta_http import alta_i_sessio
 
 NOW = datetime(2026, 9, 29, 12, tzinfo=UTC)
 CUTOFF = NOW - ARCHIVED_NOTIFICATION_RETENTION
@@ -96,18 +97,15 @@ def test_purges_archived_from_every_entity() -> None:
 
 def test_sqlalchemy_deletes_old_archived_row(sqlite_session_factory) -> None:
     client = TestClient(create_app(session_factory=sqlite_session_factory))
-    created = client.post(
-        "/registre",
-        json={
-            "entity_name": "AAVV Barri A",
-            "typology": "associació de veïns",
-            "responsible_name": "Anna",
-            "email": "anna-purge@example.com",
-            "password": "secret123",
-        },
+    created = alta_i_sessio(
+        client,
+        entity_name="AAVV Barri A",
+        typology="associació de veïns",
+        responsible_name="Anna",
+        email="anna-purge@example.com",
+        password="secret123",
     )
-    assert created.status_code == 201
-    headers_resp = {"Authorization": f"Bearer {created.json()['token']}"}
+    headers_resp = {"Authorization": f"Bearer {created['token']}"}
     invited = client.post("/invitacions", headers=headers_resp, json={"email": "carla-purge@example.com"})
     token = invited.json()["accept_url"].rsplit("/", 1)[-1]
     coord = client.post(
@@ -143,7 +141,7 @@ def test_sqlalchemy_deletes_old_archived_row(sqlite_session_factory) -> None:
     finally:
         session.close()
 
-    entity_id = UUID(created.json()["entity_id"])
+    entity_id = UUID(str(created["entity_id"]))
     uow = SqlAlchemyReservationUnitOfWork(sqlite_session_factory)
     try:
         result = PurgeArchivedNotifications(uow, FixedClock(NOW)).execute()

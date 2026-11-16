@@ -67,7 +67,7 @@ Sessió per compte (email + contrasenya a v1). Totes les rutes de negoci exigeix
 
 | Ruta | Accés |
 |---|---|
-| `/`, `/recuperar`, `/politica-de-cookies` | pública |
+| `/`, `/recuperar`, `/verificar`, `/politica-de-cookies` | pública |
 | `/registre`, `/iniciar-sessio`, `/invitar/:token` | només sense sessió confirmada |
 | `/espais`, `/calendari` | responsable i coordinador |
 | `/espais/nou`, `/espais/:id`, `/analisi`, `/coordinadors/convidar`, `/entitat/colors` | responsable |

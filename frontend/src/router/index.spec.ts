@@ -112,6 +112,11 @@ describe("guardes del router", () => {
     expect(router.currentRoute.value.name).toBe("recuperar-acces");
   });
 
+  it("l’enllaç de verificació s’obre sense sessió", async () => {
+    await router.push("/verificar");
+    expect(router.currentRoute.value.name).toBe("verificar-correu");
+  });
+
   it("una ruta pública no espera la confirmació de la sessió desada", async () => {
     let cridat = false;
     configuraConfirmacioSessio(() => {

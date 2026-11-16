@@ -22,7 +22,7 @@ const sessio: SessioDto = {
 };
 
 const api: IdentityApi = {
-  registrar: async () => sessio,
+  registrar: async () => ({ detall: "T’hem enviat un correu.", lliurament: "sent" }),
   iniciarSessio: async () => sessio,
   obtenirSessio: async () => sessio,
   actualitzarPaleta: async (_token, palette) => ({ palette }),
@@ -38,6 +38,8 @@ const api: IdentityApi = {
   tancarSessio: async () => undefined,
   demanarRecuperacio: async () => ({ detall: "Si aquest correu té un compte, rebràs un enllaç." }),
   confirmarRecuperacio: confirmacioCorrecta,
+  demanarVerificacio: async () => ({ detall: "Si aquest correu té un registre pendent, rebràs un enllaç." }),
+  confirmarVerificacio: async () => ({ detall: "El correu s’ha verificat." }),
 };
 
 async function muntar() {

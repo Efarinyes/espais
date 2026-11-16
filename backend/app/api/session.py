@@ -16,13 +16,19 @@ from app.api.deps import (
     get_token_issuer,
     require_session,
 )
-from app.domain.errors import InvalidCredentialsError, SessionNotFoundError
+from app.domain.errors import (
+    EmailNotVerifiedError,
+    InvalidCredentialsError,
+    SessionNotFoundError,
+)
 from app.domain.identity import MembershipRole
 from app.usecases.authenticate_user import AuthenticateUserCommand
 from app.usecases.close_session import CloseSession
 from app.usecases.resolve_session import SessionView
 
 router = APIRouter()
+
+DETALL_SENSE_VERIFICAR = "Verifica el correu abans d’iniciar sessió."
 
 
 class LoginRequest(BaseModel):
@@ -65,6 +71,8 @@ def login(
         )
     except InvalidCredentialsError:
         raise HTTPException(status_code=401, detail="email o contrasenya incorrectes") from None
+    except EmailNotVerifiedError:
+        raise HTTPException(status_code=403, detail=DETALL_SENSE_VERIFICAR) from None
     return session_response(
         view, token=identity.tokens.issue(view.user_id, view.session_version)
     )

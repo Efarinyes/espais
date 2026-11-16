@@ -15,17 +15,17 @@ def _payload(**overrides: object) -> dict[str, object]:
     return data
 
 
-def test_post_registre_returns_201_and_ids(sqlite_session_factory) -> None:
+def test_post_registre_no_obre_sessio(sqlite_session_factory) -> None:
     client = TestClient(create_app(session_factory=sqlite_session_factory))
     response = client.post("/registre", json=_payload())
     assert response.status_code == 201
     body = response.json()
-    assert body["entity_id"]
-    assert body["user_id"]
-    assert body["membership_id"]
-    assert body["token"]
-    assert body["entity_name"] == "AAVV Barri A"
-    assert body["role"] == "responsible"
+    assert body["lliurament"] == "unavailable"
+    assert "token" not in body
+    assert "verificació" in body["detall"]
+    login = client.post("/sessio", json={"email": "anna@example.com", "password": "secret123"})
+    assert login.status_code == 403
+    assert login.json()["detail"] == "Verifica el correu abans d’iniciar sessió."
 
 
 def test_post_registre_duplicate_email_does_not_confirm_it_exists(sqlite_session_factory) -> None:

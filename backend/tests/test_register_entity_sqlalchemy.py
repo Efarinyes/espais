@@ -1,13 +1,13 @@
 from uuid import UUID
 
 from app.adapters.memory.identity import FixedClock
-from app.api.deps import email_for_user
 from app.adapters.security import BcryptPasswordHasher
 from app.adapters.sqlalchemy.identity import (
     FailingSqlAlchemyMembershipRepository,
     SqlAlchemyIdentityUnitOfWork,
 )
 from app.adapters.system import UuidIdGenerator
+from app.api.deps import email_for_user
 from app.domain.errors import DuplicateEmailError
 from app.domain.identity import MembershipRole
 from app.usecases.register_entity import RegisterEntity, RegisterEntityCommand
@@ -40,12 +40,14 @@ def test_sqlalchemy_register_persists_entity_user_and_membership(sqlite_session_
         assert len(entities) == 1
         assert entities[0].id == result.entity_id
         assert entities[0].name == "AAVV Barri A"
+        assert entities[0].activated_at is None
 
         user = reader.users.get_by_email("anna@example.com")
         assert user is not None
         assert user.id == result.user_id
         assert user.password_hash != "secret123"
         assert user.password_hash.startswith("$2")
+        assert user.email_verified_at is None
 
         memberships = reader.memberships.list_all()
         assert len(memberships) == 1

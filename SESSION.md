@@ -9,6 +9,8 @@ Actualitza aquest arxiu al final de cada sessió. És el punt d’arrencada del 
 
 ## Darrera feina
 
+2026-11-16: el registre del responsable ja no obre sessió. Crea el compte i l’entitat provisionals, envia un enllaç de verificació d’un sol ús (24 hores, només el hash) i `ConfirmEmailVerification` activa els dos a la mateixa transacció. Sense SMTP el token es consumeix i no es mostra; es pot tornar a demanar. Un correu ja registrat continua sense confirmar-se (ADR 0016). La recuperació no verifica el correu. El coordinador entra per la invitació, que ja marca el correu com a verificat. Els comptes que ja existien queden verificats a la migració `0011`. Decisió: ADR [0024](docs/adr/0024-verificacio-correu-responsable.md). Pytest 299, Vitest 276, `vue-tsc` i `npm run build` nets. El recorregut s’ha vist al navegador, a 390 px, contra una API i un SMTP locals amb una base a `/tmp`: correu, bloqueig abans de verificar, enllaç invàlid, activació, entrada i empty state. No s’ha executat l’E2E Docker. `espais.sqlite3` i els volums `espais_*` no s’han tocat. El codi és a `feat/docker-caddy-sqlite` i a `origin`. No es fusiona a `main`. El VPS encara no el serveix: qui l’opera el publica amb `git pull` i `docker compose up -d --build`, sense `down -v`.
+
 2026-11-15: sessió tancada. Autorització centralitzada, sense ADR nou. El rol continua sortint de la membership a cada petició. Les accions viuen a `app/domain/authorization.py` i les pantalles a `frontend/src/autoritzacio.ts`. Una ruta privada no es pinta fins que `GET /sessio` confirma el rol. `/avisos` és només del coordinador: el responsable rep 403. Pytest 286, Vitest 270 i `vue-tsc` nets. E2E Docker del projecte `espais-e2e-autoritzacio`, a `127.0.0.1:8090`, 27 comprovacions; la pila i els seus volums s’han esborrat. `espais.sqlite3` i els volums `espais_*` no s’han tocat. El codi de l’app és `eecda4f`, ja a `origin/feat/docker-caddy-sqlite` (la punta remota, abans d’aquesta nota, és `58ee3ca`). No es fusiona a `main`. El VPS encara no el serveix: qui l’opera el publica amb `git pull` i `docker compose up -d --build`, sense `down -v`.
 
 2026-11-15: sessió tancada. Qui fa servir l’app confirma que l’avís es veu a Safari i, amb l’id `nota-funcio`, també a Brave amb EasyList Cookie activada. El codi és `e450a71`, a `origin/feat/docker-caddy-sqlite`, i el servidor ja el serveix. No es fusiona a `main`. Sense ADR: el canvi d’id és deute d’implementació ja aplicat, anotat a `docs/14-ui-ux.md`. Queda sense inventar: adreça postal, NIF, correu de contacte i la informació de l’article 13 del RGPD.
@@ -131,6 +133,8 @@ Desplegat al VPS (`6b455b9`) i provat amb Capgrossos, «Sala pilars». La vista 
 
 ## Següent tasca
 
+La verificació del correu del responsable (ADR 0024) és a `origin/feat/docker-caddy-sqlite`. No es fusiona a `main`. Qui opera el servidor la publica amb `git pull` i `docker compose up -d --build`, sense `down -v`. Els scripts E2E ja llegeixen el correu de verificació a Mailpit; la pila Docker d’aquesta peça no s’ha aixecat.
+
 L’autorització de rutes i d’endpoints queda tancada. No es reobre. Ja és a `origin/feat/docker-caddy-sqlite`. El pas següent, només quan qui opera el servidor ho faci, és `git pull` i `docker compose up -d --build`, sense `down -v`. No es fusiona a `main`.
 
 L’avís i la política de cookies queden tancats. No es reobren. No es fusiona a `main`.
@@ -139,11 +143,11 @@ La prova de camp del calendari (ADR [0023](docs/adr/0023-coordinador-pel-nom.md)
 
 La feina de desplegament continua a `feat/docker-caddy-sqlite`: és la branca que el servidor desplega després del `git pull` i de regenerar els contenidors. `backup/alpha-funcional` (`9178e98`, també a `origin`) és el punt de retorn. `backup/pre-ux-ui-2026-11-02` (`436d97b`) no es mou. No es fusiona a `main` fins a la Beta, quan es canviï la configuració del servidor. No s’esborren `backup/alpha-funcional` ni `backup/pre-dockeritzacio`.
 
-L’assistència amb `mine: false`, el README, les capçaleres/OpenAPI, el registre (ADR 0016), la invitació per correu i la revocació en sortir (ADR 0014) ja són a `origin` i s’han vist a l’Alpha. No es refan. La verificació de correu segueix al backlog. L’ADR 0017 continua proposat, sense codi.
+L’assistència amb `mine: false`, el README, les capçaleres/OpenAPI, el registre (ADR 0016), la invitació per correu i la revocació en sortir (ADR 0014) ja són a `origin` i s’han vist a l’Alpha. No es refan. La verificació de correu del responsable és l’ADR 0024 i ja és a `origin/feat/docker-caddy-sqlite`. L’ADR 0017 continua proposat, sense codi.
 
 Les paletes aprovades ja són el codi de l’app (ADR 0020). No es comencen soles les troballes que l’auditoria de la recuperació va deixar fora d’aquesta correcció (F-01, F-02, F-03, D-01, D-02). No es comença sola la decisió D1 del calendari, ni l’alineació de glossari, visió i fase 5, ni l’ADR 0017, ni les recomanacions «Després» de l’auditoria. `backup/alpha-funcional` no es mou fins que es demani.
 
-2026-10-21, decisions del prompt 6 aplicades, sense fase nova: el registre continua obert i la verificació de correu segueix al backlog (`docs/05`), també a l’Alpha i sense SMTP. La invitació s’envia si hi ha `ESPAIS_SMTP_HOST`; si no n’hi ha o l’enviament falla, es conserva i el responsable veu l’enllaç (`docs/05`, `docs/08`). Port propi, no el `Notifier` d’anul·lació. Caducitat 14 dies. La resta del backlog d’invitacions (llista, revocació) no es reobre.
+2026-10-21, decisions del prompt 6 aplicades, sense fase nova: el registre continua obert. La verificació del responsable ja no és backlog: és l’ADR 0024. El text d’aquell dia deia que seguia al backlog, també a l’Alpha i sense SMTP. La invitació s’envia si hi ha `ESPAIS_SMTP_HOST`; si no n’hi ha o l’enviament falla, es conserva i el responsable veu l’enllaç (`docs/05`, `docs/08`). Port propi, no el `Notifier` d’anul·lació. Caducitat 14 dies. La resta del backlog d’invitacions (llista, revocació) no es reobre.
 
 Més endavant, no ara: la decisió de producte D1 del calendari (sala seleccionada pel coordinador i reserves pròpies fora d’aquell rang). No es canvia el codi fins que es decideixi. Tampoc no s’alineen glossari, visió i criteri de la fase 5 fins que es confirmi que la regla d’assistència del 3 d’octubre es manté.
 
@@ -182,6 +186,7 @@ Cap. API de desenvolupament `http://127.0.0.1:8000`; front de desenvolupament `h
 - [0021](docs/adr/0021-filtre-coordinador-i-colors-sala.md) — acceptat; esmenat per 0022 en el xoc de to i de patró (desplegable de coordinador; colors de sala separats)
 - [0022](docs/adr/0022-sales-i-tramats-sense-xoc.md) — acceptat; el tramat de coordinador queda retirat per 0023. El color de sala sense xoc continua vigent
 - [0023](docs/adr/0023-coordinador-pel-nom.md) — acceptat (el coordinador s’identifica pel nom; no hi ha llegenda ni tramat de persona)
+- [0024](docs/adr/0024-verificacio-correu-responsable.md) — acceptat (el responsable queda provisional fins a verificar el correu; la confirmació activa el compte i l’entitat i no obre sessió)
 
 ## Notes
 

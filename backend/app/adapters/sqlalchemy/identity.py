@@ -10,6 +10,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.adapters.sqlalchemy.models import (
+    EmailVerificationRow,
     EntityRow,
     InvitationRow,
     MembershipRow,
@@ -17,6 +18,7 @@ from app.adapters.sqlalchemy.models import (
     RecoveryAttemptRow,
     UserRow,
 )
+from app.domain.email_verification import EmailVerification
 from app.domain.errors import DuplicateEmailError
 from app.domain.identity import Entity, Membership, MembershipRole, User
 from app.domain.invitation import Invitation
@@ -36,6 +38,7 @@ def _entity_from_row(row: EntityRow) -> Entity:
         typology=row.typology,
         created_at=_aware(row.created_at),
         palette=row.palette,
+        activated_at=_aware(row.activated_at) if row.activated_at is not None else None,
     )
 
 
@@ -47,6 +50,7 @@ def _user_from_row(row: UserRow) -> User:
         password_hash=row.password_hash,
         created_at=_aware(row.created_at),
         session_version=row.session_version,
+        email_verified_at=_aware(row.email_verified_at) if row.email_verified_at is not None else None,
     )
 
 
@@ -82,6 +86,7 @@ class SqlAlchemyEntityRepository:
                 name=entity.name,
                 typology=entity.typology,
                 palette=entity.palette,
+                activated_at=entity.activated_at,
                 created_at=entity.created_at,
             )
         )
@@ -100,6 +105,7 @@ class SqlAlchemyEntityRepository:
         row.name = entity.name
         row.typology = entity.typology
         row.palette = entity.palette
+        row.activated_at = entity.activated_at
         self._session.flush()
 
     def list_all(self) -> list[Entity]:
@@ -119,6 +125,7 @@ class SqlAlchemyUserRepository:
                 email=user.email,
                 password_hash=user.password_hash,
                 session_version=user.session_version,
+                email_verified_at=user.email_verified_at,
                 created_at=user.created_at,
             )
         )
@@ -149,6 +156,7 @@ class SqlAlchemyUserRepository:
         row.email = user.email
         row.password_hash = user.password_hash
         row.session_version = user.session_version
+        row.email_verified_at = user.email_verified_at
         self._session.flush()
 
 
@@ -297,6 +305,83 @@ class SqlAlchemyPasswordResetRepository:
         self._session.flush()
 
 
+def _verification_from_row(row: EmailVerificationRow) -> EmailVerification:
+    return EmailVerification(
+        id=row.id,
+        user_id=row.user_id,
+        token_hash=row.token_hash,
+        expires_at=_aware(row.expires_at),
+        used_at=_aware(row.used_at) if row.used_at is not None else None,
+        created_at=_aware(row.created_at),
+    )
+
+
+class SqlAlchemyEmailVerificationRepository:
+    def __init__(self, session: Session) -> None:
+        self._session = session
+
+    def add(self, verification: EmailVerification) -> None:
+        self._session.add(
+            EmailVerificationRow(
+                id=verification.id,
+                user_id=verification.user_id,
+                token_hash=verification.token_hash,
+                expires_at=verification.expires_at,
+                used_at=verification.used_at,
+                created_at=verification.created_at,
+            )
+        )
+        self._session.flush()
+
+    def save(self, verification: EmailVerification) -> None:
+        row = self._session.get(EmailVerificationRow, verification.id)
+        if row is None:
+            self.add(verification)
+            return
+        row.used_at = verification.used_at
+        row.expires_at = verification.expires_at
+        self._session.flush()
+
+    def get_by_token_hash(self, token_hash: str) -> EmailVerification | None:
+        row = self._session.scalar(
+            select(EmailVerificationRow).where(EmailVerificationRow.token_hash == token_hash)
+        )
+        if row is None:
+            return None
+        return _verification_from_row(row)
+
+    def consume(self, token_hash: str, now: datetime) -> EmailVerification | None:
+        result = self._session.execute(
+            update(EmailVerificationRow)
+            .where(
+                EmailVerificationRow.token_hash == token_hash,
+                EmailVerificationRow.used_at.is_(None),
+                EmailVerificationRow.expires_at > now,
+            )
+            .values(used_at=now)
+            .execution_options(synchronize_session=False)
+        )
+        if result.rowcount != 1:
+            return None
+        row = self._session.scalar(
+            select(EmailVerificationRow)
+            .where(EmailVerificationRow.token_hash == token_hash)
+            .execution_options(populate_existing=True)
+        )
+        return _verification_from_row(row) if row is not None else None
+
+    def invalidate_unused(self, user_id: UUID, now: datetime) -> None:
+        rows = self._session.scalars(
+            select(EmailVerificationRow).where(
+                EmailVerificationRow.user_id == user_id,
+                EmailVerificationRow.used_at.is_(None),
+            )
+        ).all()
+        for row in rows:
+            row.used_at = now
+        self._session.flush()
+
+
 class SqlAlchemyRecoveryAttemptRepository:
     def __init__(self, session: Session) -> None:
         self._session = session
@@ -355,6 +440,7 @@ class SqlAlchemyIdentityUnitOfWork:
         self.memberships = SqlAlchemyMembershipRepository(self._session)
         self.invitations = SqlAlchemyInvitationRepository(self._session)
         self.password_resets = SqlAlchemyPasswordResetRepository(self._session)
+        self.email_verifications = SqlAlchemyEmailVerificationRepository(self._session)
         self.recovery_attempts = SqlAlchemyRecoveryAttemptRepository(self._session)
 
     def commit(self) -> None:

@@ -5,6 +5,7 @@ from sqlalchemy import create_engine, inspect
 
 from app.adapters.sqlalchemy.engine import database_url, repo_root
 from app.main import create_app
+from tests.alta_http import alta_i_sessio
 
 
 def test_default_sqlite_url_is_absolute_under_repo(monkeypatch) -> None:
@@ -20,18 +21,15 @@ def test_app_startup_migrates_spaces_and_persists(tmp_path: Path, monkeypatch) -
     db_path = tmp_path / "espais.sqlite3"
     monkeypatch.setenv("DATABASE_URL", f"sqlite:///{db_path}")
     client = TestClient(create_app())
-    created = client.post(
-        "/registre",
-        json={
-            "entity_name": "AAVV Barri A",
-            "typology": "associació de veïns",
-            "responsible_name": "Anna",
-            "email": "anna-boot@example.com",
-            "password": "secret123",
-        },
+    created = alta_i_sessio(
+        client,
+        entity_name="AAVV Barri A",
+        typology="associació de veïns",
+        responsible_name="Anna",
+        email="anna-boot@example.com",
+        password="secret123",
     )
-    assert created.status_code == 201
-    headers = {"Authorization": f"Bearer {created.json()['token']}"}
+    headers = {"Authorization": f"Bearer {created['token']}"}
     posted = client.post("/espais", headers=headers, json={"name": "Sala 1", "capacity": 40})
     assert posted.status_code == 201
     listed = client.get("/espais", headers=headers)

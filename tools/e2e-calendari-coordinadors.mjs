@@ -2,11 +2,13 @@
 // E2E del desplegable de coordinadors i dels colors de sala.
 // Contra una pila Docker local. No imprimeix tokens ni contrasenyes.
 import { spawn } from "node:child_process";
+import { correuDeVerificacio } from "./verificar-alta.mjs";
 import { existsSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 const APP = process.env.ESPAIS_E2E_APP ?? "http://localhost";
+const MAILPIT = process.env.ESPAIS_E2E_MAILPIT ?? "http://127.0.0.1:8025";
 const PASSWORD = "secret123";
 if (!["localhost", "127.0.0.1"].includes(new URL(APP).hostname)) {
   console.error(`Només contra una pila local: ${APP} no ho és.`);
@@ -141,8 +143,14 @@ try {
     email: `rita.${sufix}@example.com`,
     password: PASSWORD,
   });
-  check(registre.status === 201, "el responsable es registra");
-  const tokenRita = registre.body.token;
+  check(registre.status === 201 && !registre.body.token, "el responsable es registra");
+  const verificacioRita = await correuDeVerificacio(MAILPIT, `rita.${sufix}@example.com`);
+  check(Boolean(verificacioRita?.token), "arriba el correu de verificació");
+  secrets.push(verificacioRita.token);
+  check((await api("POST", "/registre/verificacio/confirmacio", { token: verificacioRita.token })).status === 200, "la Rita verifica el correu");
+  const sessioRita = await api("POST", "/sessio", { email: `rita.${sufix}@example.com`, password: PASSWORD });
+  check(sessioRita.status === 200, "la Rita entra després de verificar");
+  const tokenRita = sessioRita.body.token;
   secrets.push(tokenRita);
 
   async function accepta(email, name) {
@@ -169,9 +177,15 @@ try {
     email: `berta.${sufix}@example.com`,
     password: PASSWORD,
   });
-  check(altra.status === 201, "una segona entitat es registra");
-  secrets.push(altra.body.token);
-  const invitedB = await api("POST", "/invitacions", { email: `fora.${sufix}@example.com` }, altra.body.token);
+  check(altra.status === 201 && !altra.body.token, "una segona entitat es registra");
+  const verificacioBerta = await correuDeVerificacio(MAILPIT, `berta.${sufix}@example.com`);
+  check(Boolean(verificacioBerta?.token), "arriba el correu de la Berta");
+  secrets.push(verificacioBerta.token);
+  check((await api("POST", "/registre/verificacio/confirmacio", { token: verificacioBerta.token })).status === 200, "la Berta verifica el correu");
+  const sessioBerta = await api("POST", "/sessio", { email: `berta.${sufix}@example.com`, password: PASSWORD });
+  check(sessioBerta.status === 200, "la Berta entra després de verificar");
+  secrets.push(sessioBerta.body.token);
+  const invitedB = await api("POST", "/invitacions", { email: `fora.${sufix}@example.com` }, sessioBerta.body.token);
   const tokenB = invitedB.body.accept_url.split("/").pop();
   secrets.push(tokenB);
   const fora = await api("POST", `/invitacions/${tokenB}/acceptar`, { name: "Foraster", password: PASSWORD });

@@ -2,12 +2,14 @@
 // E2E visual del calendari: tres coordinadors, tres sales, clar i fosc.
 // Contra una pila Docker local aïllada. No imprimeix tokens ni contrasenyes.
 import { spawn } from "node:child_process";
+import { correuDeVerificacio } from "./verificar-alta.mjs";
 import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const APP = process.env.ESPAIS_E2E_APP ?? "http://localhost";
+const MAILPIT = process.env.ESPAIS_E2E_MAILPIT ?? "http://127.0.0.1:8025";
 const PASSWORD = "secret123";
 const ARREL = join(dirname(fileURLToPath(import.meta.url)), "..");
 const CAPTURES = process.env.ESPAIS_E2E_CAPTURES ?? join(ARREL, "artifacts", "e2e-calendari-visual");
@@ -232,8 +234,18 @@ try {
     email: `responsable.${sufix}@example.com`,
     password: PASSWORD,
   });
-  check(registre.status === 201, `el responsable es registra (${registre.status})`);
-  const tokenRita = registre.body.token;
+  check(registre.status === 201 && !registre.body.token, `el responsable es registra (${registre.status})`);
+  const verificacio = await correuDeVerificacio(MAILPIT, `responsable.${sufix}@example.com`);
+  check(Boolean(verificacio?.token), "arriba el correu de verificació");
+  secrets.push(verificacio.token);
+  const confirmat = await api("POST", "/registre/verificacio/confirmacio", { token: verificacio.token });
+  check(confirmat.status === 200, "el responsable verifica el correu");
+  const sessioRita = await api("POST", "/sessio", {
+    email: `responsable.${sufix}@example.com`,
+    password: PASSWORD,
+  });
+  check(sessioRita.status === 200, "el responsable entra després de verificar");
+  const tokenRita = sessioRita.body.token;
   secrets.push(tokenRita);
   resum.entitat = `E2E Visual ${sufix}`;
 

@@ -22,7 +22,7 @@ const sessioCoord: SessioDto = {
 
 function identityBase(api: Partial<IdentityApi>): IdentityApi {
   return {
-    registrar: async () => sessioCoord,
+    registrar: async () => ({ detall: "T’hem enviat un correu.", lliurament: "sent" as const }),
     iniciarSessio: async () => sessioCoord,
     obtenirSessio: async () => sessioCoord,
     actualitzarPaleta: async (_token, palette) => ({ palette }),
@@ -40,7 +40,9 @@ function identityBase(api: Partial<IdentityApi>): IdentityApi {
     acceptarInvitacio: async () => sessioCoord,
     tancarSessio: async () => undefined,
     demanarRecuperacio: async () => ({ detall: "Si aquest correu té un compte, rebràs un enllaç." }),
-    confirmarRecuperacio: async () => sessioCoord,
+    confirmarRecuperacio: async () => ({ detall: "La contrasenya s’ha actualitzat." }),
+    demanarVerificacio: async () => ({ detall: "Si aquest correu té un registre pendent, rebràs un enllaç." }),
+    confirmarVerificacio: async () => ({ detall: "El correu s’ha verificat." }),
     ...api,
   };
 }

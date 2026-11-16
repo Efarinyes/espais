@@ -18,6 +18,7 @@ import IniciView from "../views/IniciView.vue";
 import PoliticaCookiesView from "../views/PoliticaCookiesView.vue";
 import RecuperarAccesView from "../views/RecuperarAccesView.vue";
 import RegistreView from "../views/RegistreView.vue";
+import VerificarCorreuView from "../views/VerificarCorreuView.vue";
 
 export const router = createRouter({
   history: createWebHistory(),
@@ -40,6 +41,11 @@ export const router = createRouter({
       path: "/recuperar",
       name: "recuperar-acces",
       component: RecuperarAccesView,
+    },
+    {
+      path: "/verificar",
+      name: "verificar-correu",
+      component: VerificarCorreuView,
     },
     {
       path: "/politica-de-cookies",

@@ -12,6 +12,7 @@ from app.adapters.system import SystemClock
 from app.adapters.tokens import HmacTokenIssuer, _b64url_encode
 from app.main import create_app
 from app.ports.password_reset_mail import PasswordResetMessage
+from tests.alta_http import alta_i_sessio
 
 SECRET = "secret-test"
 DETALL_RECUPERACIO = (
@@ -48,18 +49,14 @@ def _client(sqlite_session_factory, mailer: CapturingMailer) -> TestClient:
 
 
 def _registre(client: TestClient, email: str = "anna@example.com") -> dict[str, object]:
-    response = client.post(
-        "/registre",
-        json={
-            "entity_name": "AAVV Barri A",
-            "typology": "associació de veïns",
-            "responsible_name": "Anna",
-            "email": email,
-            "password": "secret123",
-        },
+    return alta_i_sessio(
+        client,
+        entity_name="AAVV Barri A",
+        typology="associació de veïns",
+        responsible_name="Anna",
+        email=email,
+        password="secret123",
     )
-    assert response.status_code == 201
-    return response.json()
 
 
 def _coordinador(client: TestClient, token_responsable: str, email: str = "carla@example.com") -> dict[str, object]:

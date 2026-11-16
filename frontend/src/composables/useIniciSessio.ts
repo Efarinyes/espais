@@ -20,6 +20,7 @@ export function useIniciSessio() {
     password: "",
   });
   const errorGlobal = ref("");
+  const calVerificar = ref(false);
   const enviant = ref(false);
 
   function valida(): boolean {
@@ -30,6 +31,7 @@ export function useIniciSessio() {
 
   async function enviar() {
     errorGlobal.value = "";
+    calVerificar.value = false;
     if (!valida()) {
       return;
     }
@@ -41,6 +43,9 @@ export function useIniciSessio() {
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
         errorGlobal.value = "Email o contrasenya incorrectes.";
+      } else if (err instanceof ApiError && err.status === 403) {
+        errorGlobal.value = err.message;
+        calVerificar.value = true;
       } else if (err instanceof ApiError) {
         errorGlobal.value = err.message;
       } else {
@@ -51,5 +56,5 @@ export function useIniciSessio() {
     }
   }
 
-  return { camps, errorsCamp, errorGlobal, enviant, enviar };
+  return { camps, errorsCamp, errorGlobal, calVerificar, enviant, enviar };
 }

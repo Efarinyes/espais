@@ -3,7 +3,7 @@ import { RouterLink } from "vue-router";
 
 import { useIniciSessio } from "../composables/useIniciSessio";
 
-const { camps, errorsCamp, errorGlobal, enviant, enviar } = useIniciSessio();
+const { camps, errorsCamp, errorGlobal, calVerificar, enviant, enviar } = useIniciSessio();
 </script>
 
 <template>
@@ -14,6 +14,9 @@ const { camps, errorsCamp, errorGlobal, enviant, enviar } = useIniciSessio();
     <div v-if="errorGlobal" class="alert alert-error mt-6" role="alert">
       <span>{{ errorGlobal }}</span>
     </div>
+    <p v-if="calVerificar" class="mt-4">
+      <RouterLink class="link link-primary" to="/verificar">Torna a enviar el correu de verificació</RouterLink>
+    </p>
 
     <form class="mt-6 space-y-4" @submit.prevent="enviar">
       <fieldset class="fieldset">

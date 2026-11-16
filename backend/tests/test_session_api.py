@@ -1,6 +1,7 @@
 from fastapi.testclient import TestClient
 
 from app.main import create_app
+from tests.alta_http import alta_i_sessio
 
 
 def _payload(**overrides: object) -> dict[str, object]:
@@ -17,7 +18,7 @@ def _payload(**overrides: object) -> dict[str, object]:
 
 def test_login_returns_same_entity_as_register(sqlite_session_factory) -> None:
     client = TestClient(create_app(session_factory=sqlite_session_factory))
-    created = client.post("/registre", json=_payload()).json()
+    created = alta_i_sessio(client, **_payload())
     response = client.post(
         "/sessio",
         json={"email": "Anna@example.com", "password": "secret123"},
@@ -42,11 +43,11 @@ def test_login_wrong_password_returns_401(sqlite_session_factory) -> None:
 
 def test_get_sessio_returns_only_the_callers_entity(sqlite_session_factory) -> None:
     client = TestClient(create_app(session_factory=sqlite_session_factory))
-    a = client.post("/registre", json=_payload()).json()
-    b = client.post(
-        "/registre",
-        json=_payload(entity_name="AAVV Barri B", email="berta@example.com", responsible_name="Berta"),
-    ).json()
+    a = alta_i_sessio(client, **_payload())
+    b = alta_i_sessio(
+        client,
+        **_payload(entity_name="AAVV Barri B", email="berta@example.com", responsible_name="Berta"),
+    )
 
     sessio_a = client.get("/sessio", headers={"Authorization": f"Bearer {a['token']}"})
     sessio_b = client.get("/sessio", headers={"Authorization": f"Bearer {b['token']}"})
@@ -84,7 +85,7 @@ def test_tancament_revoca_nomes_aquell_token(sqlite_session_factory) -> None:
             token_issuer=HmacTokenIssuer("secret-de-prova", Rellotge()),
         )
     )
-    creat = client.post("/registre", json=_payload()).json()
+    creat = alta_i_sessio(client, **_payload())
     primer = creat["token"]
     segon = client.post(
         "/sessio",

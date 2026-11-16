@@ -41,7 +41,7 @@ function muntar(api: Partial<IdentityApi>) {
       plugins: [pinia, router],
       provide: {
         [identityApiKey as symbol]: {
-          registrar: async () => sessioOk,
+          registrar: async () => ({ detall: "T’hem enviat un correu.", lliurament: "sent" as const }),
           iniciarSessio: async () => sessioOk,
           obtenirSessio: async () => sessioOk,
           actualitzarPaleta: async (_token, palette) => ({ palette }),
@@ -59,7 +59,13 @@ function muntar(api: Partial<IdentityApi>) {
           acceptarInvitacio: async () => sessioOk,
           tancarSessio: async () => undefined,
           demanarRecuperacio: async () => ({ detall: "Si aquest correu té un compte, rebràs un enllaç." }),
-          confirmarRecuperacio: async () => sessioOk,
+          confirmarRecuperacio: async () => ({ detall: "La contrasenya s’ha actualitzat." }),
+          demanarVerificacio: async () => ({
+            detall: "Si aquest correu té un registre pendent de verificar, rebràs un enllaç.",
+          }),
+          confirmarVerificacio: async () => ({
+            detall: "El correu s’ha verificat i l’entitat ja està activa. Ara pots iniciar sessió.",
+          }),
           ...api,
         } satisfies IdentityApi,
       },
@@ -69,7 +75,7 @@ function muntar(api: Partial<IdentityApi>) {
 }
 
 describe("useRegistre", () => {
-  it("inicia sessió i navega als espais després d’un registre correcte", async () => {
+  it("deixa el compte pendent de verificació i no obre sessió", async () => {
     const { wrapper, router, sessio } = muntar({});
     await router.push("/registre");
     wrapper.vm.camps.entity_name = "AAVV Barri A";
@@ -78,9 +84,10 @@ describe("useRegistre", () => {
     wrapper.vm.camps.password = "secret123";
     await wrapper.vm.enviar();
     await flushPromises();
-    expect(sessio.iniciada).toBe(true);
-    expect(sessio.entityName).toBe("AAVV Barri A");
-    expect(router.currentRoute.value.name).toBe("espais");
+    expect(sessio.iniciada).toBe(false);
+    expect(wrapper.vm.pendent).toBe(true);
+    expect(wrapper.vm.missatge).toContain("correu");
+    expect(router.currentRoute.value.name).toBe("registre");
   });
 
   it("no diu que l’email ja existeix si el registre no es completa", async () => {

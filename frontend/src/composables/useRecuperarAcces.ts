@@ -1,19 +1,12 @@
 import { reactive, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
+import { decodificaToken, fragmentCru, treuFragment } from "../enllacFragment";
 import { ApiError } from "../services/http";
 import { requireIdentityApi } from "../services/identitat";
 import { useSessioStore } from "../stores/sessio";
 
 export type PasRecuperacio = "demanar" | "contrasenya" | "fet";
-
-function decodifica(cru: string): string {
-  try {
-    return decodeURIComponent(cru).trim();
-  } catch {
-    return "";
-  }
-}
 
 export function useRecuperarAcces() {
   const api = requireIdentityApi();
@@ -37,15 +30,12 @@ export function useRecuperarAcces() {
   const enviant = ref(false);
 
   function prenTokenDelFragment(hash: string) {
-    const cru = hash.startsWith("#") ? hash.slice(1) : "";
+    const cru = fragmentCru(hash);
     if (!cru) {
       return;
     }
-    if (window.location.hash) {
-      window.history.replaceState(window.history.state, "", `${window.location.pathname}${window.location.search}`);
-    }
-    void router.replace({ path: route.path, query: route.query, hash: "" });
-    const nou = decodifica(cru);
+    treuFragment(router, route);
+    const nou = decodificaToken(cru);
     if (!nou) {
       return;
     }

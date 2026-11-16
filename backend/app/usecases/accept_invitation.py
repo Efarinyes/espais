@@ -61,6 +61,7 @@ class AcceptInvitation:
             email=invitation.email,
             password_hash=self._hasher.hash(command.password),
             created_at=now,
+            email_verified_at=now,
         )
         membership = Membership(
             id=membership_id,

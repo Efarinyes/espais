@@ -11,11 +11,12 @@ from app.api.deps import IdentityHttp, get_identity_http, require_session
 from app.api.session import SessionResponse, session_response
 from app.domain.errors import (
     DuplicateEmailError,
+    EmailNotVerifiedError,
     ForbiddenError,
+    InvalidRegistrationError,
     InvitationAcceptedError,
     InvitationExpiredError,
     InvitationNotFoundError,
-    InvalidRegistrationError,
 )
 from app.usecases.accept_invitation import AcceptInvitationCommand
 from app.usecases.invite_coordinator import InviteCoordinatorCommand
@@ -125,7 +126,10 @@ def accept_invitation(
     ) as exc:
         raise _invitation_http_error(exc) from None
 
-    view = identity.resolve.execute(result.user_id)
+    try:
+        view = identity.resolve.execute(result.user_id)
+    except EmailNotVerifiedError:
+        raise HTTPException(status_code=403, detail="L’entitat encara no està activa.") from None
     token_sessio = identity.tokens.issue(result.user_id, view.session_version)
     base = session_response(view, token=token_sessio)
     return AcceptInvitationResponse(membership_id=result.membership_id, **base.model_dump())

@@ -1,6 +1,7 @@
 from fastapi.testclient import TestClient
 
 from app.main import create_app
+from tests.alta_http import alta_i_sessio
 
 
 def _register(client: TestClient, **overrides: object) -> dict[str, object]:
@@ -12,9 +13,7 @@ def _register(client: TestClient, **overrides: object) -> dict[str, object]:
         "password": "secret123",
     }
     data.update(overrides)
-    response = client.post("/registre", json=data)
-    assert response.status_code == 201
-    return response.json()
+    return alta_i_sessio(client, **data)
 
 
 def _coordinator(client: TestClient, created: dict[str, object]) -> dict[str, object]:

@@ -53,6 +53,14 @@ class InvalidPasswordResetError(Exception):
     """L’enllaç de recuperació no existeix, ha caducat o ja s’ha fet servir."""
 
 
+class InvalidEmailVerificationError(Exception):
+    """L’enllaç de verificació no existeix, ha caducat o ja s’ha fet servir."""
+
+
+class EmailNotVerifiedError(Exception):
+    """El compte existeix, però el correu del responsable encara no s’ha verificat."""
+
+
 class InvalidReservationError(Exception):
     """Interval, disponibilitat o espai invàlids per a la reserva."""
 

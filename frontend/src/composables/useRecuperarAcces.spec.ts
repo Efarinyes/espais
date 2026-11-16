@@ -23,7 +23,7 @@ const DETALL_CANVI = "La contrasenya s’ha actualitzat correctament. Ara pots i
 
 function identity(api: Partial<IdentityApi> = {}): IdentityApi {
   return {
-    registrar: async () => sessioAntiga,
+    registrar: async () => ({ detall: "T’hem enviat un correu.", lliurament: "sent" as const }),
     iniciarSessio: async () => sessioAntiga,
     obtenirSessio: async () => sessioAntiga,
     actualitzarPaleta: async (_token, palette) => ({ palette }),
@@ -44,6 +44,8 @@ function identity(api: Partial<IdentityApi> = {}): IdentityApi {
       detall: "Si aquest correu té un compte, rebràs un enllaç per triar una contrasenya nova.",
     }),
     confirmarRecuperacio: async () => ({ detall: DETALL_CANVI }),
+    demanarVerificacio: async () => ({ detall: "Si aquest correu té un registre pendent, rebràs un enllaç." }),
+    confirmarVerificacio: async () => ({ detall: "El correu s’ha verificat." }),
     ...api,
   };
 }

@@ -35,6 +35,7 @@ class Entity:
     typology: str | None
     created_at: datetime
     palette: str = DEFAULT_ENTITY_PALETTE
+    activated_at: datetime | None = None
 
 
 @dataclass(frozen=True)
@@ -45,6 +46,7 @@ class User:
     password_hash: str
     created_at: datetime
     session_version: int = 0
+    email_verified_at: datetime | None = None
 
 
 @dataclass(frozen=True)

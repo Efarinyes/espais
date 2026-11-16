@@ -38,7 +38,7 @@ function muntar(api: Partial<IdentityApi>) {
       plugins: [pinia, router],
       provide: {
         [identityApiKey as symbol]: {
-          registrar: async () => sessioOk,
+          registrar: async () => ({ detall: "T’hem enviat un correu.", lliurament: "sent" as const }),
           iniciarSessio: async () => sessioOk,
           obtenirSessio: async () => sessioOk,
           actualitzarPaleta: async (_token, palette) => ({ palette }),
@@ -56,7 +56,9 @@ function muntar(api: Partial<IdentityApi>) {
           acceptarInvitacio: async () => sessioOk,
           tancarSessio: async () => undefined,
           demanarRecuperacio: async () => ({ detall: "Si aquest correu té un compte, rebràs un enllaç." }),
-          confirmarRecuperacio: async () => sessioOk,
+          confirmarRecuperacio: async () => ({ detall: "La contrasenya s’ha actualitzat." }),
+          demanarVerificacio: async () => ({ detall: "Si aquest correu té un registre pendent, rebràs un enllaç." }),
+          confirmarVerificacio: async () => ({ detall: "El correu s’ha verificat." }),
           ...api,
         } satisfies IdentityApi,
       },

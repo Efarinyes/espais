@@ -24,6 +24,13 @@ export type RegistreInput = {
   password: string;
 };
 
+export type LliuramentVerificacio = "sent" | "unavailable" | "failed";
+
+export type RegistreResultat = {
+  detall: string;
+  lliurament: LliuramentVerificacio;
+};
+
 export type LliuramentInvitacio = "sent" | "unavailable" | "failed";
 
 export type InvitacioDto = {
@@ -44,7 +51,7 @@ export type CoordinadorDto = {
 };
 
 export type IdentityApi = {
-  registrar(input: RegistreInput): Promise<SessioDto>;
+  registrar(input: RegistreInput): Promise<RegistreResultat>;
   iniciarSessio(email: string, password: string): Promise<SessioDto>;
   obtenirSessio(token: string): Promise<Omit<SessioDto, "token">>;
   actualitzarPaleta(token: string, palette: string): Promise<{ palette: string }>;
@@ -55,6 +62,8 @@ export type IdentityApi = {
   tancarSessio(token: string): Promise<void>;
   demanarRecuperacio(email: string): Promise<{ detall: string }>;
   confirmarRecuperacio(token: string, password: string): Promise<{ detall: string }>;
+  demanarVerificacio(email: string): Promise<{ detall: string }>;
+  confirmarVerificacio(token: string): Promise<{ detall: string }>;
 };
 
 export const identityApiKey: InjectionKey<IdentityApi> = Symbol("identityApi");
@@ -70,7 +79,7 @@ export function requireIdentityApi(): IdentityApi {
 export function createIdentityApi(baseUrl = ""): IdentityApi {
   return {
     async registrar(input) {
-      return fetchApi<SessioDto>(`${baseUrl}/registre`, {
+      return fetchApi<RegistreResultat>(`${baseUrl}/registre`, {
         method: "POST",
         body: JSON.stringify({
           entity_name: input.entity_name,
@@ -139,6 +148,20 @@ export function createIdentityApi(baseUrl = ""): IdentityApi {
       return fetchApi<{ detall: string }>(`${baseUrl}/recuperacio/confirmacio`, {
         method: "POST",
         body: JSON.stringify({ token, password }),
+      });
+    },
+
+    async demanarVerificacio(email) {
+      return fetchApi<{ detall: string }>(`${baseUrl}/registre/verificacio`, {
+        method: "POST",
+        body: JSON.stringify({ email }),
+      });
+    },
+
+    async confirmarVerificacio(token) {
+      return fetchApi<{ detall: string }>(`${baseUrl}/registre/verificacio/confirmacio`, {
+        method: "POST",
+        body: JSON.stringify({ token }),
       });
     },
   };

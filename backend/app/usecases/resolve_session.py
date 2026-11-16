@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from uuid import UUID
 
-from app.domain.errors import SessionNotFoundError
+from app.domain.errors import EmailNotVerifiedError, SessionNotFoundError
 from app.domain.identity import MembershipRole
 from app.ports.identity import IdentityUnitOfWork
 
@@ -34,6 +34,8 @@ class ResolveSession:
         entity = self._uow.entities.get_by_id(membership.entity_id)
         if entity is None:
             raise SessionNotFoundError()
+        if user.email_verified_at is None or entity.activated_at is None:
+            raise EmailNotVerifiedError()
         return SessionView(
             user_id=user.id,
             entity_id=entity.id,

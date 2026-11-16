@@ -18,13 +18,13 @@ Tota agregació de tenant porta `entity_id`. Un espai no existeix fora d’una e
 
 ## Entitat
 
-- `id`, `name`, `typology` (string lliure), `created_at`, `palette` (llista tancada; defecte `mar-cel`). La paleta la canvia el responsable; tothom de l’entitat la llegeix. ADR [0011](adr/0011-paleta-entitat-mode-personal.md).
+- `id`, `name`, `typology` (string lliure), `created_at`, `palette` (llista tancada; defecte `mar-cel`), `activated_at`. La paleta la canvia el responsable; tothom de l’entitat la llegeix. ADR [0011](adr/0011-paleta-entitat-mode-personal.md). `activated_at` buit vol dir que l’entitat encara no es pot fer servir: es posa en verificar el correu del responsable (ADR [0024](adr/0024-verificacio-correu-responsable.md)).
 - El primer responsable es crea al mateix cas d’ús de registre ([05-registre-alta.md](05-registre-alta.md)).
 - No hi ha jerarquia d’entitats a v1.
 
 ## Usuari i membership
 
-- Usuari: identitat (email, nom, credencials).
+- Usuari: identitat (email, nom, credencials) i `email_verified_at`. Buit al responsable fins a la verificació; el coordinador el rep en acceptar la invitació.
 - Membership: `user_id` + `entity_id` + `role` (`responsible` | `coordinator`).
 - v1: un usuari, una membership (una entitat). Multi-entitat és backlog.
 
@@ -64,6 +64,7 @@ Vegeu [07-reserves-assistencia.md](07-reserves-assistencia.md).
 | Cas d’ús | Fase |
 |---|---|
 | `RegisterEntity` | 2 |
+| `IssueEmailVerification` / `RequestEmailVerification` / `ConfirmEmailVerification` | post-v1, ADR 0024 |
 | `InviteCoordinator` | 4 |
 | `CreateSpace` / `UpdateSpace` / `ListSpaces` | 3 |
 | `CreateReservation` | 4 |

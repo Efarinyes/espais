@@ -3,6 +3,7 @@
 // Ús: node tools/e2e-recuperacio.mjs [--limits]
 // Crea entitats de prova: només accepta localhost. Cap token ni sessió surt per pantalla.
 import { spawn } from "node:child_process";
+import { correuDeVerificacio } from "./verificar-alta.mjs";
 import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -279,9 +280,18 @@ async function nouCompte(sufix) {
     email: resp,
     password: "secret123",
   });
-  check(alta.status === 201, `alta de l’entitat de prova ${sufix}`);
-  secrets.push(alta.body.token);
-  const convit = await api("POST", "/invitacions", { email: coord }, alta.body.token);
+  check(alta.status === 201 && !alta.body.token, `alta de l’entitat de prova ${sufix} sense sessió`);
+  const bloquejat = await api("POST", "/sessio", { email: resp, password: "secret123" });
+  check(bloquejat.status === 403, "abans de verificar el responsable no entra");
+  const verificacio = await correuDeVerificacio(MAILPIT, resp);
+  check(Boolean(verificacio?.token) && verificacio.url.includes("/verificar#"), "el correu de verificació arriba");
+  secrets.push(verificacio.token);
+  const confirmat = await api("POST", "/registre/verificacio/confirmacio", { token: verificacio.token });
+  check(confirmat.status === 200, "el responsable verifica el correu");
+  const sessio = await api("POST", "/sessio", { email: resp, password: "secret123" });
+  check(sessio.status === 200 && sessio.body.role === "responsible", "el responsable entra després de verificar");
+  secrets.push(sessio.body.token);
+  const convit = await api("POST", "/invitacions", { email: coord }, sessio.body.token);
   check(convit.status === 201 && convit.body.delivery === "sent", "la invitació surt per correu i no es mostra l’enllaç");
   const enllac = await enllacNou(coord, "Invitació a ", 0);
   check(enllac?.startsWith(`${APP}/invitar/`), "la invitació arriba a Mailpit amb el domini públic");

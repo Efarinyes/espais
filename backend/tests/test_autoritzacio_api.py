@@ -9,6 +9,7 @@ from sqlalchemy import select
 
 from app.adapters.sqlalchemy.models import MembershipRow, UserRow
 from app.main import create_app
+from tests.alta_http import alta_i_sessio
 
 MADRID = ZoneInfo("Europe/Madrid")
 ALIENA = "00000000-0000-0000-0000-000000000099"
@@ -23,9 +24,7 @@ def _register(client: TestClient, **overrides: object) -> dict[str, object]:
         "password": "secret123",
     }
     data.update(overrides)
-    response = client.post("/registre", json=data)
-    assert response.status_code == 201
-    return response.json()
+    return alta_i_sessio(client, **data)
 
 
 def _invite(client: TestClient, headers: dict[str, str], email: str, name: str = "Carla") -> dict[str, object]:

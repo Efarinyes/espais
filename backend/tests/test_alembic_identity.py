@@ -30,8 +30,8 @@ def test_alembic_upgrade_creates_identity_tables(tmp_path: Path) -> None:
         engine.dispose()
 
     assert {"entities", "users", "memberships", "spaces", "space_availability_windows", "attendance_records", "notifications", "alembic_version"} <= names
-    assert {"revoked_tokens", "password_resets", "recovery_attempts"} <= names
-    assert "session_version" in user_columns
+    assert {"revoked_tokens", "password_resets", "recovery_attempts", "email_verifications"} <= names
+    assert {"session_version", "email_verified_at"} <= user_columns
 
 
 def test_les_migracions_de_l_arrencada_no_apaguen_els_logs_de_l_app(tmp_path: Path) -> None:
@@ -67,3 +67,4 @@ def test_la_migracio_de_recuperacio_conserva_els_comptes_existents(tmp_path: Pat
     assert user.id == UUID(int=1)
     assert user.password_hash == "hash-antic"
     assert user.session_version == 0
+    assert user.email_verified_at is not None

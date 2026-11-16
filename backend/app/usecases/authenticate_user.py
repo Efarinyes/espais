@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from app.domain.errors import InvalidCredentialsError
+from app.domain.errors import EmailNotVerifiedError, InvalidCredentialsError
 from app.ports.identity import IdentityUnitOfWork, PasswordHasher
 from app.usecases.resolve_session import ResolveSession, SessionView
 
@@ -25,4 +25,6 @@ class AuthenticateUser:
         user = self._uow.users.get_by_email(email)
         if user is None or not self._hasher.verify(command.password, user.password_hash):
             raise InvalidCredentialsError()
+        if user.email_verified_at is None:
+            raise EmailNotVerifiedError()
         return ResolveSession(self._uow).execute(user.id)

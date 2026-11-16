@@ -44,7 +44,7 @@ describe("política de rutes", () => {
     for (const nom of [...compartides, ...propies.responsible, ...propies.coordinator]) {
       expect(decisioAcces(nom, anonima)).toEqual({ name: "iniciar-sessio" });
     }
-    for (const nom of ["inici", "politica-cookies", "recuperar-acces", "registre", "iniciar-sessio"] as const) {
+    for (const nom of ["inici", "politica-cookies", "recuperar-acces", "verificar-correu", "registre", "iniciar-sessio"] as const) {
       expect(decisioAcces(nom, anonima)).toBe(true);
     }
   });
@@ -89,6 +89,7 @@ describe("política de rutes", () => {
     expect(calVerificarSessio("inici", pendent)).toBe(true);
     expect(calVerificarSessio("politica-cookies", pendent)).toBe(false);
     expect(calVerificarSessio("recuperar-acces", pendent)).toBe(false);
+    expect(calVerificarSessio("verificar-correu", pendent)).toBe(false);
     expect(decisioAcces("analisi", pendent)).toEqual({ name: "iniciar-sessio" });
   });
 });

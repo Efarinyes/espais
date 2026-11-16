@@ -2,11 +2,13 @@
 // E2E d’autorització contra una pila Docker local (docs/13-testing.md).
 // Comprova l’accés directe a les rutes i les crides a l’API. No imprimeix tokens.
 import { spawn } from "node:child_process";
+import { correuDeVerificacio } from "./verificar-alta.mjs";
 import { existsSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 const APP = process.env.ESPAIS_E2E_APP ?? "http://127.0.0.1:8090";
+const MAILPIT = process.env.ESPAIS_E2E_MAILPIT ?? "http://127.0.0.1:18025";
 const NAVEGADOR =
   process.env.ESPAIS_E2E_NAVEGADOR ??
   [
@@ -177,7 +179,25 @@ try {
       password: "secret123",
     },
   });
-  check(responsable.status === 201 && responsable.json.role === "responsible", "API: alta del responsable");
+  check(responsable.status === 201 && !("token" in responsable.json), "API: alta del responsable sense sessió");
+  const bloquejat = await api("/sessio", {
+    method: "POST",
+    body: { email: "e2e.autoritzacio.resp@example.com", password: "secret123" },
+  });
+  check(bloquejat.status === 403, "API: abans de verificar no entra");
+  const verificacio = await correuDeVerificacio(MAILPIT, "e2e.autoritzacio.resp@example.com");
+  check(Boolean(verificacio?.token), "API: arriba el correu de verificació");
+  const confirmat = await api("/registre/verificacio/confirmacio", {
+    method: "POST",
+    body: { token: verificacio.token },
+  });
+  check(confirmat.status === 200, "API: el correu queda verificat");
+  const sessio = await api("/sessio", {
+    method: "POST",
+    body: { email: "e2e.autoritzacio.resp@example.com", password: "secret123" },
+  });
+  check(sessio.status === 200 && sessio.json.role === "responsible", "API: entra després de verificar");
+  responsable.json = sessio.json;
   const espai = await api("/espais", {
     method: "POST",
     token: responsable.json.token,

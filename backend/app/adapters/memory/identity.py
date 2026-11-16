@@ -7,6 +7,7 @@ from datetime import UTC, datetime
 from hmac import compare_digest
 from uuid import UUID
 
+from app.domain.email_verification import EmailVerification
 from app.domain.identity import Entity, Membership, User
 from app.domain.invitation import Invitation
 from app.domain.password_reset import PasswordReset, RecoveryAttempt
@@ -19,6 +20,7 @@ class _Store:
     memberships: list[Membership] = field(default_factory=list)
     invitations: list[Invitation] = field(default_factory=list)
     password_resets: list[PasswordReset] = field(default_factory=list)
+    email_verifications: list[EmailVerification] = field(default_factory=list)
     recovery_attempts: list[RecoveryAttempt] = field(default_factory=list)
 
     def copy(self) -> _Store:
@@ -28,6 +30,7 @@ class _Store:
             memberships=list(self.memberships),
             invitations=list(self.invitations),
             password_resets=list(self.password_resets),
+            email_verifications=list(self.email_verifications),
             recovery_attempts=list(self.recovery_attempts),
         )
 
@@ -176,6 +179,47 @@ class InMemoryPasswordResetRepository:
                 )
 
 
+class InMemoryEmailVerificationRepository:
+    def __init__(self, uow: InMemoryIdentityUnitOfWork) -> None:
+        self._uow = uow
+
+    def add(self, verification: EmailVerification) -> None:
+        self._uow._working.email_verifications.append(verification)
+
+    def save(self, verification: EmailVerification) -> None:
+        working = self._uow._working.email_verifications
+        for index, existing in enumerate(working):
+            if existing.id == verification.id:
+                working[index] = verification
+                return
+        working.append(verification)
+
+    def get_by_token_hash(self, token_hash: str) -> EmailVerification | None:
+        for verification in self._uow._working.email_verifications:
+            if verification.token_hash == token_hash:
+                return verification
+        return None
+
+    def consume(self, token_hash: str, now: datetime) -> EmailVerification | None:
+        working = self._uow._working.email_verifications
+        for index, verification in enumerate(working):
+            if (
+                verification.token_hash == token_hash
+                and verification.used_at is None
+                and now < verification.expires_at
+            ):
+                consumed = replace(verification, used_at=now)
+                working[index] = consumed
+                return consumed
+        return None
+
+    def invalidate_unused(self, user_id: UUID, now: datetime) -> None:
+        working = self._uow._working.email_verifications
+        for index, verification in enumerate(working):
+            if verification.user_id == user_id and verification.used_at is None:
+                working[index] = replace(verification, used_at=now)
+
+
 class InMemoryRecoveryAttemptRepository:
     def __init__(self, uow: InMemoryIdentityUnitOfWork) -> None:
         self._uow = uow
@@ -219,6 +263,7 @@ class InMemoryIdentityUnitOfWork:
         self.memberships = InMemoryMembershipRepository(self)
         self.invitations = InMemoryInvitationRepository(self)
         self.password_resets = InMemoryPasswordResetRepository(self)
+        self.email_verifications = InMemoryEmailVerificationRepository(self)
         self.recovery_attempts = InMemoryRecoveryAttemptRepository(self)
 
     def commit(self) -> None:

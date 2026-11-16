@@ -78,4 +78,18 @@ describe("useIniciSessio", () => {
     expect(useSessioStore().iniciada).toBe(false);
     expect(router.currentRoute.value.name).toBe("iniciar-sessio");
   });
+
+  it("un compte sense verificar no entra i ofereix tornar a enviar el correu", async () => {
+    const { wrapper, router } = await muntar(async () => {
+      throw new ApiError("Verifica el correu abans d’iniciar sessió.", 403);
+    });
+    wrapper.vm.camps.email = "anna@example.com";
+    wrapper.vm.camps.password = "secret123";
+    await wrapper.vm.enviar();
+    await flushPromises();
+    expect(wrapper.vm.errorGlobal).toBe("Verifica el correu abans d’iniciar sessió.");
+    expect(wrapper.vm.calVerificar).toBe(true);
+    expect(useSessioStore().iniciada).toBe(false);
+    expect(router.currentRoute.value.name).toBe("iniciar-sessio");
+  });
 });

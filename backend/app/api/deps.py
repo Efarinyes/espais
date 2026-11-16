@@ -13,6 +13,7 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import sessionmaker
 
 from app.adapters.attendance import CountAttendance
+from app.adapters.email_verification_mail import build_email_verification_mailer
 from app.adapters.invitation_mail import build_invitation_mailer
 from app.adapters.notifier import LoggingNotifier, SmtpNotifier, build_notifier
 from app.adapters.password_reset_mail import build_password_reset_mailer
@@ -28,7 +29,7 @@ from app.adapters.system import (
     UuidIdGenerator,
 )
 from app.adapters.tokens import HmacTokenIssuer, session_secret
-from app.domain.errors import SessionNotFoundError
+from app.domain.errors import EmailNotVerifiedError, SessionNotFoundError
 from app.ports.identity import TokenIssuer
 from app.ports.notifications import Notifier
 from app.usecases.accept_invitation import AcceptInvitation
@@ -38,6 +39,7 @@ from app.usecases.cancel_own_reservation import CancelOwnReservation
 from app.usecases.cancel_reservation_by_responsible import (
     CancelReservationByResponsible,
 )
+from app.usecases.confirm_email_verification import ConfirmEmailVerification
 from app.usecases.confirm_password_reset import ConfirmPasswordReset
 from app.usecases.create_reservation import CreateReservation
 from app.usecases.create_space import CreateSpace
@@ -45,6 +47,7 @@ from app.usecases.get_invitation import GetInvitation
 from app.usecases.get_space import GetSpace
 from app.usecases.get_usage_summary import GetUsageSummary
 from app.usecases.invite_coordinator import InviteCoordinator
+from app.usecases.issue_email_verification import IssueEmailVerification
 from app.usecases.list_entity_coordinators import ListEntityCoordinators
 from app.usecases.list_notifications import ListNotifications
 from app.usecases.list_reservations import ListReservations
@@ -52,6 +55,11 @@ from app.usecases.list_spaces import ListSpaces
 from app.usecases.mark_notification_read import MarkNotificationRead
 from app.usecases.record_attendance import RecordAttendance
 from app.usecases.register_entity import RegisterEntity
+from app.usecases.request_email_verification import (
+    RequestEmailVerification,
+    RequestEmailVerificationCommand,
+    run_request,
+)
 from app.usecases.request_password_reset import (
     RequestPasswordReset,
     RequestPasswordResetCommand,
@@ -78,6 +86,8 @@ class IdentityHttp:
     update_palette: UpdateEntityPalette
     list_coordinators: ListEntityCoordinators
     confirm_reset: ConfirmPasswordReset
+    issue_verification: IssueEmailVerification
+    confirm_verification: ConfirmEmailVerification
 
 
 def get_session_factory(request: Request) -> sessionmaker:
@@ -131,6 +141,10 @@ def get_identity_http(request: Request) -> Iterator[IdentityHttp]:
     hasher = BcryptPasswordHasher()
     clock = SystemClock()
     ids = UuidIdGenerator()
+    verification_mailer = (
+        getattr(request.app.state, "email_verification_mailer", None)
+        or build_email_verification_mailer()
+    )
     try:
         yield IdentityHttp(
             register=RegisterEntity(uow, clock, ids, hasher),
@@ -145,6 +159,14 @@ def get_identity_http(request: Request) -> Iterator[IdentityHttp]:
             update_palette=UpdateEntityPalette(uow),
             list_coordinators=ListEntityCoordinators(uow),
             confirm_reset=ConfirmPasswordReset(uow, clock, hasher),
+            issue_verification=IssueEmailVerification(
+                uow,
+                clock,
+                ids,
+                SecretsInvitationTokenGenerator(),
+                verification_mailer,
+            ),
+            confirm_verification=ConfirmEmailVerification(uow, clock),
         )
     finally:
         uow.close()
@@ -162,6 +184,34 @@ def get_password_reset_request(request: Request) -> Callable[[RequestPasswordRes
             ).execute(command)
         except Exception as exc:  # noqa: BLE001
             logger.error("no s’ha pogut processar la demanda de recuperació (%s)", type(exc).__name__)
+        finally:
+            uow.close()
+
+    return run
+
+
+def get_email_verification_request(
+    request: Request,
+) -> Callable[[RequestEmailVerificationCommand], None]:
+    factory = get_session_factory(request)
+    mailer = (
+        getattr(request.app.state, "email_verification_mailer", None)
+        or build_email_verification_mailer()
+    )
+
+    def run(command: RequestEmailVerificationCommand) -> None:
+        uow = SqlAlchemyIdentityUnitOfWork(factory)
+        try:
+            run_request(
+                RequestEmailVerification(
+                    uow,
+                    SystemClock(),
+                    UuidIdGenerator(),
+                    SecretsInvitationTokenGenerator(),
+                    mailer,
+                ),
+                command,
+            )
         finally:
             uow.close()
 
@@ -190,7 +240,7 @@ def require_session(
     try:
         try:
             view = ResolveSession(uow).execute(user_id)
-        except SessionNotFoundError:
+        except (SessionNotFoundError, EmailNotVerifiedError):
             raise HTTPException(status_code=401, detail="sessió invàlida") from None
         token_version = issuer.session_version(creds.credentials)
         if token_version is None or token_version != view.session_version:
