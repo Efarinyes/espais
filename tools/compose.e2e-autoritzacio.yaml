@@ -1,5 +1,10 @@
 # Pila de la prova d’autorització. No publica 80 ni 443 i no fa servir els volums espais_*.
 services:
+  backend:
+    environment:
+      ESPAIS_DOMAIN: http://127.0.0.1:8090
+      ESPAIS_SMTP_HOST: mailpit
+      ESPAIS_SMTP_PORT: "1025"
   web:
     environment:
       ESPAIS_DOMAIN: http://127.0.0.1:8090

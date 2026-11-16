@@ -56,6 +56,11 @@ def emet_verificacio(
     )
     uow.email_verifications.add(verification)
     _commit(uow)
+    titular = uow.users.get_by_email(email)
+    if titular is None or titular.id != user_id or titular.email_verified_at is not None:
+        logger.error("no s’envia la verificació: el compte no admet un enllaç nou")
+        _consume(uow, verification, now)
+        return "unavailable"
     if not mailer.configured():
         _consume(uow, verification, now)
         return "unavailable"

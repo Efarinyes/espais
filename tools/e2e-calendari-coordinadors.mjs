@@ -202,7 +202,7 @@ try {
   check(idAnnaA !== idAnnaB, "dos Anna tenen id diferent");
 
   check((await api("GET", "/entitat/coordinadors", null, anna1.token)).status === 403, "un coordinador rep 403");
-  const llistaB = await api("GET", "/entitat/coordinadors", null, altra.body.token);
+  const llistaB = await api("GET", "/entitat/coordinadors", null, sessioBerta.body.token);
   check(llistaB.status === 200 && llistaB.body.map((p) => p.name).join(",") === "Foraster", "l’altra entitat només veu el seu coordinador");
 
   const sala1 = await api("POST", "/espais", { name: "Sala Croses", capacity: 10 }, tokenRita);

@@ -38,6 +38,9 @@ export function useRegistre() {
   }
 
   async function enviar() {
+    if (enviant.value || pendent.value) {
+      return;
+    }
     errorGlobal.value = "";
     if (!valida()) {
       return;
@@ -55,6 +58,9 @@ export function useRegistre() {
       lliurament.value = resultat.lliurament;
       pendent.value = true;
     } catch (err) {
+      if (pendent.value) {
+        return;
+      }
       if (err instanceof ApiError && err.status === 409) {
         errorGlobal.value = "No s’ha pogut completar el registre. Revisa les dades o inicia la sessió.";
       } else if (err instanceof ApiError) {

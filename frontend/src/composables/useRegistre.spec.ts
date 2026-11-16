@@ -90,6 +90,33 @@ describe("useRegistre", () => {
     expect(router.currentRoute.value.name).toBe("registre");
   });
 
+  it("mentre el primer registre no ha respost, un segon clic no fa una altra petició", async () => {
+    let crides = 0;
+    let resoldre: (valor: { detall: string; lliurament: "sent" }) => void = () => undefined;
+    const { wrapper } = muntar({
+      registrar: () => {
+        crides += 1;
+        return new Promise((resolve) => {
+          resoldre = resolve;
+        });
+      },
+    });
+    wrapper.vm.camps.entity_name = "AAVV";
+    wrapper.vm.camps.responsible_name = "Anna";
+    wrapper.vm.camps.email = "anna@example.com";
+    wrapper.vm.camps.password = "secret123";
+    const primer = wrapper.vm.enviar();
+    const segon = wrapper.vm.enviar();
+    expect(crides).toBe(1);
+    resoldre({ detall: "T’hem enviat un correu.", lliurament: "sent" });
+    await primer;
+    await segon;
+    await flushPromises();
+    expect(crides).toBe(1);
+    expect(wrapper.vm.pendent).toBe(true);
+    expect(wrapper.vm.errorGlobal).toBe("");
+  });
+
   it("no diu que l’email ja existeix si el registre no es completa", async () => {
     const { wrapper } = muntar({
       registrar: async () => {

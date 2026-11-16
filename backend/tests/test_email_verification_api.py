@@ -117,6 +117,40 @@ def test_el_reenviament_respon_igual_i_un_correu_caigut_es_pot_tornar_a_demanar(
     assert len(mailer.messages) == 1
 
 
+def test_un_correu_ja_registrat_no_rep_un_altre_enllac(sqlite_session_factory) -> None:
+    mailer = CapturingMailer()
+    client = _client(sqlite_session_factory, mailer)
+    assert client.post("/registre", json=_payload()).status_code == 201
+    assert [missatge.to_email for missatge in mailer.messages] == ["anna@example.com"]
+
+    repetit = client.post(
+        "/registre",
+        json=_payload(entity_name="Altra entitat", responsible_name="Altra"),
+    )
+    assert repetit.status_code == 400
+    assert "registrat" not in repetit.json()["detail"]
+    assert len(mailer.messages) == 1
+
+    confirmat = client.post(
+        "/registre/verificacio/confirmacio",
+        json={"token": mailer.messages[0].token},
+    )
+    assert confirmat.status_code == 200
+    ja_actiu = client.post("/registre", json=_payload())
+    assert ja_actiu.status_code == 400
+    assert len(mailer.messages) == 1
+
+    altre = client.post(
+        "/registre",
+        json=_payload(email="berta@example.com", entity_name="Entitat B", responsible_name="Berta"),
+    )
+    assert altre.status_code == 201
+    assert [missatge.to_email for missatge in mailer.messages] == [
+        "anna@example.com",
+        "berta@example.com",
+    ]
+
+
 def test_la_recuperacio_i_la_invitacio_segueixen_despres_de_verificar(sqlite_session_factory) -> None:
     mailer, reset = CapturingMailer(), ResetMailer()
     client = _client(sqlite_session_factory, mailer, reset)
