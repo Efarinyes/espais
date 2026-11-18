@@ -9,7 +9,7 @@ Actualitza aquest arxiu al final de cada sessió. És el punt d’arrencada del 
 
 ## Darrera feina
 
-2026-11-18: sessió tancada. El login amb codi és `d0f0f3d` i la nota, `665078b`, tots dos a `origin/feat/docker-caddy-sqlite`. No es fusiona a `main`. El VPS encara no el serveix: qui l’opera el publica amb `git pull` i `docker compose up -d --build`, sense `down -v`. Les captures de `artifacts/` es queden fora del repositori. `backup/abans-login-2fa` segueix en local a `9b3efda`.
+2026-11-18: sessió tancada. Qui opera el servidor confirma que el VPS ja serveix el login amb codi i que l’ha provat. El codi és `d0f0f3d`, la nota `665078b`, a `origin/feat/docker-caddy-sqlite`. No es fusiona a `main`. No es torna a desplegar. Les captures de `artifacts/` es queden fora del repositori. `backup/abans-login-2fa` segueix en local a `9b3efda`.
 
 2026-11-18: E2E Docker del projecte `espais-e2e-2fa`, a `127.0.0.1:8090`, amb Mailpit a `127.0.0.1:18025`. Han passat el registre, les cookies, la recuperació amb límits, l’autorització, els coordinadors del calendari (39) i la graella visual (51). El codi de login s’escolta abans de la resposta HTTP, perquè si no el socket el perd. El sostre de codis per adreça passa de 30 a 120 en 10 minuts: la suite sencera, des d’una sola IP, rebia 429. Les reserves de prova del calendari són de la setmana del 16 al 22 de novembre de 2026, i el nom del coordinador es comprova a la casella, no en una llegenda. En acabar, `down -v` ha esborrat només els volums `espais-e2e-2fa_*`. `espais.sqlite3` i els volums `espais_*` no s’han tocat. El codi és `d0f0f3d`, a `feat/docker-caddy-sqlite` i a `origin`. No es fusiona a `main`. El VPS encara no el serveix: qui l’opera el publica amb `git pull` i `docker compose up -d --build`, sense `down -v`.
 
@@ -141,7 +141,7 @@ Desplegat al VPS (`6b455b9`) i provat amb Capgrossos, «Sala pilars». La vista 
 
 ## Següent tasca
 
-El segon pas del login (ADR 0025) és `d0f0f3d`, a `origin/feat/docker-caddy-sqlite`. No es fusiona a `main`. El VPS encara no el serveix: qui l’opera el publica amb `git pull` i `docker compose up -d --build`, sense `down -v`.
+El login amb codi (ADR 0025) queda tancat. Qui opera el servidor confirma que el VPS ja el serveix i que l’ha provat. El codi és `d0f0f3d`, a `origin/feat/docker-caddy-sqlite`. No es fusiona a `main`. No es torna a desplegar.
 
 La verificació del correu del responsable (ADR 0024) és a `origin/feat/docker-caddy-sqlite`. No es fusiona a `main`. Qui opera el servidor la publica amb `git pull` i `docker compose up -d --build`, sense `down -v`. Els scripts E2E ja llegeixen el correu de verificació a Mailpit; la pila Docker d’aquesta peça no s’ha aixecat.
 
