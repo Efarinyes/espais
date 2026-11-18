@@ -24,7 +24,8 @@ const DETALL = "El correu s’ha verificat i l’entitat ja està activa. Ara po
 function identity(api: Partial<IdentityApi> = {}): IdentityApi {
   return {
     registrar: async () => ({ detall: "T’hem enviat un correu.", lliurament: "sent" }),
-    iniciarSessio: async () => sessioAntiga,
+    demanarCodiDeSessio: async () => ({ challenge_id: "repte", expires_at: "2026-11-18T18:02:00.000Z" }),
+    confirmarCodiDeSessio: async () => sessioAntiga,
     obtenirSessio: async () => sessioAntiga,
     actualitzarPaleta: async (_token, palette) => ({ palette }),
     llistarCoordinadors: async () => [],

@@ -26,7 +26,9 @@ FastAPI (routers prims)
 | Repositoris (port + adaptador) | Persistència | Regles d’anul·lació |
 | Infra | DB, correu, config | Lògica de reserva |
 
-Un cas d’ús = un mòdul/classe (`RegisterEntity`, `IssueEmailVerification`, `RequestEmailVerification`, `ConfirmEmailVerification`, `CreateSpace`, `CreateReservation`, `RecordAttendance`, `CancelReservationByResponsible`, `RescheduleReservation`, `GetUsageSummary`, `ArchiveNotification`, `PurgeArchivedNotifications`, `UpdateEntityPalette`).
+Un cas d’ús = un mòdul/classe (`RegisterEntity`, `IssueEmailVerification`, `RequestEmailVerification`, `ConfirmEmailVerification`, `AuthenticateUser`, `BeginLoginVerification`, `ConfirmLoginVerification`, `CreateSpace`, `CreateReservation`, `RecordAttendance`, `CancelReservationByResponsible`, `RescheduleReservation`, `GetUsageSummary`, `ArchiveNotification`, `PurgeArchivedNotifications`, `UpdateEntityPalette`).
+
+El login comprova les credencials amb `AuthenticateUser` i el token amb el mateix emissor HMAC. El codi temporal i el Socket.IO són un canal a part (ADR [0025](adr/0025-verificacio-login-socket.md)): el cas d’ús no importa el servidor de sockets.
 
 ## Multi-tenant
 

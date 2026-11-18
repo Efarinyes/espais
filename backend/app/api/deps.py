@@ -25,6 +25,7 @@ from app.adapters.sqlalchemy.schema import bootstrap_session_factory
 from app.adapters.sqlalchemy.spaces import SqlAlchemySpaceUnitOfWork
 from app.adapters.system import (
     SecretsInvitationTokenGenerator,
+    SixDigitLoginCode,
     SystemClock,
     UuidIdGenerator,
 )
@@ -35,11 +36,13 @@ from app.ports.notifications import Notifier
 from app.usecases.accept_invitation import AcceptInvitation
 from app.usecases.archive_notification import ArchiveNotification
 from app.usecases.authenticate_user import AuthenticateUser
+from app.usecases.begin_login_verification import BeginLoginVerification
 from app.usecases.cancel_own_reservation import CancelOwnReservation
 from app.usecases.cancel_reservation_by_responsible import (
     CancelReservationByResponsible,
 )
 from app.usecases.confirm_email_verification import ConfirmEmailVerification
+from app.usecases.confirm_login_verification import ConfirmLoginVerification
 from app.usecases.confirm_password_reset import ConfirmPasswordReset
 from app.usecases.create_reservation import CreateReservation
 from app.usecases.create_space import CreateSpace
@@ -88,6 +91,8 @@ class IdentityHttp:
     confirm_reset: ConfirmPasswordReset
     issue_verification: IssueEmailVerification
     confirm_verification: ConfirmEmailVerification
+    begin_login: BeginLoginVerification
+    confirm_login: ConfirmLoginVerification
 
 
 def get_session_factory(request: Request) -> sessionmaker:
@@ -139,8 +144,9 @@ class NotificationsHttp:
 def get_identity_http(request: Request) -> Iterator[IdentityHttp]:
     uow = SqlAlchemyIdentityUnitOfWork(get_session_factory(request))
     hasher = BcryptPasswordHasher()
-    clock = SystemClock()
+    clock = getattr(request.app.state, "clock", None) or SystemClock()
     ids = UuidIdGenerator()
+    codes = getattr(request.app.state, "login_codes", None) or SixDigitLoginCode()
     verification_mailer = (
         getattr(request.app.state, "email_verification_mailer", None)
         or build_email_verification_mailer()
@@ -167,6 +173,21 @@ def get_identity_http(request: Request) -> Iterator[IdentityHttp]:
                 verification_mailer,
             ),
             confirm_verification=ConfirmEmailVerification(uow, clock),
+            begin_login=BeginLoginVerification(
+                uow,
+                hasher,
+                clock,
+                ids,
+                codes,
+                request.app.state.login_challenges,
+                request.app.state.login_hub,
+            ),
+            confirm_login=ConfirmLoginVerification(
+                uow,
+                clock,
+                request.app.state.login_challenges,
+                request.app.state.login_hub,
+            ),
         )
     finally:
         uow.close()

@@ -2,6 +2,7 @@
 // Un correu que ja té compte no rep un altre enllaç de registre.
 // Contra una pila Docker local amb Mailpit. No imprimeix tokens.
 import { correuDeVerificacio } from "./verificar-alta.mjs";
+import { iniciaSessio } from "./sessio-socket.mjs";
 
 const APP = process.env.ESPAIS_E2E_APP ?? "http://127.0.0.1:8090";
 const MAILPIT = process.env.ESPAIS_E2E_MAILPIT ?? "http://127.0.0.1:18025";
@@ -71,7 +72,7 @@ try {
   check(confirmat.status === 200 && !confirmat.body.token, "verificar el correu no obre sessió");
   const usat = await api("POST", "/registre/verificacio/confirmacio", { token: enllac.token });
   check(usat.status === 410, "l’enllaç de verificació només val una vegada");
-  const sessio = await api("POST", "/sessio", { email: volei, password: PASSWORD });
+  const sessio = await iniciaSessio(APP, volei, PASSWORD);
   check(sessio.status === 200 && sessio.body.role === "responsible", "després de verificar es pot entrar");
   check((await nombreCorreus(volei, "Verifica el correu")) === 1, "un compte ja verificat tampoc no rep un enllaç de registre");
   const jaActiu = await alta(volei, `Tercera ${SUFIX}`, "Tercera");
@@ -85,7 +86,7 @@ try {
 
   const enllacAltre = await correuDeVerificacio(MAILPIT, altre);
   await api("POST", "/registre/verificacio/confirmacio", { token: enllacAltre.token });
-  const sessioAltre = await api("POST", "/sessio", { email: altre, password: PASSWORD });
+  const sessioAltre = await iniciaSessio(APP, altre, PASSWORD);
   const espai = await api("POST", "/espais", { name: "Sala 1", capacity: 12 }, sessioAltre.body.token);
   check(espai.status === 201, "el responsable verificat crea un espai");
   const invitacio = await api("POST", "/invitacions", { email: `coord.${SUFIX}@example.com` }, sessioAltre.body.token);

@@ -18,7 +18,8 @@ const sessioBuida: SessioDto = {
 
 const api: IdentityApi = {
   registrar: async () => ({ detall: "T’hem enviat un correu.", lliurament: "sent" }),
-  iniciarSessio: async () => sessioBuida,
+  demanarCodiDeSessio: async () => ({ challenge_id: "repte", expires_at: "2026-11-18T18:02:00.000Z" }),
+  confirmarCodiDeSessio: async () => sessioBuida,
   obtenirSessio: async () => sessioBuida,
   actualitzarPaleta: async (_token, palette) => ({ palette }),
   llistarCoordinadors: async () => [],

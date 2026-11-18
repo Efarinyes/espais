@@ -3,6 +3,7 @@
 // Contra una pila Docker local. No imprimeix tokens ni contrasenyes.
 import { spawn } from "node:child_process";
 import { correuDeVerificacio } from "./verificar-alta.mjs";
+import { iniciaSessio } from "./sessio-socket.mjs";
 import { existsSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -108,6 +109,18 @@ async function entra(email) {
     document.querySelector('main form').requestSubmit();
     return true;
   })()`);
+  await waitFor(
+    "(() => { const el = document.querySelector('#codi-rebut'); return !!el && /^\\d{6}$/.test((el.textContent || '').trim()); })()",
+    "codi de verificació",
+  );
+  await ev(`(() => {
+    const codi = document.querySelector('#codi-rebut').textContent.trim();
+    const el = document.querySelector('#codi');
+    Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set.call(el, codi);
+    el.dispatchEvent(new Event('input', { bubbles: true }));
+    document.querySelector('main form').requestSubmit();
+    return true;
+  })()`);
   await waitFor("location.pathname === '/espais'", "entrada");
   const sessio = JSON.parse(await ev("localStorage.getItem('espais.sessio')"));
   secrets.push(sessio.token);
@@ -148,7 +161,7 @@ try {
   check(Boolean(verificacioRita?.token), "arriba el correu de verificació");
   secrets.push(verificacioRita.token);
   check((await api("POST", "/registre/verificacio/confirmacio", { token: verificacioRita.token })).status === 200, "la Rita verifica el correu");
-  const sessioRita = await api("POST", "/sessio", { email: `rita.${sufix}@example.com`, password: PASSWORD });
+  const sessioRita = await iniciaSessio(APP, `rita.${sufix}@example.com`, PASSWORD);
   check(sessioRita.status === 200, "la Rita entra després de verificar");
   const tokenRita = sessioRita.body.token;
   secrets.push(tokenRita);
@@ -182,7 +195,7 @@ try {
   check(Boolean(verificacioBerta?.token), "arriba el correu de la Berta");
   secrets.push(verificacioBerta.token);
   check((await api("POST", "/registre/verificacio/confirmacio", { token: verificacioBerta.token })).status === 200, "la Berta verifica el correu");
-  const sessioBerta = await api("POST", "/sessio", { email: `berta.${sufix}@example.com`, password: PASSWORD });
+  const sessioBerta = await iniciaSessio(APP, `berta.${sufix}@example.com`, PASSWORD);
   check(sessioBerta.status === 200, "la Berta entra després de verificar");
   secrets.push(sessioBerta.body.token);
   const invitedB = await api("POST", "/invitacions", { email: `fora.${sufix}@example.com` }, sessioBerta.body.token);
@@ -208,8 +221,8 @@ try {
   const sala1 = await api("POST", "/espais", { name: "Sala Croses", capacity: 10 }, tokenRita);
   const sala2 = await api("POST", "/espais", { name: "Sala Manilles", capacity: 10 }, tokenRita);
   check(sala1.status === 201 && sala2.status === 201, "el responsable crea dues sales");
-  const inici = "2026-11-12T18:00:00+01:00";
-  const fi = "2026-11-12T19:00:00+01:00";
+  const inici = "2026-11-19T18:00:00+01:00";
+  const fi = "2026-11-19T19:00:00+01:00";
   const reserva1 = await api(
     "POST",
     "/reserves",
@@ -274,11 +287,11 @@ try {
   check(opcions.some((o) => o.t === "Núria"), "Núria surt encara que no tingui reserva aquesta setmana");
   check(!(await ev("!!document.querySelector('#cerca-coordinador')")), "ja no hi ha el camp de text");
   await waitFor(
-    "document.querySelectorAll('.llegenda-calendari[aria-label=Coordinadors] li').length === 2",
-    "la llegenda mostra les dues persones amb reserva",
+    "document.querySelectorAll('.sx__time-grid-event-title').length === 2",
+    "les dues reserves es veuen pel nom",
   );
   const nomsLlegenda = await ev(
-    "[...document.querySelectorAll('.llegenda-calendari[aria-label=Coordinadors] li')].map((li) => li.textContent.trim())",
+    "[...document.querySelectorAll('.sx__time-grid-event-title')].map((el) => el.textContent.trim())",
   );
   check(
     nomsLlegenda.length === 2 && nomsLlegenda.every((nom) => nom === "Anna"),
@@ -301,8 +314,8 @@ try {
   })()`);
   await waitFor(`location.search.includes(${JSON.stringify(idAnnaA)})`, "la URL guarda la persona");
   await waitFor(
-    "document.querySelectorAll('.llegenda-calendari[aria-label=Coordinadors] li').length === 1",
-    "tria una Anna i la llegenda en deixa una",
+    "document.querySelectorAll('.sx__time-grid-event-title').length === 1",
+    "tria una Anna i només queda la seva reserva",
   );
   await go(`${APP}/calendari?coordinador=${idAnnaA}`);
   await waitFor(

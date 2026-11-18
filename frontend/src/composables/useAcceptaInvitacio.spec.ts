@@ -23,7 +23,8 @@ const sessioCoord: SessioDto = {
 function identityBase(api: Partial<IdentityApi>): IdentityApi {
   return {
     registrar: async () => ({ detall: "T’hem enviat un correu.", lliurament: "sent" as const }),
-    iniciarSessio: async () => sessioCoord,
+    demanarCodiDeSessio: async () => ({ challenge_id: "repte", expires_at: "2026-11-18T18:02:00.000Z" }),
+    confirmarCodiDeSessio: async () => sessioCoord,
     obtenirSessio: async () => sessioCoord,
     actualitzarPaleta: async (_token, palette) => ({ palette }),
     llistarCoordinadors: async () => [],

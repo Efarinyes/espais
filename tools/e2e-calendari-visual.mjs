@@ -3,6 +3,7 @@
 // Contra una pila Docker local aïllada. No imprimeix tokens ni contrasenyes.
 import { spawn } from "node:child_process";
 import { correuDeVerificacio } from "./verificar-alta.mjs";
+import { iniciaSessio } from "./sessio-socket.mjs";
 import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
@@ -109,6 +110,18 @@ async function entra(email) {
     };
     posa('#email', ${JSON.stringify(email)});
     posa('#password', ${JSON.stringify(PASSWORD)});
+    document.querySelector('main form').requestSubmit();
+    return true;
+  })()`);
+  await waitFor(
+    "(() => { const el = document.querySelector('#codi-rebut'); return !!el && /^\\d{6}$/.test((el.textContent || '').trim()); })()",
+    "codi de verificació",
+  );
+  await ev(`(() => {
+    const codi = document.querySelector('#codi-rebut').textContent.trim();
+    const el = document.querySelector('#codi');
+    Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set.call(el, codi);
+    el.dispatchEvent(new Event('input', { bubbles: true }));
     document.querySelector('main form').requestSubmit();
     return true;
   })()`);
@@ -240,10 +253,7 @@ try {
   secrets.push(verificacio.token);
   const confirmat = await api("POST", "/registre/verificacio/confirmacio", { token: verificacio.token });
   check(confirmat.status === 200, "el responsable verifica el correu");
-  const sessioRita = await api("POST", "/sessio", {
-    email: `responsable.${sufix}@example.com`,
-    password: PASSWORD,
-  });
+  const sessioRita = await iniciaSessio(APP, `responsable.${sufix}@example.com`, PASSWORD);
   check(sessioRita.status === 200, "el responsable entra després de verificar");
   const tokenRita = sessioRita.body.token;
   secrets.push(tokenRita);
@@ -309,13 +319,13 @@ try {
   ];
 
   const plans = [
-    [josep, croses.body.id, "Sala Croses", "2026-11-09T17:30:00+01:00", "2026-11-09T18:30:00+01:00"],
-    [oriol, croses.body.id, "Sala Croses", "2026-11-09T19:00:00+01:00", "2026-11-09T20:00:00+01:00"],
-    [nuria, croses.body.id, "Sala Croses", "2026-11-11T17:00:00+01:00", "2026-11-11T18:00:00+01:00"],
-    [josep, manilles.body.id, "Sala Manilles", "2026-11-10T18:00:00+01:00", "2026-11-10T19:00:00+01:00"],
-    [oriol, manilles.body.id, "Sala Manilles", "2026-11-12T19:30:00+01:00", "2026-11-12T20:30:00+01:00"],
-    [nuria, pilars.body.id, "Sala Pilars", "2026-11-14T11:00:00+01:00", "2026-11-14T12:00:00+01:00"],
-    [josep, pilars.body.id, "Sala Pilars", "2026-11-14T12:30:00+01:00", "2026-11-14T13:30:00+01:00"],
+    [josep, croses.body.id, "Sala Croses", "2026-11-16T17:30:00+01:00", "2026-11-16T18:30:00+01:00"],
+    [oriol, croses.body.id, "Sala Croses", "2026-11-16T19:00:00+01:00", "2026-11-16T20:00:00+01:00"],
+    [nuria, croses.body.id, "Sala Croses", "2026-11-18T17:00:00+01:00", "2026-11-18T18:00:00+01:00"],
+    [josep, manilles.body.id, "Sala Manilles", "2026-11-17T18:00:00+01:00", "2026-11-17T19:00:00+01:00"],
+    [oriol, manilles.body.id, "Sala Manilles", "2026-11-19T19:30:00+01:00", "2026-11-19T20:30:00+01:00"],
+    [nuria, pilars.body.id, "Sala Pilars", "2026-11-21T11:00:00+01:00", "2026-11-21T12:00:00+01:00"],
+    [josep, pilars.body.id, "Sala Pilars", "2026-11-21T12:30:00+01:00", "2026-11-21T13:30:00+01:00"],
   ];
   for (const [persona, espaiId, sala, inici, fi] of plans) {
     const creada = await api("POST", "/reserves", { space_id: espaiId, starts_at: inici, ends_at: fi }, persona.token);

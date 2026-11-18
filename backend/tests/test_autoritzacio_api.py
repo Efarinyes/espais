@@ -10,6 +10,7 @@ from sqlalchemy import select
 from app.adapters.sqlalchemy.models import MembershipRow, UserRow
 from app.main import create_app
 from tests.alta_http import alta_i_sessio
+from tests.sessio_http import inicia_sessio
 
 MADRID = ZoneInfo("Europe/Madrid")
 ALIENA = "00000000-0000-0000-0000-000000000099"
@@ -218,10 +219,7 @@ def test_una_sessio_revocada_o_caducada_es_rebutja(sqlite_session_factory) -> No
     assert client.get("/espais", headers=headers).status_code == 401
     assert client.get("/sessio", headers=headers).status_code == 401
 
-    reopened = client.post(
-        "/sessio",
-        json={"email": "anna-morta@example.com", "password": "secret123"},
-    )
+    reopened = inicia_sessio(client, "anna-morta@example.com", "secret123")
     assert reopened.status_code == 200
     viu = _auth(reopened.json()["token"])
     db = sqlite_session_factory()

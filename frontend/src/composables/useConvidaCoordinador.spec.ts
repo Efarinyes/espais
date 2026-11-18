@@ -39,7 +39,8 @@ function muntar(api: Partial<IdentityApi>) {
       provide: {
         [identityApiKey as symbol]: {
           registrar: async () => ({ detall: "T’hem enviat un correu.", lliurament: "sent" as const }),
-          iniciarSessio: async () => sessioOk,
+          demanarCodiDeSessio: async () => ({ challenge_id: "repte", expires_at: "2026-11-18T18:02:00.000Z" }),
+          confirmarCodiDeSessio: async () => sessioOk,
           obtenirSessio: async () => sessioOk,
           actualitzarPaleta: async (_token, palette) => ({ palette }),
           llistarCoordinadors: async () => [],

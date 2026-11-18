@@ -56,7 +56,7 @@ No pot:
 
 Sessió per compte (email + contrasenya a v1). Totes les rutes de negoci exigeixen membership a l’entitat del recurs.
 
-- Un sol login per als dos rols (`POST /sessio`). El rol no el tria ningú: surt de la membership a la base, a cada petició (`ResolveSession`). No el porta el token ni el decideix el navegador.
+- Un sol login per als dos rols (`POST /sessio` i `POST /sessio/verificacio`). El rol no el tria ningú: surt de la membership a la base, a cada petició (`ResolveSession`). No el porta el token ni el decideix el navegador. La contrasenya correcta encara no obre sessió: el codi arriba només pel Socket.IO de la finestra que ha iniciat el login (ADR [0025](adr/0025-verificacio-login-socket.md)).
 - La política d’accions viu a `app/domain/authorization.py`. Cada cas d’ús restringit la consulta i respon 403. El recurs d’una altra entitat, o un avís que no és del coordinador, respon 404.
 - La política de pantalles viu a `frontend/src/autoritzacio.ts` i la guarda del router l’aplica. No n’hi ha prou d’amagar el menú. Una ruta privada no es pinta fins que `GET /sessio` confirma el rol. Canviar la ruta o el `localStorage` no dona cap permís: el servidor continua sent l’autoritat.
 - El token de sessió és un HMAC amb `sub`, `exp` i `ver`. `require_session` el rebutja si està revocat (ADR [0014](adr/0014-revocar-token-en-sortir.md)) o si `ver` no és el `session_version` de l’usuari.

@@ -5,6 +5,7 @@ from fastapi.testclient import TestClient
 from app.main import create_app
 from app.ports.email_verification_mail import EmailVerificationMessage
 from app.ports.password_reset_mail import PasswordResetMessage
+from tests.sessio_http import inicia_sessio
 
 DETALL_REENVIAMENT = (
     "Si aquest correu té un registre pendent de verificar, rebràs un enllaç. "
@@ -78,7 +79,7 @@ def test_verificar_el_correu_permet_entrar_i_un_token_usat_no(sqlite_session_fac
     assert confirmat.status_code == 200
     assert confirmat.json()["detall"] == DETALL_VERIFICAT
     assert "token" not in confirmat.json()
-    sessio = client.post("/sessio", json={"email": "Anna@example.com", "password": "secret123"})
+    sessio = inicia_sessio(client, "Anna@example.com", "secret123")
     assert sessio.status_code == 200
     assert sessio.json()["role"] == "responsible"
     assert sessio.json()["entity_name"] == "AAVV Barri A"
@@ -168,7 +169,7 @@ def test_la_recuperacio_i_la_invitacio_segueixen_despres_de_verificar(sqlite_ses
     assert canviat.status_code == 200
     antiga = client.post("/sessio", json={"email": "anna@example.com", "password": "secret123"})
     assert antiga.status_code == 401
-    nova = client.post("/sessio", json={"email": "anna@example.com", "password": "nova-clau"})
+    nova = inicia_sessio(client, "anna@example.com", "nova-clau")
     assert nova.status_code == 200
     invited = client.post(
         "/invitacions",

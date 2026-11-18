@@ -2,6 +2,7 @@ from fastapi.testclient import TestClient
 
 from app.main import create_app
 from tests.alta_http import alta_i_sessio
+from tests.sessio_http import inicia_sessio
 
 
 def _payload(**overrides: object) -> dict[str, object]:
@@ -19,10 +20,7 @@ def _payload(**overrides: object) -> dict[str, object]:
 def test_login_returns_same_entity_as_register(sqlite_session_factory) -> None:
     client = TestClient(create_app(session_factory=sqlite_session_factory))
     created = alta_i_sessio(client, **_payload())
-    response = client.post(
-        "/sessio",
-        json={"email": "Anna@example.com", "password": "secret123"},
-    )
+    response = inicia_sessio(client, "Anna@example.com", "secret123")
     assert response.status_code == 200
     body = response.json()
     assert body["entity_id"] == created["entity_id"]
@@ -87,10 +85,7 @@ def test_tancament_revoca_nomes_aquell_token(sqlite_session_factory) -> None:
     )
     creat = alta_i_sessio(client, **_payload())
     primer = creat["token"]
-    segon = client.post(
-        "/sessio",
-        json={"email": "anna@example.com", "password": "secret123"},
-    ).json()["token"]
+    segon = inicia_sessio(client, "anna@example.com", "secret123").json()["token"]
     assert primer != segon
 
     tancament = client.post("/sessio/tancament", headers={"Authorization": f"Bearer {primer}"})

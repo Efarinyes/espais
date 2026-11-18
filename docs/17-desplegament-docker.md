@@ -142,4 +142,4 @@ Fins que el DNS apunti al servidor, no posis el domini real: el certificat falla
 
 ## El que no es fa en aquesta Alpha
 
-PostgreSQL, Redis, Celery, Kubernetes, Swarm, més d’un VPS, un registry d’imatges, ni WebSocket nous. Un worker. Quan calgui escriptura concurrent de veritat, la migració a PostgreSQL es decideix a part (ADR 0012).
+PostgreSQL, Redis, Celery, Kubernetes, Swarm, més d’un VPS, un registry d’imatges, ni un WebSocket de calendari. El login usa Socket.IO al mateix worker, sense Redis (ADR [0025](adr/0025-verificacio-login-socket.md)). Un worker. Quan calgui escriptura concurrent de veritat, la migració a PostgreSQL es decideix a part (ADR 0012).

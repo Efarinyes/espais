@@ -55,6 +55,7 @@ Punt de mapa. Llegeix [`SESSION.md`](../SESSION.md) abans de qualsevol capítol.
 - [adr/0022-sales-i-tramats-sense-xoc.md](adr/0022-sales-i-tramats-sense-xoc.md)
 - [adr/0023-coordinador-pel-nom.md](adr/0023-coordinador-pel-nom.md)
 - [adr/0024-verificacio-correu-responsable.md](adr/0024-verificacio-correu-responsable.md)
+- [adr/0025-verificacio-login-socket.md](adr/0025-verificacio-login-socket.md)
 
 ## Skills i rules
 

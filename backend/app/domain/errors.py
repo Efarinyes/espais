@@ -61,6 +61,30 @@ class EmailNotVerifiedError(Exception):
     """El compte existeix, però el correu del responsable encara no s’ha verificat."""
 
 
+class LoginConnectionError(Exception):
+    """El canal de verificació no existeix o la connexió ja no és viva."""
+
+
+class LoginRateLimitedError(Exception):
+    """Massa codis demanats per aquest canal o aquesta adreça."""
+
+    def __init__(self, scope: str) -> None:
+        self.scope = scope
+        super().__init__(scope)
+
+
+class InvalidLoginCodeError(Exception):
+    """El codi no coincideix i encara queden intents."""
+
+
+class LoginChallengeClosedError(Exception):
+    """El repte ha caducat, s’ha usat, s’ha tancat o no és d’aquesta connexió."""
+
+    def __init__(self, reason: str) -> None:
+        self.reason = reason
+        super().__init__(reason)
+
+
 class InvalidReservationError(Exception):
     """Interval, disponibilitat o espai invàlids per a la reserva."""
 

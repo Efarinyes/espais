@@ -4,6 +4,7 @@
 // Crea entitats de prova: només accepta localhost. Cap token ni sessió surt per pantalla.
 import { spawn } from "node:child_process";
 import { correuDeVerificacio } from "./verificar-alta.mjs";
+import { iniciaSessio } from "./sessio-socket.mjs";
 import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -150,6 +151,17 @@ async function entra(email, password) {
   await fill("#email", email);
   await fill("#password", password);
   await submit();
+  await completaVerificacio();
+}
+
+async function completaVerificacio() {
+  await waitFor(
+    "(() => { const el = document.querySelector('#codi-rebut'); return !!el && /^\\d{6}$/.test((el.textContent || '').trim()); })()",
+    "codi de verificació",
+  );
+  const codi = (await text("#codi-rebut")).trim();
+  await fill("#codi", codi);
+  await submit();
 }
 
 async function recuperaPerPantalla(email, password, sessioAntiga, nom) {
@@ -224,6 +236,7 @@ async function provaRol({ email, antiga, nova, rol, nom }) {
   check((await text("main .alert-error")) === "Email o contrasenya incorrectes.", `${nom}: la contrasenya antiga ja no entra`);
   await fill("#password", nova);
   await submit();
+  await completaVerificacio();
   await waitFor("location.pathname === '/espais'", "entrada amb la contrasenya nova");
   const sessioNova = JSON.parse(await sessioDesada());
   secrets.push(sessioNova.token);
@@ -288,7 +301,7 @@ async function nouCompte(sufix) {
   secrets.push(verificacio.token);
   const confirmat = await api("POST", "/registre/verificacio/confirmacio", { token: verificacio.token });
   check(confirmat.status === 200, "el responsable verifica el correu");
-  const sessio = await api("POST", "/sessio", { email: resp, password: "secret123" });
+  const sessio = await iniciaSessio(APP, resp, "secret123");
   check(sessio.status === 200 && sessio.body.role === "responsible", "el responsable entra després de verificar");
   secrets.push(sessio.body.token);
   const convit = await api("POST", "/invitacions", { email: coord }, sessio.body.token);

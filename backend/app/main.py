@@ -4,12 +4,16 @@ import asyncio
 import os
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager, suppress
+from datetime import datetime
 
+import socketio
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import sessionmaker
 
 from app.adapters.access_log import protegeix_log_acces
+from app.adapters.login_challenges import LoginChallengeStore
+from app.adapters.login_socket import LoginHub, bind_login_socket
 from app.adapters.maintenance import run_archived_notification_purge_loop
 from app.adapters.sqlalchemy.schema import bootstrap_session_factory
 from app.adapters.system import SystemClock
@@ -72,6 +76,21 @@ def create_app(
         session_secret(),
         SystemClock(),
     )
+    hub = LoginHub()
+    challenges = LoginChallengeStore()
+    sio = socketio.AsyncServer(async_mode="asgi", logger=False, engineio_logger=False)
+    application.state.login_hub = hub
+    application.state.login_challenges = challenges
+    application.state.sio = sio
+
+    def _ara() -> datetime:
+        clock = getattr(application.state, "clock", None)
+        if clock is None:
+            return SystemClock().now()
+        return clock.now()
+
+    bind_login_socket(sio, hub, challenges, _ara)
+    application.state.asgi = socketio.ASGIApp(sio, other_asgi_app=application)
     application.add_middleware(
         CORSMiddleware,
         allow_origins=[
@@ -95,4 +114,4 @@ def create_app(
     return application
 
 
-app = create_app(enable_maintenance=True)
+app = create_app(enable_maintenance=True).state.asgi

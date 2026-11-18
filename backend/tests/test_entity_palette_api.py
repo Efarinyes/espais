@@ -2,6 +2,7 @@ from fastapi.testclient import TestClient
 
 from app.main import create_app
 from tests.alta_http import alta_i_sessio
+from tests.sessio_http import inicia_sessio
 
 
 def _register(client: TestClient, **overrides: object) -> dict[str, object]:
@@ -32,7 +33,7 @@ def test_register_and_login_default_to_mar_cel(sqlite_session_factory) -> None:
     client = TestClient(create_app(session_factory=sqlite_session_factory))
     created = _register(client)
     assert created["palette"] == "mar-cel"
-    login = client.post("/sessio", json={"email": "anna-paleta@example.com", "password": "secret123"})
+    login = inicia_sessio(client, "anna-paleta@example.com", "secret123")
     assert login.status_code == 200
     assert login.json()["palette"] == "mar-cel"
 

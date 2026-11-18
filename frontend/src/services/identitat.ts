@@ -50,9 +50,15 @@ export type CoordinadorDto = {
   name: string;
 };
 
+export type RepteSessio = {
+  challenge_id: string;
+  expires_at: string;
+};
+
 export type IdentityApi = {
   registrar(input: RegistreInput): Promise<RegistreResultat>;
-  iniciarSessio(email: string, password: string): Promise<SessioDto>;
+  demanarCodiDeSessio(email: string, password: string, channel: string): Promise<RepteSessio>;
+  confirmarCodiDeSessio(challengeId: string, code: string, channel: string): Promise<SessioDto>;
   obtenirSessio(token: string): Promise<Omit<SessioDto, "token">>;
   actualitzarPaleta(token: string, palette: string): Promise<{ palette: string }>;
   llistarCoordinadors(token: string): Promise<CoordinadorDto[]>;
@@ -91,10 +97,17 @@ export function createIdentityApi(baseUrl = ""): IdentityApi {
       });
     },
 
-    async iniciarSessio(email, password) {
-      return fetchApi<SessioDto>(`${baseUrl}/sessio`, {
+    async demanarCodiDeSessio(email, password, channel) {
+      return fetchApi<RepteSessio>(`${baseUrl}/sessio`, {
         method: "POST",
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password, channel }),
+      });
+    },
+
+    async confirmarCodiDeSessio(challengeId, code, channel) {
+      return fetchApi<SessioDto>(`${baseUrl}/sessio/verificacio`, {
+        method: "POST",
+        body: JSON.stringify({ challenge_id: challengeId, code, channel }),
       });
     },
 

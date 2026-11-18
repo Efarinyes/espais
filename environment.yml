@@ -10,5 +10,7 @@ dependencies:
   - alembic
   - pytest
   - httpx
+  - requests
   - bcrypt
+  - python-socketio
   - ruff

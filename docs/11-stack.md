@@ -51,4 +51,4 @@ Mai `micromamba env create` si l’entorn `espais` ja existeix.
 - Vue CLI global.
 - ORM diferent de SQLAlchemy 2.
 - Redis/cues pesades: reintents de correu amb flag i job simple, no Kubernetes.
-- WebSocket/SSE de calendari a v1: el front té un port de disparador (ADR [0007](adr/0007-calendari-polling.md)); l’adaptador actual és polling HTTP.
+- WebSocket/SSE de calendari a v1: el front té un port de disparador (ADR [0007](adr/0007-calendari-polling.md)); l’adaptador actual és polling HTTP. El login sí que usa Socket.IO, només per al codi de la finestra que entra (ADR [0025](adr/0025-verificacio-login-socket.md)).

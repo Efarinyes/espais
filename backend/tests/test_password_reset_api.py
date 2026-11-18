@@ -13,6 +13,7 @@ from app.adapters.tokens import HmacTokenIssuer, _b64url_encode
 from app.main import create_app
 from app.ports.password_reset_mail import PasswordResetMessage
 from tests.alta_http import alta_i_sessio
+from tests.sessio_http import inicia_sessio
 
 SECRET = "secret-test"
 DETALL_RECUPERACIO = (
@@ -80,7 +81,7 @@ def _h(token: object) -> dict[str, str]:
 
 
 def _login(client: TestClient, email: str, password: str):  # type: ignore[no-untyped-def]
-    return client.post("/sessio", json={"email": email, "password": password})
+    return inicia_sessio(client, email, password)
 
 
 def _recupera(client: TestClient, mailer: CapturingMailer, email: str, password: str = "nova-clau-1"):  # type: ignore[no-untyped-def]

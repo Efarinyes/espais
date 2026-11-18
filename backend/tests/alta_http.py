@@ -9,6 +9,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.adapters.sqlalchemy.models import EntityRow, MembershipRow, UserRow
+from tests.sessio_http import inicia_sessio
 
 
 def _activar(session: Session, email: str) -> None:
@@ -41,9 +42,6 @@ def alta_i_sessio(client: TestClient, **overrides: object) -> dict[str, object]:
         _activar(db, str(data["email"]))
     finally:
         db.close()
-    sessio = client.post(
-        "/sessio",
-        json={"email": data["email"], "password": data["password"]},
-    )
+    sessio = inicia_sessio(client, str(data["email"]), str(data["password"]))
     assert sessio.status_code == 200, sessio.text
     return sessio.json()

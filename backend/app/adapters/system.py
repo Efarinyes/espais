@@ -1,7 +1,7 @@
 """Rellotge i UUID de producció (injectats al cas d’ús)."""
 
 from datetime import UTC, datetime
-from secrets import token_urlsafe
+from secrets import randbelow, token_urlsafe
 from uuid import UUID, uuid4
 
 
@@ -18,3 +18,8 @@ class UuidIdGenerator:
 class SecretsInvitationTokenGenerator:
     def new(self) -> str:
         return token_urlsafe(32)
+
+
+class SixDigitLoginCode:
+    def new(self) -> str:
+        return f"{randbelow(1_000_000):06d}"

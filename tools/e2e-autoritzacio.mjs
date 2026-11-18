@@ -3,6 +3,7 @@
 // Comprova l’accés directe a les rutes i les crides a l’API. No imprimeix tokens.
 import { spawn } from "node:child_process";
 import { correuDeVerificacio } from "./verificar-alta.mjs";
+import { iniciaSessio } from "./sessio-socket.mjs";
 import { existsSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -192,10 +193,7 @@ try {
     body: { token: verificacio.token },
   });
   check(confirmat.status === 200, "API: el correu queda verificat");
-  const sessio = await api("/sessio", {
-    method: "POST",
-    body: { email: "e2e.autoritzacio.resp@example.com", password: "secret123" },
-  });
+  const sessio = await iniciaSessio(APP, "e2e.autoritzacio.resp@example.com", "secret123");
   check(sessio.status === 200 && sessio.json.role === "responsible", "API: entra després de verificar");
   responsable.json = sessio.json;
   const espai = await api("/espais", {
