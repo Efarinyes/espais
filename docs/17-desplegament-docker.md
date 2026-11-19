@@ -62,6 +62,11 @@ No reutilitzis `CHANGE_ME` ni `espais-dev-insegur`. El backend no arrenca en pro
 Les notificacions del navegador al coordinador (ADR [0026](adr/0026-avisos-web-push-i-reserva-sota-control.md)) necessiten un parell de claus VAPID, generat una sola vegada per servidor:
 
 ```bash
+# Al servidor, sense micromamba: dins la imatge del backend (cal haver-la reconstruït amb `--build`).
+# La imatge no inclou `tools/`: es munta només per a aquesta comanda.
+docker compose run --rm --no-deps -v "$PWD/tools:/app/tools:ro" backend python tools/generar-claus-vapid.py
+
+# En local, amb micromamba:
 micromamba run -n espais python tools/generar-claus-vapid.py
 ```
 

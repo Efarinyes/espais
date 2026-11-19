@@ -3,6 +3,7 @@
 .env*
 !.env.example
 backups/
+artifacts/
 node_modules/
 __pycache__/
 .mamba/
