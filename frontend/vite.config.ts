@@ -1,7 +1,14 @@
+import { createHash } from "node:crypto";
+import { readFileSync } from "node:fs";
+
 import tailwindcss from "@tailwindcss/vite";
 import vue from "@vitejs/plugin-vue";
 import { VitePWA } from "vite-plugin-pwa";
 import { defineConfig } from "vitest/config";
+
+// El navegador només actualitza el Service Worker si canvia el seu text: la versió de
+// push-sw.js viatja a la URL d’importScripts i qualsevol canvi del fitxer el renova.
+const versioPush = createHash("sha256").update(readFileSync(new URL("./public/push-sw.js", import.meta.url))).digest("hex").slice(0, 12);
 
 const pwa =
   process.env.VITEST === "true"
@@ -29,6 +36,7 @@ const pwa =
             globPatterns: ["**/*.{js,css,html,svg,ico,webmanifest}"],
             navigateFallback: "index.html",
             navigateFallbackDenylist: [/^\/api/],
+            importScripts: [`push-sw.js?v=${versioPush}`],
           },
           devOptions: {
             enabled: true,

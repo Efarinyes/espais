@@ -9,3 +9,6 @@ sqlalchemy==2.0.52
 alembic==1.19.2
 bcrypt==5.0.0
 python-socketio==5.18.1
+pywebpush==2.5.0
+py-vapid==1.9.6
+cryptography==50.0.2

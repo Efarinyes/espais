@@ -34,6 +34,8 @@ class NotificationListItem:
     reason: str | None
     read_at: datetime | None
     created_at: datetime
+    space_id: str | None
+    changes: tuple[str, ...]
 
 
 def _to_item(notification: Notification) -> NotificationListItem:
@@ -52,6 +54,8 @@ def _to_item(notification: Notification) -> NotificationListItem:
         reason=payload.reason,
         read_at=notification.read_at,
         created_at=notification.created_at,
+        space_id=payload.space_id,
+        changes=payload.changes,
     )
 
 

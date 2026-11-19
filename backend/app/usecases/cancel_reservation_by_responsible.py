@@ -86,6 +86,7 @@ class CancelReservationByResponsible:
             payload=NotificationPayload(
                 entity_name=command.entity_name,
                 space_name=space.name,
+                space_id=str(space.id),
                 starts_at=reservation.starts_at.isoformat(),
                 ends_at=reservation.ends_at.isoformat(),
                 responsible_name=command.actor_name,

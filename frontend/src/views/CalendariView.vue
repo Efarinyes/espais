@@ -10,7 +10,7 @@ import "temporal-polyfill/global";
 import CalendariModal from "../components/CalendariModal.vue";
 import LlistaReserves from "../components/LlistaReserves.vue";
 import { etiquetaPeriode, nomAccessibleReserva, rangVisible } from "../calendari";
-import { queryCalendari, type VistaCalendari } from "../consultaCalendari";
+import { diaDeQuery, queryCalendari, type VistaCalendari } from "../consultaCalendari";
 import { useAparencaStore } from "../stores/aparenca";
 import { useSessioStore } from "../stores/sessio";
 import { requireIdentityApi, type CoordinadorDto } from "../services/identitat";
@@ -208,7 +208,19 @@ const campsNova = computed(() => ({
 
 const eventsServiceHolder = { current: createEventsServicePlugin() };
 const calendarApp = shallowRef<ReturnType<typeof createCalendar> | null>(null);
-const diaActiu = ref(Temporal.Now.zonedDateTimeISO("Europe/Madrid").toPlainDate());
+function diaInicial(): Temporal.PlainDate {
+  const demanat = diaDeQuery(route.query);
+  if (demanat) {
+    try {
+      return Temporal.PlainDate.from(demanat);
+    } catch {
+      /* data impossible: s’obre avui */
+    }
+  }
+  return Temporal.Now.zonedDateTimeISO("Europe/Madrid").toPlainDate();
+}
+
+const diaActiu = ref(diaInicial());
 const vistaUnDia = ref(typeof window.matchMedia === "function" && window.matchMedia("(max-width: 1023px)").matches);
 const arrossegant = ref(false);
 const acabaDArrossegar = ref(false);

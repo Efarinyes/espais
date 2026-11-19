@@ -12,9 +12,13 @@ from sqlalchemy import (
     ForeignKey,
     Integer,
     String,
+    Text,
     Time,
     UniqueConstraint,
     Uuid,
+)
+from sqlalchemy import (
+    false as sa_false,
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -184,6 +188,9 @@ class ReservationRow(Base):
     status: Mapped[str] = mapped_column(String(32), nullable=False)
     notes: Mapped[str | None] = mapped_column(String(512), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    managed_by_responsible: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=False, server_default=sa_false()
+    )
 
 
 class AttendanceRecordRow(Base):
@@ -242,3 +249,26 @@ class NotificationRow(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     read_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     archived_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+
+class PushSubscriptionRow(Base):
+    __tablename__ = "push_subscriptions"
+
+    id: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), primary_key=True)
+    entity_id: Mapped[UUID] = mapped_column(
+        Uuid(as_uuid=True),
+        ForeignKey("entities.id"),
+        nullable=False,
+        index=True,
+    )
+    user_id: Mapped[UUID] = mapped_column(
+        Uuid(as_uuid=True),
+        ForeignKey("users.id"),
+        nullable=False,
+        index=True,
+    )
+    endpoint_hash: Mapped[str] = mapped_column(String(64), nullable=False, unique=True)
+    endpoint: Mapped[str] = mapped_column(Text, nullable=False)
+    p256dh: Mapped[str] = mapped_column(String(255), nullable=False)
+    auth: Mapped[str] = mapped_column(String(255), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)

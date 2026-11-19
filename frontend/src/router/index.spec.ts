@@ -75,6 +75,20 @@ describe("guardes del router", () => {
     expect(router.currentRoute.value.name).toBe("espais");
   });
 
+  it("el coordinador no entra als avisos enviats i el responsable sí", async () => {
+    useSessioStore().iniciar(coordinador);
+    await router.push("/avisos-enviats");
+    expect(router.currentRoute.value.name).toBe("espais");
+    useSessioStore().iniciar(responsable);
+    await router.push("/avisos-enviats");
+    expect(router.currentRoute.value.name).toBe("avisos-enviats");
+  });
+
+  it("sense sessió, els avisos enviats porten a iniciar sessió", async () => {
+    await router.push("/avisos-enviats");
+    expect(router.currentRoute.value.name).toBe("iniciar-sessio");
+  });
+
   it("el coordinador entra a la seva safata i a les rutes compartides", async () => {
     useSessioStore().iniciar(coordinador);
     await router.push("/avisos");

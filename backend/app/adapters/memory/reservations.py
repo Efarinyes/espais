@@ -130,6 +130,21 @@ class InMemoryNotificationRepository:
         ]
         return sorted(items, key=lambda item: item.created_at, reverse=True)
 
+    def list_for_reservations(
+        self, entity_id: UUID, reservation_ids: list[UUID]
+    ) -> list[Notification]:
+        wanted = set(reservation_ids)
+        items = [
+            item
+            for item in self._uow._working_notifications
+            if item.entity_id == entity_id and item.reservation_id in wanted
+        ]
+        return sorted(items, key=lambda item: item.created_at, reverse=True)
+
+    def list_recent(self, entity_id: UUID, limit: int) -> list[Notification]:
+        items = [item for item in self._uow._working_notifications if item.entity_id == entity_id]
+        return sorted(items, key=lambda item: item.created_at, reverse=True)[:limit]
+
     def delete_archived_before(self, cutoff: datetime) -> int:
         kept: list[Notification] = []
         deleted = 0

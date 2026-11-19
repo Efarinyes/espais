@@ -14,6 +14,7 @@ from app.domain.authorization import (
     mostra_nom_de_coordinador,
 )
 from app.domain.identity import MembershipRole
+from app.domain.notification import Notification, NotificationType
 from app.domain.reservation import ReservationStatus, as_utc
 from app.ports.reservations import ReservationUnitOfWork
 
@@ -27,6 +28,16 @@ class ListReservationsQuery:
     ends_at: datetime
     space_id: UUID | None = None
     include_cancelled: bool = False
+
+
+@dataclass(frozen=True)
+class NoticeStatus:
+    """Estat de l’últim avís al coordinador. `read_at` només el posa la lectura dins d’Espais."""
+
+    notification_id: UUID
+    type: NotificationType
+    created_at: datetime
+    read_at: datetime | None
 
 
 @dataclass(frozen=True)
@@ -45,6 +56,19 @@ class ReservationListItem:
     min_attendance: int | None
     exceeds_capacity: bool
     below_min_attendance: bool
+    managed_by_responsible: bool = False
+    notice: NoticeStatus | None = None
+
+
+def _notice_of(notification: Notification | None) -> NoticeStatus | None:
+    if notification is None:
+        return None
+    return NoticeStatus(
+        notification_id=notification.id,
+        type=notification.type,
+        created_at=notification.created_at,
+        read_at=notification.read_at,
+    )
 
 
 class ListReservations:
@@ -66,6 +90,12 @@ class ListReservations:
             query.entity_id,
             [reservation.id for reservation in reservations],
         )
+        latest_notice: dict[UUID, Notification] = {}
+        if query.actor_role == MembershipRole.RESPONSIBLE:
+            for notification in self._uow.notifications.list_for_reservations(
+                query.entity_id, [reservation.id for reservation in reservations]
+            ):
+                latest_notice.setdefault(notification.reservation_id, notification)
         items: list[ReservationListItem] = []
         allowed = {ReservationStatus.CONFIRMED}
         if query.include_cancelled:
@@ -101,6 +131,9 @@ class ListReservations:
                     min_attendance=space.min_attendance,
                     exceeds_capacity=exceeds,
                     below_min_attendance=below,
+                    managed_by_responsible=reservation.managed_by_responsible
+                    and (mine or query.actor_role == MembershipRole.RESPONSIBLE),
+                    notice=_notice_of(latest_notice.get(reservation.id)),
                 )
             )
         return items

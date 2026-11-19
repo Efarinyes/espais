@@ -129,6 +129,7 @@ describe("TaulerLayout", () => {
       "Espais",
       "Calendari",
       "Estadístiques",
+      "Avisos enviats",
       "Convida coordinadors",
       "Tria els colors",
     ]);

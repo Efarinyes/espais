@@ -33,6 +33,7 @@ class Reservation:
     status: ReservationStatus
     notes: str | None
     created_at: datetime
+    managed_by_responsible: bool = False
 
 
 def as_utc(moment: datetime) -> datetime:

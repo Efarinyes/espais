@@ -43,6 +43,9 @@ Amb `ESPAIS_DOMAIN=http://localhost`, Caddy respon per HTTP al port 80. El nom `
 | `ESPAIS_SMTP_FROM` | Remitent. El domini de l’app i el del remitent poden ser diferents. |
 | `ESPAIS_SMTP_STARTTLS` | Buit amb Mailpit. `1` quan el relay ho demani. |
 | `ESPAIS_SMTP_USER` / `ESPAIS_SMTP_PASSWORD` | Buits amb Mailpit. Credencials del relay, quan n’hi hagi. |
+| `ESPAIS_VAPID_PRIVATE_KEY` | **Secret.** Clau privada VAPID del Web Push (vegeu [Web Push](#web-push-vapid)). Buida: el push queda desactivat i la resta de l’app funciona igual. |
+| `ESPAIS_VAPID_SUBJECT` | Contacte del servidor per als serveis de push: `mailto:…` o `https://…`. Obligatori si hi ha clau privada. |
+| `ESPAIS_PUSH_EXTRA_HOSTS` | Opcional. Sufixos de host de push admesos a més de `googleapis.com`, `push.services.mozilla.com`, `push.apple.com` i `notify.windows.com`, separats per comes. Normalment buit. |
 
 `.env` no entra a Git ni a la imatge. `.env.example` sí.
 
@@ -53,6 +56,42 @@ python3 -c "import secrets; print(secrets.token_urlsafe(32))"
 ```
 
 No reutilitzis `CHANGE_ME` ni `espais-dev-insegur`. El backend no arrenca en producció amb aquests valors.
+
+## Web Push (VAPID)
+
+Les notificacions del navegador al coordinador (ADR [0026](adr/0026-avisos-web-push-i-reserva-sota-control.md)) necessiten un parell de claus VAPID, generat una sola vegada per servidor:
+
+```bash
+micromamba run -n espais python tools/generar-claus-vapid.py
+```
+
+L’eina imprimeix `ESPAIS_VAPID_PRIVATE_KEY=…` i `ESPAIS_VAPID_SUBJECT=mailto:…` per copiar al `.env` del servidor, i la clau pública (informativa: el backend la deriva de la privada i la serveix a `GET /push/configuracio`). Edita el subjecte amb un correu de contacte real. La clau privada és un secret: no entra a Git, ni a la imatge, ni a un xat ni a un log. Les dependències són `pywebpush` i `py-vapid` (a `backend/requirements.txt` i `environment.yml`); la imatge es reconstrueix amb `docker compose up -d --build`.
+
+Requisits del navegador:
+
+- **HTTPS** (o `localhost`). Al VPS ja el posa Caddy.
+- Chrome, Edge, Firefox i Safari recents. Cal permís de notificacions, que es demana només quan el coordinador prem «Activa les notificacions» a la safata d’avisos.
+- **iPhone i iPad:** el push només funciona amb l’app instal·lada a la pantalla d’inici (Comparteix → «Afegeix a la pantalla d’inici») i iOS 16.4 o superior. Des de Safari normal, la pantalla ho indica i no demana permís.
+- El permís és del navegador i del dispositiu: un coordinador amb dos dispositius n’ha d’activar dos.
+
+Gestió de subscripcions: es registren i s’esborren des de la mateixa pantalla; en tancar sessió s’esborra la del navegador; el servidor esborra les que el servei de push declara caducades (404/410); cada usuari en té com a màxim 10. **Canviar `ESPAIS_VAPID_PRIVATE_KEY` invalida totes les subscripcions**: el servidor les descartarà quan el servei de push les rebutgi i cada coordinador haurà de tornar a activar les notificacions.
+
+Limitacions conegudes:
+
+- El push no confirma que s’hagi rebut ni llegit: només la lectura dins d’Espais ho marca.
+- Si el navegador o el sistema bloquegen les notificacions (mode no molestar, estalvi d’energia, permís denegat), l’avís continua a la safata d’Espais.
+- Dins l’app oberta, l’avís arriba pel refresc periòdic (uns 20 segons) i, si hi ha push, immediatament.
+- Sense `ESPAIS_VAPID_PRIVATE_KEY`, `GET /push/configuracio` respon `enabled: false` i la UI no ofereix el push.
+
+### Verificació manual del push
+
+El push no s’ha provat en un dispositiu real des del desenvolupament. Abans de donar-lo per bo, amb HTTPS i una entitat de prova:
+
+1. Entra com a coordinador (Android/Chrome i, si cal, iPhone amb l’app instal·lada) i prem «Activa les notificacions» a `/avisos`; accepta el permís.
+2. Crea una reserva amb aquest coordinador. Tanca l’app o la pestanya.
+3. Entra com a responsable, en un altre navegador, i modifica l’horari de la reserva. El dispositiu del coordinador mostra «Reserva modificada: …» amb l’horari d’abans i d’ara. Toca la notificació: obre `/avisos`, l’avís surt com a «No llegit» fins que s’obre. Mira que al calendari del responsable l’avís encara apareix com a pendent de lectura i que després de l’obertura passa a llegit.
+4. Repeteix amb una anul·lació («Reserva anul·lada: …»). Comprova que el coordinador no pot tornar a modificar-la ni a anul·lar-la, i que pot crear una reserva nova a la mateixa franja.
+5. Tanca la sessió del coordinador i fes un canvi: no ha d’arribar cap push a aquell navegador.
 
 ## Salut
 
@@ -121,15 +160,15 @@ tools/restore-sqlite.sh --confirmo ./espais.sqlite3
 1. Un Linux amb Docker Engine i el plugin Compose.
 2. DNS: un registre A (o AAAA) del domini cap a la IP del VPS.
 3. Obre només **80** i **443**. No obris **8000** ni el SMTP de Mailpit (**1025**).
-4. Clona el repositori, crea `.env` amb el domini real i un `ESPAIS_SECRET` nou. Per capturar el correu a l’Alpha: `ESPAIS_SMTP_HOST=mailpit` i `ESPAIS_SMTP_PORT=1025`.
-5. Còpia de la base (`tools/backup-sqlite.sh`) abans d’actualitzar un servidor que ja té dades.
+4. Clona el repositori, crea `.env` amb el domini real i un `ESPAIS_SECRET` nou. Per capturar el correu a l’Alpha: `ESPAIS_SMTP_HOST=mailpit` i `ESPAIS_SMTP_PORT=1025`. Per al Web Push, `ESPAIS_VAPID_PRIVATE_KEY` i `ESPAIS_VAPID_SUBJECT` (vegeu [Web Push](#web-push-vapid)).
+5. Còpia de la base abans d’actualitzar un servidor que ja té dades: **al servidor, amb els contenidors actuals encara en marxa** (l’script fa servir `docker compose exec`, així que el backend ha d’estar corrent) i **abans** del `docker compose up -d --build`. Des de l’arrel del repositori: `tools/backup-sqlite.sh` (escriu a `backups/espais-<data>.sqlite3`, que no es versiona) i, si vols, copia el fitxer fora del servidor amb `scp`. Una còpia feta al teu ordinador és de la base local, no de la del servidor.
 6. `git pull` a `feat/docker-caddy-sqlite` i `docker compose up -d --build`. No facis `down -v`.
 
 Mailpit és a la xarxa interna. La interfície només escolta a `127.0.0.1:8025` del VPS. Per veure els missatges, un túnel SSH cap a aquest port i el navegador a `http://127.0.0.1:8025`. No es publica a Caddy. No té volum: recrear el contenidor buida la bústia.
 
 Els enllaços de recuperació i d’invitació surten de `ESPAIS_DOMAIN`. No hi van `localhost`, `mailpit` ni noms de contenidor.
 
-Les migracions s’apliquen soles en arrencar el backend (la de la recuperació és `0010_password_resets`: afegeix `users.session_version` amb valor 0 i dues taules, sense tocar dades). Després d’actualitzar:
+Les migracions s’apliquen soles en arrencar el backend. La darrera és `0012_notification_center_push`: afegeix `reservations.managed_by_responsible` (a cert per a les reserves que ja tenen un avís de reprogramació: **bloqueig retroactiu**, el coordinador ja no les podrà tornar a canviar) i la taula `push_subscriptions`. Abans d’actualitzar, fes la còpia de la base. (La de la recuperació, més antiga, és `0010_password_resets`: afegeix `users.session_version` amb valor 0 i dues taules, sense tocar dades). Després d’actualitzar:
 
 1. `curl -i https://<domini>/api/salut` respon 200, i `docker compose logs backend` mostra la migració fins a `0010_password_resets`.
 2. La PWA pot servir el paquet anterior la primera vegada. Recarrega la pàgina fins que «Inicia sessió» mostri «Has oblidat la contrasenya?».

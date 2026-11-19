@@ -19,14 +19,14 @@ Pot correspondre a una activitat interna (entrenament, junta) o oberta a la ciut
 ### Reprogramació
 
 - Coordinador: la seva reserva, si el nou interval és lliure. Sense avís.
-- Responsable: qualsevol reserva; genera **avís** al coordinador (mateix canal que l’anul·lació).
+- Responsable: qualsevol reserva; genera **avís** al coordinador (mateix canal que l’anul·lació) i la reserva queda **sota control del responsable** (`managed_by_responsible`): el coordinador ja no la pot reprogramar ni anul·lar (403). El bloqueig és del registre, no de l’espai ni de la franja (ADR [0026](adr/0026-avisos-web-push-i-reserva-sota-control.md)).
 
 v1: mutar l’interval de la mateixa fila i deixar l’estat en `confirmed`. L’interval antic i el nou van al payload de l’avís. L’event log és backlog del pla; no l’afegeixis si la tasca no ho demana.
 
 ### Anul·lació
 
 - Coordinador: la seva; estat `cancelled`; sense correu al responsable a v1.
-- Responsable: `CancelReservationByResponsible`; estat `cancelled`; **avís in-app + correu** al coordinador. Vegeu [08-notificacions.md](08-notificacions.md).
+- Responsable: `CancelReservationByResponsible`; estat `cancelled`; **avís in-app + correu + push** al coordinador. Vegeu [08-notificacions.md](08-notificacions.md). El registre anul·lat es conserva com a històric: no es pot reprogramar, reactivar ni reutilitzar. La franja queda lliure per a una reserva nova i independent. El coordinador no pot registrar-hi assistència.
 
 ### Llistats
 

@@ -18,6 +18,14 @@ class NotificationRepository(Protocol):
 
     def list_for_user(self, entity_id: UUID, user_id: UUID) -> list[Notification]: ...
 
+    def list_for_reservations(
+        self, entity_id: UUID, reservation_ids: list[UUID]
+    ) -> list[Notification]:
+        """Tots els avisos de les reserves, també els arxivats: el responsable en veu l’estat."""
+        ...
+
+    def list_recent(self, entity_id: UUID, limit: int) -> list[Notification]: ...
+
     def delete_archived_before(self, cutoff: datetime) -> int: ...
 
 

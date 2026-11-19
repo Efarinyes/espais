@@ -26,6 +26,8 @@ class Accio(StrEnum):
     REGISTRAR_ASSISTENCIA = "registrar_assistencia"
     REPROGRAMAR = "reprogramar"
     LLEGIR_AVISOS = "llegir_avisos"
+    VEURE_AVISOS_ENVIATS = "veure_avisos_enviats"
+    GESTIONAR_PUSH = "gestionar_push"
 
 
 @dataclass(frozen=True)
@@ -76,6 +78,12 @@ POLITICA: dict[Accio, Regla] = {
         "no pots reprogramar aquesta reserva",
     ),
     Accio.LLEGIR_AVISOS: Regla(_COORDINADOR, "només el coordinador pot llegir els avisos"),
+    Accio.VEURE_AVISOS_ENVIATS: Regla(
+        _RESPONSABLE, "només el responsable pot veure els avisos enviats"
+    ),
+    Accio.GESTIONAR_PUSH: Regla(
+        _COORDINADOR, "només el coordinador pot gestionar les notificacions del dispositiu"
+    ),
 }
 
 
@@ -93,6 +101,14 @@ def exigir_recurs_propi(role: MembershipRole, accio: Accio, *, propi: bool) -> N
     alie = POLITICA[accio].alie
     if alie is not None and role == MembershipRole.COORDINATOR and not propi:
         raise ForbiddenError(alie)
+
+
+def exigir_reserva_no_gestionada(role: MembershipRole, *, gestionada: bool) -> None:
+    """Una reserva modificada pel responsable ja només la canvia ell (ADR 0026)."""
+    if role == MembershipRole.COORDINATOR and gestionada:
+        raise ForbiddenError(
+            "el responsable ha modificat aquesta reserva i només ell la pot tornar a canviar"
+        )
 
 
 def mostra_nom_de_coordinador(role: MembershipRole, *, propi: bool) -> bool:

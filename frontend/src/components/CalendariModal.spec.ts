@@ -88,4 +88,66 @@ describe("CalendariModal", () => {
     expect(wrapper.emitted("tancar")).toBeUndefined();
     wrapper.unmount();
   });
+
+  it("el coordinador veu que la reserva és del responsable i no té accions de canvi", () => {
+    const modal: ModalCalendari = { tipus: "detall", reserva: { ...reserva, managed_by_responsible: true } };
+    const wrapper = mount(CalendariModal, {
+      props: { ...base, modal, potAnular: false, potReprogramar: false },
+    });
+    expect(wrapper.get("[data-reserva-bloquejada]").text()).toContain("El responsable ha modificat aquesta reserva");
+    expect(wrapper.text()).not.toContain("Anul·la");
+    expect(wrapper.text()).not.toContain("Canvia l’horari");
+    expect(wrapper.find("[data-estat-avis]").exists()).toBe(false);
+    wrapper.unmount();
+  });
+
+  it("una reserva normal no mostra l’avís de bloqueig", () => {
+    const modal: ModalCalendari = { tipus: "detall", reserva };
+    const wrapper = mount(CalendariModal, { props: { ...base, modal } });
+    expect(wrapper.find("[data-reserva-bloquejada]").exists()).toBe(false);
+    wrapper.unmount();
+  });
+
+  it("el responsable veu si el coordinador encara no ha llegit l’avís", () => {
+    const modal: ModalCalendari = {
+      tipus: "detall",
+      reserva: {
+        ...reserva,
+        managed_by_responsible: true,
+        notice: {
+          notification_id: "n1",
+          type: "reservation_rescheduled",
+          created_at: "2026-09-08T10:00:00Z",
+          read_at: null,
+        },
+      },
+    };
+    const wrapper = mount(CalendariModal, { props: { ...base, modal } });
+    expect(wrapper.get("[data-estat-avis]").text()).toBe(
+      "Avís de modificació al coordinador: pendent de lectura.",
+    );
+    expect(wrapper.find("[data-reserva-bloquejada]").exists()).toBe(false);
+    wrapper.unmount();
+  });
+
+  it("el responsable veu quan el coordinador ha llegit l’avís dins d’Espais", () => {
+    const modal: ModalCalendari = {
+      tipus: "detall",
+      reserva: {
+        ...reserva,
+        managed_by_responsible: true,
+        notice: {
+          notification_id: "n1",
+          type: "reservation_rescheduled",
+          created_at: "2026-09-08T10:00:00Z",
+          read_at: "2026-09-08T11:30:00Z",
+        },
+      },
+    };
+    const wrapper = mount(CalendariModal, { props: { ...base, modal } });
+    const text = wrapper.get("[data-estat-avis]").text();
+    expect(text).toContain("Avís de modificació al coordinador: llegit el");
+    expect(text).not.toContain("pendent");
+    wrapper.unmount();
+  });
 });

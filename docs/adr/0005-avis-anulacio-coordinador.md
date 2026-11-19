@@ -1,6 +1,6 @@
 # ADR 0005 — Avís d’anul·lació al coordinador
 
-- **Estat:** acceptat
+- **Estat:** acceptat; esmenat per l’[ADR 0026](0026-avisos-web-push-i-reserva-sota-control.md) (hi afegeix Web Push, lectura confirmada i el bloqueig de la reserva)
 - **Data:** 2026-09-07
 
 ## Context
@@ -17,7 +17,7 @@ El mateix avís s’aplica a la reprogramació feta pel responsable.
 
 - Cal UI de safata d’avisos per al coordinador.
 - Cal fake `Notifier` als tests.
-- No hi ha WhatsApp ni push a v1.
+- No hi ha WhatsApp. El push, que aquí quedava fora, s’afegeix a l’ADR 0026.
 
 ## Alternatives rebutjades
 

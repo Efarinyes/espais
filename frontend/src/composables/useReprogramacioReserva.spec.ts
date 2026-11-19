@@ -254,4 +254,33 @@ describe("useReprogramacioReserva", () => {
     expect(wrapper.vm.tancat()).toBe(false);
     expect(wrapper.vm.okReprogramacio).toBe("");
   });
+
+  it("el coordinador no pot reprogramar una reserva que el responsable ha modificat", async () => {
+    let cridat = false;
+    const wrapper = muntar(
+      {
+        reprogramar: async () => {
+          cridat = true;
+          return reserva();
+        },
+      },
+      sessioCoord,
+      reserva({ mine: true, managed_by_responsible: true }),
+    );
+    expect(wrapper.vm.potReprogramar).toBe(false);
+    expect(wrapper.vm.esReservaMovible("r1")).toBe(false);
+    const moguda = await wrapper.vm.moureReserva(
+      "r1",
+      Temporal.ZonedDateTime.from("2026-09-09T10:00:00+02:00[Europe/Madrid]"),
+      Temporal.ZonedDateTime.from("2026-09-09T10:30:00+02:00[Europe/Madrid]"),
+    );
+    expect(moguda).toBeNull();
+    expect(cridat).toBe(false);
+  });
+
+  it("el responsable pot tornar a moure una reserva que ja havia modificat", () => {
+    const wrapper = muntar({}, sessioResp, reserva({ managed_by_responsible: true }));
+    expect(wrapper.vm.potReprogramar).toBe(true);
+    expect(wrapper.vm.esReservaMovible("r1")).toBe(true);
+  });
 });

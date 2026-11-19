@@ -145,4 +145,22 @@ describe("useAnulacioReserva", () => {
     expect(wrapper.vm.tancat()).toBe(false);
     expect(wrapper.vm.enviantAnulacio).toBe(false);
   });
+
+  it("el coordinador no pot anul·lar una reserva que el responsable ha modificat", () => {
+    const wrapper = muntar(
+      {},
+      { ...sessioResp, role: "coordinator", user_id: "u2" },
+      reserva({ mine: true, managed_by_responsible: true }),
+    );
+    expect(wrapper.vm.potAnular).toBe(false);
+    wrapper.vm.demanarAnulacio();
+    expect(wrapper.vm.modal).toBe("detall");
+  });
+
+  it("el responsable continua podent anul·lar una reserva que ja havia modificat", () => {
+    const wrapper = muntar({}, sessioResp, reserva({ mine: false, managed_by_responsible: true }));
+    expect(wrapper.vm.potAnular).toBe(true);
+    wrapper.vm.demanarAnulacio();
+    expect(wrapper.vm.modal).toBe("confirmar-anulacio");
+  });
 });

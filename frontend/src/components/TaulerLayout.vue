@@ -1,12 +1,29 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { RouterView } from "vue-router";
 
+import AvisosPendents from "./AvisosPendents.vue";
 import TaulerMenu from "./TaulerMenu.vue";
 import { useMenuMobil } from "../composables/useMenuMobil";
+import { useSincronitzaPush } from "../composables/usePush";
+import { useAvisosStore } from "../stores/avisos";
 import { useSessioStore } from "../stores/sessio";
 
 const sessio = useSessioStore();
+const avisos = useAvisosStore();
+const { sincronitzar } = useSincronitzaPush();
+const pendents = computed(() => (sessio.role === "coordinator" ? avisos.noLlegits : 0));
+const etiquetaMenu = computed(() => {
+  const base = "Menú, " + sessio.entityName;
+  if (pendents.value === 0) {
+    return base;
+  }
+  return `${base}, ${pendents.value} ${pendents.value === 1 ? "avís nou" : "avisos nous"}`;
+});
+
+onMounted(() => {
+  void sincronitzar();
+});
 const contingut = ref<HTMLElement | null>(null);
 const boto = ref<HTMLButtonElement | null>(null);
 const panell = ref<HTMLElement | null>(null);
@@ -25,21 +42,26 @@ const { obert, alternar, tancar } = useMenuMobil(contingut, boto, panell);
           data-obre-menu
           :aria-expanded="obert"
           :aria-controls="obert ? 'menu-mobil' : undefined"
-          :aria-label="'Menú, ' + sessio.entityName"
+          :aria-label="etiquetaMenu"
           @click="alternar"
         >
           <span class="flex min-w-0 flex-col items-start">
             <span class="text-sm font-semibold">Menú</span>
             <span class="truncate">{{ sessio.entityName }}</span>
           </span>
-          <svg class="h-5 w-5 shrink-0" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-            <path
-              d="M3.5 5.5h13M3.5 10h13M3.5 14.5h13"
-              stroke="currentColor"
-              stroke-width="1.75"
-              stroke-linecap="round"
-            />
-          </svg>
+          <span class="flex shrink-0 items-center gap-2">
+            <span v-if="pendents > 0" class="badge badge-primary" data-pendents-menu aria-hidden="true">
+              {{ pendents }}
+            </span>
+            <svg class="h-5 w-5 shrink-0" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <path
+                d="M3.5 5.5h13M3.5 10h13M3.5 14.5h13"
+                stroke="currentColor"
+                stroke-width="1.75"
+                stroke-linecap="round"
+              />
+            </svg>
+          </span>
         </button>
       </div>
       <Transition name="calaix" :duration="180">
@@ -77,6 +99,7 @@ const { obert, alternar, tancar } = useMenuMobil(contingut, boto, panell);
       </div>
     </aside>
     <div ref="contingut" class="min-w-0 flex-1 outline-none" tabindex="-1" data-contingut :inert="obert ? true : undefined">
+      <AvisosPendents />
       <RouterView />
     </div>
   </div>

@@ -13,9 +13,14 @@ from app.domain.errors import (
     NotificationNotFoundError,
     NotificationNotReadError,
 )
-from app.domain.notification import NotificationType
+from app.domain.notification import Notification, NotificationType
+from app.domain.reservation import ReservationStatus
 from app.usecases.archive_notification import ArchiveNotificationCommand
 from app.usecases.list_notifications import ListNotificationsQuery, NotificationListItem
+from app.usecases.list_sent_notifications import (
+    ListSentNotificationsQuery,
+    SentNotificationItem,
+)
 from app.usecases.mark_notification_read import MarkNotificationReadCommand
 from app.usecases.resolve_session import SessionView
 
@@ -36,6 +41,24 @@ class AvisResponse(BaseModel):
     reason: str | None
     read_at: datetime | None
     created_at: datetime
+    space_id: str | None
+    changes: list[str]
+
+
+class AvisEnviatResponse(BaseModel):
+    id: UUID
+    type: NotificationType
+    reservation_id: UUID
+    coordinator_name: str
+    space_name: str
+    starts_at: str
+    ends_at: str
+    new_starts_at: str | None
+    new_ends_at: str | None
+    changes: list[str]
+    reservation_status: ReservationStatus | None
+    created_at: datetime
+    read_at: datetime | None
 
 
 def _to_response(item: NotificationListItem) -> AvisResponse:
@@ -53,7 +76,62 @@ def _to_response(item: NotificationListItem) -> AvisResponse:
         reason=item.reason,
         read_at=item.read_at,
         created_at=item.created_at,
+        space_id=item.space_id,
+        changes=list(item.changes),
     )
+
+
+def _from_notification(notification: Notification) -> AvisResponse:
+    payload = notification.payload
+    return AvisResponse(
+        id=notification.id,
+        type=notification.type,
+        reservation_id=notification.reservation_id,
+        entity_name=payload.entity_name,
+        space_name=payload.space_name,
+        starts_at=payload.starts_at,
+        ends_at=payload.ends_at,
+        new_starts_at=payload.new_starts_at,
+        new_ends_at=payload.new_ends_at,
+        responsible_name=payload.responsible_name,
+        reason=payload.reason,
+        read_at=notification.read_at,
+        created_at=notification.created_at,
+        space_id=payload.space_id,
+        changes=list(payload.changes),
+    )
+
+
+def _sent_to_response(item: SentNotificationItem) -> AvisEnviatResponse:
+    return AvisEnviatResponse(
+        id=item.id,
+        type=item.type,
+        reservation_id=item.reservation_id,
+        coordinator_name=item.coordinator_name,
+        space_name=item.space_name,
+        starts_at=item.starts_at,
+        ends_at=item.ends_at,
+        new_starts_at=item.new_starts_at,
+        new_ends_at=item.new_ends_at,
+        changes=list(item.changes),
+        reservation_status=item.reservation_status,
+        created_at=item.created_at,
+        read_at=item.read_at,
+    )
+
+
+@router.get("/avisos/enviats", response_model=list[AvisEnviatResponse])
+def list_avisos_enviats(
+    view: Annotated[SessionView, Depends(require_session)],
+    notifications: Annotated[NotificationsHttp, Depends(get_notifications_http)],
+) -> list[AvisEnviatResponse]:
+    try:
+        items = notifications.sent.execute(
+            ListSentNotificationsQuery(entity_id=view.entity_id, actor_role=view.role)
+        )
+    except ForbiddenError as exc:
+        raise HTTPException(status_code=403, detail=str(exc)) from None
+    return [_sent_to_response(item) for item in items]
 
 
 @router.get("/avisos", response_model=list[AvisResponse])
@@ -93,23 +171,7 @@ def mark_avis_llegit(
         raise HTTPException(status_code=403, detail=str(exc)) from None
     except NotificationNotFoundError:
         raise HTTPException(status_code=404, detail="aquest avís no existeix") from None
-    notification = result.notification
-    payload = notification.payload
-    return AvisResponse(
-        id=notification.id,
-        type=notification.type,
-        reservation_id=notification.reservation_id,
-        entity_name=payload.entity_name,
-        space_name=payload.space_name,
-        starts_at=payload.starts_at,
-        ends_at=payload.ends_at,
-        new_starts_at=payload.new_starts_at,
-        new_ends_at=payload.new_ends_at,
-        responsible_name=payload.responsible_name,
-        reason=payload.reason,
-        read_at=notification.read_at,
-        created_at=notification.created_at,
-    )
+    return _from_notification(result.notification)
 
 
 @router.post("/avisos/{notification_id}/arxivat", status_code=204)

@@ -111,3 +111,15 @@ class NotificationNotFoundError(Exception):
 
 class NotificationNotReadError(Exception):
     """Només es poden arxivar avisos ja llegits."""
+
+
+class InvalidPushSubscriptionError(Exception):
+    """La subscripció push no és vàlida o no apunta a un servei de push admès."""
+
+
+class PushSubscriptionExpiredError(Exception):
+    """El servei de push diu que la subscripció ja no existeix (404 o 410)."""
+
+
+class PushDeliveryError(Exception):
+    """El servei de push no ha acceptat el missatge. No porta l’endpoint ni el cos."""

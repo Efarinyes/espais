@@ -8,10 +8,19 @@ from uuid import UUID
 from sqlalchemy import delete, select
 from sqlalchemy.orm import Session, sessionmaker
 
-from app.adapters.sqlalchemy.models import AttendanceRecordRow, NotificationRow, ReservationRow
+from app.adapters.sqlalchemy.models import (
+    AttendanceRecordRow,
+    NotificationRow,
+    ReservationRow,
+)
 from app.adapters.sqlalchemy.spaces import SqlAlchemySpaceRepository
 from app.domain.attendance import AttendanceRecord
-from app.domain.notification import Notification, NotificationType, payload_as_dict, payload_from_dict
+from app.domain.notification import (
+    Notification,
+    NotificationType,
+    payload_as_dict,
+    payload_from_dict,
+)
 from app.domain.reservation import Reservation, ReservationStatus, as_utc
 
 
@@ -33,6 +42,7 @@ def _from_row(row: ReservationRow) -> Reservation:
         status=ReservationStatus(row.status),
         notes=row.notes,
         created_at=_aware(row.created_at),
+        managed_by_responsible=bool(row.managed_by_responsible),
     )
 
 
@@ -53,6 +63,7 @@ class SqlAlchemyReservationRepository:
                 status=reservation.status.value,
                 notes=reservation.notes,
                 created_at=reservation.created_at,
+                managed_by_responsible=reservation.managed_by_responsible,
             )
         )
         self._session.flush()
@@ -74,6 +85,7 @@ class SqlAlchemyReservationRepository:
         row.ends_at = reservation.ends_at
         row.status = reservation.status.value
         row.notes = reservation.notes
+        row.managed_by_responsible = reservation.managed_by_responsible
         self._session.flush()
 
     def get_by_id(self, entity_id: UUID, reservation_id: UUID) -> Reservation | None:
@@ -264,6 +276,30 @@ class SqlAlchemyNotificationRepository:
                 NotificationRow.archived_at.is_(None),
             )
             .order_by(NotificationRow.created_at.desc())
+        ).all()
+        return [_notification_from_row(row) for row in rows]
+
+    def list_for_reservations(
+        self, entity_id: UUID, reservation_ids: list[UUID]
+    ) -> list[Notification]:
+        if not reservation_ids:
+            return []
+        rows = self._session.scalars(
+            select(NotificationRow)
+            .where(
+                NotificationRow.entity_id == entity_id,
+                NotificationRow.reservation_id.in_(reservation_ids),
+            )
+            .order_by(NotificationRow.created_at.desc())
+        ).all()
+        return [_notification_from_row(row) for row in rows]
+
+    def list_recent(self, entity_id: UUID, limit: int) -> list[Notification]:
+        rows = self._session.scalars(
+            select(NotificationRow)
+            .where(NotificationRow.entity_id == entity_id)
+            .order_by(NotificationRow.created_at.desc())
+            .limit(limit)
         ).all()
         return [_notification_from_row(row) for row in rows]
 

@@ -9,6 +9,8 @@ Actualitza aquest arxiu al final de cada sessió. És el punt d’arrencada del 
 
 ## Darrera feina
 
+2026-11-19: avisos de modificació i anul·lació amb Web Push, lectura confirmada i reserva sota control del responsable (ADR [0026](docs/adr/0026-avisos-web-push-i-reserva-sota-control.md)), a `feat/docker-caddy-sqlite`. **Sense commit, sense push, sense desplegar**: els canvis són a l'arbre de treball perquè es revisin i es provin a mà. Backend: `reservations.managed_by_responsible` (migració `0012_notification_center_push`, amb bloqueig retroactiu de les reserves que ja tenien un avís de reprogramació), el coordinador no reprograma ni anul·la una reserva gestionada pel responsable (403) però en pot registrar l'assistència; `changes` i `space_id` al payload; sense canvi real no hi ha avís; `ChannelNotifier` (cada canal aïllat) i `BackgroundNotifier`; subscripcions `push_subscriptions` (`GET /push/configuracio`, `PUT /push/subscripcio`, `POST /push/subscripcio/cancelacio`, només coordinador, endpoints https de serveis admesos), `DeliverPushNotification` (404/410 esborren la subscripció; logs només amb el tipus d'error), `GET /avisos/enviats` per al responsable i `notice` a `GET /reserves`. Frontend: store `avisos`, centre d'avisos (etiqueta Modificada/Anul·lada, «No llegit», enllaç a la reserva), indicador i bàner de pendents, `ActivaPush` (permís només per clic; iOS demana l'app instal·lada), `/avisos-enviats`, Service Worker de push a `public/push-sw.js` (importat des de `generateSW`), bloqueig a la modal del calendari. Proves: pytest 402 verds; Vitest 381 verds (58 fitxers); `vue-tsc` net; `npm run build` OK (fora del sandbox: dins, terser surt abans d'hora); ruff net als fitxers tocats (12 avisos preexistents a fitxers no tocats). E2E `tools/e2e-notificacions.mjs`: 44 comprovacions OK (escenaris A, B, C i la part de servidor de D) contra uvicorn + Vite locals, una base a `/tmp` i un receptor SMTP/Mailpit mínim a `/tmp`. **No** s'ha executat contra Docker (el dimoni no corria) i **no** s'ha provat cap push en un dispositiu real ni al Service Worker d'un navegador real: només hi ha proves unitàries de l'script del SW i del gateway. Tampoc no s'ha fet la prova visual al navegador. `espais.sqlite3` i els volums `espais_*` no s'han tocat.
+
 2026-11-18: sessió tancada. Qui opera el servidor confirma que el VPS ja serveix el login amb codi i que l’ha provat. El codi és `d0f0f3d`, la nota `665078b`, a `origin/feat/docker-caddy-sqlite`. No es fusiona a `main`. No es torna a desplegar. Les captures de `artifacts/` es queden fora del repositori. `backup/abans-login-2fa` segueix en local a `9b3efda`.
 
 2026-11-18: E2E Docker del projecte `espais-e2e-2fa`, a `127.0.0.1:8090`, amb Mailpit a `127.0.0.1:18025`. Han passat el registre, les cookies, la recuperació amb límits, l’autorització, els coordinadors del calendari (39) i la graella visual (51). El codi de login s’escolta abans de la resposta HTTP, perquè si no el socket el perd. El sostre de codis per adreça passa de 30 a 120 en 10 minuts: la suite sencera, des d’una sola IP, rebia 429. Les reserves de prova del calendari són de la setmana del 16 al 22 de novembre de 2026, i el nom del coordinador es comprova a la casella, no en una llegenda. En acabar, `down -v` ha esborrat només els volums `espais-e2e-2fa_*`. `espais.sqlite3` i els volums `espais_*` no s’han tocat. El codi és `d0f0f3d`, a `feat/docker-caddy-sqlite` i a `origin`. No es fusiona a `main`. El VPS encara no el serveix: qui l’opera el publica amb `git pull` i `docker compose up -d --build`, sense `down -v`.
@@ -141,6 +143,8 @@ Desplegat al VPS (`6b455b9`) i provat amb Capgrossos, «Sala pilars». La vista 
 
 ## Següent tasca
 
+Avisos amb Web Push (ADR 0026): pendent de revisió i prova manual abans de commit i desplegament. Qui desplega: 1) fer còpia de la base (`tools/backup-sqlite.sh`); 2) generar claus amb `tools/generar-claus-vapid.py` i posar `ESPAIS_VAPID_PRIVATE_KEY` i `ESPAIS_VAPID_SUBJECT` al `.env` (sense elles el push queda desactivat i la resta funciona); 3) `git pull` + `docker compose up -d --build`, sense `down -v` (la migració `0012` s'aplica sola i bloqueja per al coordinador les reserves ja reprogramades pel responsable); 4) seguir «Verificació manual del push» a `docs/17-desplegament-docker.md` en un dispositiu real (Android/Chrome i iPhone amb l'app instal·lada). Pendent també: executar `tools/e2e-notificacions.mjs` contra la pila Docker (`tools/compose.e2e-notificacions.yaml`) quan el dimoni Docker estigui actiu. Spec flaquejant preexistent: `useIniciSessio.spec.ts` (falla de tant en tant, també sobre codi sense tocar); no s'ha arreglat.
+
 El login amb codi (ADR 0025) queda tancat. Qui opera el servidor confirma que el VPS ja el serveix i que l’ha provat. El codi és `d0f0f3d`, a `origin/feat/docker-caddy-sqlite`. No es fusiona a `main`. No es torna a desplegar.
 
 La verificació del correu del responsable (ADR 0024) és a `origin/feat/docker-caddy-sqlite`. No es fusiona a `main`. Qui opera el servidor la publica amb `git pull` i `docker compose up -d --build`, sense `down -v`. Els scripts E2E ja llegeixen el correu de verificació a Mailpit; la pila Docker d’aquesta peça no s’ha aixecat.
@@ -177,7 +181,7 @@ Cap. API de desenvolupament `http://127.0.0.1:8000`; front de desenvolupament `h
 - [0002](docs/adr/0002-espais-definits-per-entitat.md) — acceptat
 - [0003](docs/adr/0003-assistencia-per-compte.md) — acceptat
 - [0004](docs/adr/0004-stack-fastapi-vue3-micromamba.md) — acceptat
-- [0005](docs/adr/0005-avis-anulacio-coordinador.md) — acceptat
+- [0005](docs/adr/0005-avis-anulacio-coordinador.md) — acceptat (esmenat per 0026: afegeix push, lectura i bloqueig)
 - [0006](docs/adr/0006-tailwind-daisy-pwa.md) — acceptat (esmenat: Montserrat local)
 - [0007](docs/adr/0007-calendari-polling.md) — acceptat (polling v1; sockets = adaptador futur)
 - [0008](docs/adr/0008-responsable-no-crea-reserves.md) — acceptat (el responsable reprograma i anul·la; no crea)
@@ -198,6 +202,7 @@ Cap. API de desenvolupament `http://127.0.0.1:8000`; front de desenvolupament `h
 - [0023](docs/adr/0023-coordinador-pel-nom.md) — acceptat (el coordinador s’identifica pel nom; no hi ha llegenda ni tramat de persona)
 - [0024](docs/adr/0024-verificacio-correu-responsable.md) — acceptat (el responsable queda provisional fins a verificar el correu; la confirmació activa el compte i l’entitat i no obre sessió)
 - [0025](docs/adr/0025-verificacio-login-socket.md) — acceptat (el login no obre sessió fins al codi; el codi només va pel Socket.IO de la connexió que l’ha demanat)
+- [0026](docs/adr/0026-avisos-web-push-i-reserva-sota-control.md) — acceptat (avisos amb Web Push, lectura confirmada, reserva sota control del responsable; migració `0012` amb bloqueig retroactiu)
 
 ## Notes
 

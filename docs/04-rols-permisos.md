@@ -24,7 +24,8 @@ Pot:
 - Crear reserves als espais.
 - Veure i editar les **seves** reserves (horari mentre no hi hagi conflicte; assistència).
 - Cancel·lar les seves reserves (sense avís al responsable per correu a v1; sí visible al llistat del responsable).
-- Llegir avisos d’anul·lació/reprogramació.
+- Llegir avisos d’anul·lació/modificació i rebre’ls com a notificació del navegador (Web Push), si ho activa.
+- Una reserva que el responsable ha modificat o anul·lat ja no la pot reprogramar ni anul·lar (403); l’assistència sí que la pot registrar (ADR [0026](adr/0026-avisos-web-push-i-reserva-sota-control.md)).
 
 No pot:
 
@@ -48,6 +49,9 @@ No pot:
 | Reprogramar qualsevol reserva | sí | no |
 | Reprogramar la seva (si no hi ha conflicte) | sí | sí (v1) |
 | Anul·lar com a responsable (amb avís) | sí | no |
+| Reprogramar o anul·lar una reserva ja gestionada pel responsable | sí | no |
+| Veure l’estat de lectura dels seus avisos (reserves i `/avisos-enviats`) | sí | no |
+| Llegir avisos i gestionar subscripcions push | no (403) | sí, només els seus |
 | Anul·lar la seva | sí | sí |
 | Anàlisi | sí | no |
 | Llegir avisos | no | sí |

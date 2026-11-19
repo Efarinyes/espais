@@ -16,9 +16,11 @@ from app.adapters.attendance import CountAttendance
 from app.adapters.email_verification_mail import build_email_verification_mailer
 from app.adapters.invitation_mail import build_invitation_mailer
 from app.adapters.notifier import LoggingNotifier, SmtpNotifier, build_notifier
+from app.adapters.notifier_channels import PushNotifier, build_channel_notifier
 from app.adapters.password_reset_mail import build_password_reset_mailer
 from app.adapters.security import BcryptPasswordHasher
 from app.adapters.sqlalchemy.identity import SqlAlchemyIdentityUnitOfWork
+from app.adapters.sqlalchemy.push import SqlAlchemyPushUnitOfWork
 from app.adapters.sqlalchemy.reservations import SqlAlchemyReservationUnitOfWork
 from app.adapters.sqlalchemy.revocation import SqlAlchemyRevocationUnitOfWork
 from app.adapters.sqlalchemy.schema import bootstrap_session_factory
@@ -30,6 +32,11 @@ from app.adapters.system import (
     UuidIdGenerator,
 )
 from app.adapters.tokens import HmacTokenIssuer, session_secret
+from app.adapters.webpush import (
+    PywebpushGateway,
+    VapidConfig,
+    push_host_suffixes_from_env,
+)
 from app.domain.errors import EmailNotVerifiedError, SessionNotFoundError
 from app.ports.identity import TokenIssuer
 from app.ports.notifications import Notifier
@@ -54,10 +61,12 @@ from app.usecases.issue_email_verification import IssueEmailVerification
 from app.usecases.list_entity_coordinators import ListEntityCoordinators
 from app.usecases.list_notifications import ListNotifications
 from app.usecases.list_reservations import ListReservations
+from app.usecases.list_sent_notifications import ListSentNotifications
 from app.usecases.list_spaces import ListSpaces
 from app.usecases.mark_notification_read import MarkNotificationRead
 from app.usecases.record_attendance import RecordAttendance
 from app.usecases.register_entity import RegisterEntity
+from app.usecases.register_push_subscription import RegisterPushSubscription
 from app.usecases.request_email_verification import (
     RequestEmailVerification,
     RequestEmailVerificationCommand,
@@ -69,6 +78,7 @@ from app.usecases.request_password_reset import (
 )
 from app.usecases.reschedule_reservation import RescheduleReservation
 from app.usecases.resolve_session import ResolveSession, SessionView
+from app.usecases.unregister_push_subscription import UnregisterPushSubscription
 from app.usecases.update_entity_palette import UpdateEntityPalette
 from app.usecases.update_space import UpdateSpace
 
@@ -139,6 +149,14 @@ class NotificationsHttp:
     list: ListNotifications
     mark_read: MarkNotificationRead
     archive: ArchiveNotification
+    sent: ListSentNotifications
+
+
+@dataclass
+class PushHttp:
+    register: RegisterPushSubscription
+    unregister: UnregisterPushSubscription
+    config: VapidConfig | None
 
 
 def get_identity_http(request: Request) -> Iterator[IdentityHttp]:
@@ -302,7 +320,15 @@ def get_notifier(request: Request) -> Notifier:
     def lookup_email(user_id: UUID) -> str | None:
         return email_for_user(factory, user_id)
 
-    notifier: LoggingNotifier | SmtpNotifier = build_notifier(lookup_email)
+    email: LoggingNotifier | SmtpNotifier = build_notifier(lookup_email)
+    push_config: VapidConfig | None = getattr(request.app.state, "push_config", None)
+    push: PushNotifier | None = None
+    if push_config is not None:
+        gateway = getattr(request.app.state, "push_gateway", None) or PywebpushGateway(push_config)
+        push = PushNotifier(factory, gateway)
+    notifier = build_channel_notifier(
+        email, push, getattr(request.app.state, "push_executor", None)
+    )
     request.app.state.notifier = notifier
     return notifier
 
@@ -341,6 +367,20 @@ def get_notifications_http(request: Request) -> Iterator[NotificationsHttp]:
             list=ListNotifications(uow),
             mark_read=MarkNotificationRead(uow, SystemClock()),
             archive=ArchiveNotification(uow, SystemClock()),
+            sent=ListSentNotifications(uow),
+        )
+    finally:
+        uow.close()
+
+
+def get_push_http(request: Request) -> Iterator[PushHttp]:
+    uow = SqlAlchemyPushUnitOfWork(get_session_factory(request))
+    hosts = getattr(request.app.state, "push_hosts", None) or push_host_suffixes_from_env()
+    try:
+        yield PushHttp(
+            register=RegisterPushSubscription(uow, SystemClock(), UuidIdGenerator(), hosts),
+            unregister=UnregisterPushSubscription(uow),
+            config=getattr(request.app.state, "push_config", None),
         )
     finally:
         uow.close()

@@ -1,10 +1,12 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, inject, ref } from "vue";
 import { RouterLink, useRoute, useRouter } from "vue-router";
 
 import { potAccedir } from "../autoritzacio";
 import { useComptadorAvisos } from "../composables/useAvisos";
+import { cancelaPushAlSortir } from "../composables/usePush";
 import { requireIdentityApi } from "../services/identitat";
+import { navegadorPushKey, pushApiKey } from "../services/push";
 import { useSessioStore } from "../stores/sessio";
 
 defineProps<{
@@ -16,18 +18,22 @@ const identitat = requireIdentityApi();
 const ruta = useRoute();
 const router = useRouter();
 const { noLlegits } = useComptadorAvisos();
+const pushApi = inject(pushApiKey, null);
+const navegadorPush = inject(navegadorPushKey, null);
 const tancant = ref(false);
 const errorTancament = ref("");
 
 const veuEstadistiques = computed(() => potAccedir("analisi", sessio.role));
 const veuAvisos = computed(() => potAccedir("avisos", sessio.role));
+const veuAvisosEnviats = computed(() => potAccedir("avisos-enviats", sessio.role));
 const veuAdministracio = computed(() => potAccedir("convidar-coordinador", sessio.role));
 const esEspais = computed(() => ruta.path.startsWith("/espais"));
 const esColors = computed(() => ruta.path.startsWith("/entitat/colors"));
 const esConvida = computed(() => ruta.path.startsWith("/coordinadors/convidar"));
 const esEstadistiques = computed(() => ruta.path.startsWith("/analisi"));
 const esCalendari = computed(() => ruta.path.startsWith("/calendari"));
-const esAvisos = computed(() => ruta.path.startsWith("/avisos"));
+const esAvisos = computed(() => ruta.path === "/avisos");
+const esAvisosEnviats = computed(() => ruta.path.startsWith("/avisos-enviats"));
 
 async function sortir() {
   if (tancant.value) {
@@ -35,6 +41,9 @@ async function sortir() {
   }
   errorTancament.value = "";
   tancant.value = true;
+  if (sessio.role === "coordinator") {
+    await cancelaPushAlSortir(sessio.token, pushApi, navegadorPush);
+  }
   try {
     await identitat.tancarSessio(sessio.token);
   } catch {
@@ -83,6 +92,15 @@ async function sortir() {
             :aria-current="esEstadistiques ? 'page' : undefined"
           >
             Estadístiques
+          </RouterLink>
+        </li>
+        <li v-if="veuAvisosEnviats">
+          <RouterLink
+            class="min-h-11"
+            to="/avisos-enviats"
+            :aria-current="esAvisosEnviats ? 'page' : undefined"
+          >
+            Avisos enviats
           </RouterLink>
         </li>
         <li v-if="veuAvisos">

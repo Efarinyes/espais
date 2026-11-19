@@ -14,3 +14,8 @@ dependencies:
   - bcrypt
   - python-socketio
   - ruff
+  - pip
+  - pip:
+      # Web Push (ADR 0026). No hi és a conda-forge.
+      - pywebpush==2.5.0
+      - py-vapid==1.9.6

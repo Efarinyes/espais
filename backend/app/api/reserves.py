@@ -18,13 +18,19 @@ from app.domain.errors import (
     ReservationOverlapError,
     SpaceNotFoundError,
 )
+from app.domain.identity import MembershipRole
+from app.domain.notification import Notification, NotificationType
 from app.domain.reservation import ReservationStatus
 from app.usecases.cancel_own_reservation import CancelOwnReservationCommand
 from app.usecases.cancel_reservation_by_responsible import (
     CancelReservationByResponsibleCommand,
 )
 from app.usecases.create_reservation import CreateReservationCommand
-from app.usecases.list_reservations import ListReservationsQuery, ReservationListItem
+from app.usecases.list_reservations import (
+    ListReservationsQuery,
+    NoticeStatus,
+    ReservationListItem,
+)
 from app.usecases.record_attendance import RecordAttendanceCommand
 from app.usecases.reschedule_reservation import RescheduleReservationCommand
 from app.usecases.resolve_session import SessionView
@@ -53,6 +59,15 @@ class RescheduleReservationRequest(BaseModel):
     reason: str | None = None
 
 
+class NoticeResponse(BaseModel):
+    """Avís al coordinador d’aquesta reserva. `read_at` és la lectura dins d’Espais."""
+
+    notification_id: UUID
+    type: NotificationType
+    created_at: datetime
+    read_at: datetime | None
+
+
 class ReservationResponse(BaseModel):
     id: UUID
     space_id: UUID
@@ -68,6 +83,30 @@ class ReservationResponse(BaseModel):
     min_attendance: int | None
     exceeds_capacity: bool
     below_min_attendance: bool
+    managed_by_responsible: bool = False
+    notice: NoticeResponse | None = None
+
+
+def _notice_response(notice: NoticeStatus | None) -> NoticeResponse | None:
+    if notice is None:
+        return None
+    return NoticeResponse(
+        notification_id=notice.notification_id,
+        type=notice.type,
+        created_at=notice.created_at,
+        read_at=notice.read_at,
+    )
+
+
+def _notice_of_notification(notification: Notification | None) -> NoticeResponse | None:
+    if notification is None:
+        return None
+    return NoticeResponse(
+        notification_id=notification.id,
+        type=notification.type,
+        created_at=notification.created_at,
+        read_at=notification.read_at,
+    )
 
 
 def _to_response(item: ReservationListItem) -> ReservationResponse:
@@ -86,6 +125,8 @@ def _to_response(item: ReservationListItem) -> ReservationResponse:
         min_attendance=item.min_attendance,
         exceeds_capacity=item.exceeds_capacity,
         below_min_attendance=item.below_min_attendance,
+        managed_by_responsible=item.managed_by_responsible,
+        notice=_notice_response(item.notice),
     )
 
 
@@ -201,6 +242,7 @@ def record_attendance(
         min_attendance=result.min_attendance,
         exceeds_capacity=result.exceeds_capacity,
         below_min_attendance=result.below_min_attendance,
+        managed_by_responsible=reservation.managed_by_responsible,
     )
 
 
@@ -258,6 +300,7 @@ def cancel_reservation(
         min_attendance=result.min_attendance,
         exceeds_capacity=False,
         below_min_attendance=False,
+        managed_by_responsible=reservation.managed_by_responsible,
     )
 
 
@@ -308,4 +351,6 @@ def reschedule_reservation(
         min_attendance=result.min_attendance,
         exceeds_capacity=False,
         below_min_attendance=False,
+        managed_by_responsible=reservation.managed_by_responsible,
+        notice=_notice_of_notification(result.notification) if view.role == MembershipRole.RESPONSIBLE else None,
     )

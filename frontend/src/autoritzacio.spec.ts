@@ -17,7 +17,14 @@ const coordinador: SessioAcces = { iniciada: true, confirmada: true, role: "coor
 const anonima: SessioAcces = { iniciada: false, confirmada: true, role: "" };
 
 const propies = {
-  responsible: ["espai-nou", "espai-editar", "analisi", "convidar-coordinador", "colors-entitat"],
+  responsible: [
+    "espai-nou",
+    "espai-editar",
+    "analisi",
+    "convidar-coordinador",
+    "colors-entitat",
+    "avisos-enviats",
+  ],
   coordinator: ["avisos"],
 } as const;
 

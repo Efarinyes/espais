@@ -42,6 +42,7 @@ Vegeu [07-reserves-assistencia.md](07-reserves-assistencia.md).
 - `entity_id`, `space_id`, `coordinator_id`, `starts_at`, `ends_at`, `status`, motiu/notes opcionals.
 - Estats al model: `pending`, `confirmed`, `cancelled`, `rescheduled`.
 - v1: es crea com a `confirmed` si passa disponibilitat i conflictes. `pending` queda al model per si s’afegeix aprovació; no és un flux.
+- `managed_by_responsible` (booleà, defecte fals): cert quan el responsable ha modificat o anul·lat la reserva. Bloqueja el coordinador sobre aquest registre (ADR [0026](adr/0026-avisos-web-push-i-reserva-sota-control.md)). La migració `0012` el posa a cert a les reserves que ja tenien un avís de reprogramació.
 - Reprogramació v1 (Fase 6, tancada): la mateixa fila, interval actualitzat, estat `confirmed`. L’interval antic i el nou van al payload de l’avís. No implementis event log ni passis la reserva a `rescheduled`: el pla ho deixa al backlog.
 
 ## Assistència
@@ -57,7 +58,8 @@ Vegeu [07-reserves-assistencia.md](07-reserves-assistencia.md).
 3. L’interval ha de caure dins la disponibilitat de l’espai.
 4. El coordinador de la reserva pertany a la mateixa entitat que l’espai.
 5. Només el responsable (v1) pot anul·lar o reprogramar en nom de l’entitat; el coordinador pot cancel·lar la seva reserva (sense el mateix avís intern; opcional a v1: sí que pot cancel·lar-la).
-6. Anul·lació pel responsable genera avís al coordinador ([08-notificacions.md](08-notificacions.md)).
+6. Anul·lació o modificació pel responsable genera avís al coordinador ([08-notificacions.md](08-notificacions.md)) i deixa la reserva sota control del responsable.
+7. Subscripció push: `entity_id`, `user_id` (coordinador), `endpoint` únic, claus `p256dh` i `auth`. S’esborra en tancar sessió, a petició o quan el servei de push la dona per caducada.
 
 ## Casos d’ús (noms estables)
 

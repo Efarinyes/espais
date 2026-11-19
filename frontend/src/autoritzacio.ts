@@ -14,6 +14,7 @@ export const POLITICA_RUTES = {
   "convidar-coordinador": "responsable",
   "colors-entitat": "responsable",
   avisos: "coordinador",
+  "avisos-enviats": "responsable",
 } as const;
 
 export type NomRuta = keyof typeof POLITICA_RUTES;

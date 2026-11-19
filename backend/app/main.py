@@ -18,11 +18,13 @@ from app.adapters.maintenance import run_archived_notification_purge_loop
 from app.adapters.sqlalchemy.schema import bootstrap_session_factory
 from app.adapters.system import SystemClock
 from app.adapters.tokens import HmacTokenIssuer, session_secret
+from app.adapters.webpush import vapid_config_from_env
 from app.api.analisi import router as analisi_router
 from app.api.avisos import router as avisos_router
 from app.api.entity import router as entity_router
 from app.api.health import router as health_router
 from app.api.invitations import router as invitations_router
+from app.api.push import router as push_router
 from app.api.recovery import router as recovery_router
 from app.api.register import router as register_router
 from app.api.reserves import router as reserves_router
@@ -72,6 +74,7 @@ def create_app(
     )
     application.state.session_factory = session_factory
     application.state.enable_maintenance = enable_maintenance
+    application.state.push_config = vapid_config_from_env()
     application.state.token_issuer = token_issuer or HmacTokenIssuer(
         session_secret(),
         SystemClock(),
@@ -110,6 +113,7 @@ def create_app(
     application.include_router(spaces_router)
     application.include_router(reserves_router)
     application.include_router(avisos_router)
+    application.include_router(push_router)
     application.include_router(analisi_router)
     return application
 

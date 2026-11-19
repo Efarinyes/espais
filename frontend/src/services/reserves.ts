@@ -17,6 +17,17 @@ export type ReservaDto = {
   min_attendance: number | null;
   exceeds_capacity: boolean;
   below_min_attendance: boolean;
+  /** El responsable l’ha modificat: el coordinador ja no la pot canviar ni anul·lar. */
+  managed_by_responsible?: boolean;
+  /** Només per al responsable: l’últim avís al coordinador i si l’ha llegit dins d’Espais. */
+  notice?: AvisReservaDto | null;
+};
+
+export type AvisReservaDto = {
+  notification_id: string;
+  type: string;
+  created_at: string;
+  read_at: string | null;
 };
 
 export type CreaReservaInput = {

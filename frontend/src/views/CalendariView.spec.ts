@@ -96,6 +96,7 @@ async function muntar(opts: {
   espais: EspaiDto[];
   estreta: boolean;
   espai?: string;
+  data?: string;
 }) {
   localStorage.clear();
   pantallaEstreta(opts.estreta);
@@ -117,7 +118,10 @@ async function muntar(opts: {
       { path: "/espais/nou", name: "espai-nou", component: { template: "<div />" } },
     ],
   });
-  await router.push({ name: "calendari", query: opts.espai ? { espai: opts.espai } : {} });
+  await router.push({
+    name: "calendari",
+    query: { ...(opts.espai ? { espai: opts.espai } : {}), ...(opts.data ? { data: opts.data } : {}) },
+  });
   await router.isReady();
   return mount(CalendariView, {
     global: {
@@ -139,6 +143,7 @@ async function muntar(opts: {
 }
 
 type ConfigCalendari = {
+  selectedDate: { toString(): string };
   dayBoundaries: { start: string; end: string };
   weekOptions: {
     gridHeight: number;
@@ -319,5 +324,27 @@ describe("CalendariView graella", () => {
     expect(darreraConfig().dayBoundaries).toEqual({ start: "18:00", end: "24:00" });
     expect(wrapper.get(".calendari-espais").attributes("data-dies-oberts")).toBe("0");
     wrapper.unmount();
+  });
+
+  it("un enllaç d’avís obre el calendari al dia demanat i a l’espai de la reserva", async () => {
+    await muntar({ role: "coordinator", espais: [sala1, sala2], estreta: false, espai: "s1", data: "2026-09-09" });
+    await flushPromises();
+    expect(darreraConfig().selectedDate.toString()).toBe("2026-09-09");
+  });
+
+  it("sense data a l’enllaç, el calendari s’obre a avui", async () => {
+    await muntar({ role: "coordinator", espais: [sala1], estreta: false });
+    await flushPromises();
+    expect(darreraConfig().selectedDate.toString()).toBe("2026-10-05");
+  });
+
+  it("una data invàlida o impossible s’ignora i s’obre a avui", async () => {
+    await muntar({ role: "coordinator", espais: [sala1], estreta: false, data: "2026-02-31" });
+    await flushPromises();
+    expect(darreraConfig().selectedDate.toString()).toBe("2026-10-05");
+    crearCalendari.mockClear();
+    await muntar({ role: "coordinator", espais: [sala1], estreta: false, data: "demà" });
+    await flushPromises();
+    expect(darreraConfig().selectedDate.toString()).toBe("2026-10-05");
   });
 });

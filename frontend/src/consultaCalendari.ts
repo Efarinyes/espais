@@ -51,3 +51,9 @@ export function queryCalendari(
   }
   return sortida;
 }
+
+/** Dia demanat per l’enllaç d’un avís (`?data=AAAA-MM-DD`); `null` si no és una data vàlida. */
+export function diaDeQuery(query: Record<string, unknown>): string | null {
+  const text = textQuery(query.data);
+  return /^\d{4}-\d{2}-\d{2}$/.test(text) ? text : null;
+}

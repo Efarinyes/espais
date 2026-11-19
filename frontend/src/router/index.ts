@@ -6,6 +6,7 @@ import { refrescarSessio } from "../confirmacioSessio";
 import { useSessioStore } from "../stores/sessio";
 import AcceptaInvitacioView from "../views/AcceptaInvitacioView.vue";
 import AnalisiView from "../views/AnalisiView.vue";
+import AvisosEnviatsView from "../views/AvisosEnviatsView.vue";
 import AvisosView from "../views/AvisosView.vue";
 import CalendariView from "../views/CalendariView.vue";
 import ColorsEntitatView from "../views/ColorsEntitatView.vue";
@@ -70,6 +71,18 @@ export const router = createRouter({
       path: "/avisos",
       component: TaulerLayout,
       children: [{ path: "", name: "avisos", component: AvisosView, meta: metaDeRuta("avisos") }],
+    },
+    {
+      path: "/avisos-enviats",
+      component: TaulerLayout,
+      children: [
+        {
+          path: "",
+          name: "avisos-enviats",
+          component: AvisosEnviatsView,
+          meta: metaDeRuta("avisos-enviats"),
+        },
+      ],
     },
     {
       path: "/analisi",

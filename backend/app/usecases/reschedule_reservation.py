@@ -7,7 +7,11 @@ from dataclasses import dataclass, replace
 from datetime import datetime
 from uuid import UUID
 
-from app.domain.authorization import Accio, exigir_recurs_propi
+from app.domain.authorization import (
+    Accio,
+    exigir_recurs_propi,
+    exigir_reserva_no_gestionada,
+)
 from app.domain.errors import (
     InvalidReservationError,
     ReservationNotFoundError,
@@ -15,7 +19,12 @@ from app.domain.errors import (
     SpaceNotFoundError,
 )
 from app.domain.identity import MembershipRole
-from app.domain.notification import Notification, NotificationPayload, NotificationType
+from app.domain.notification import (
+    Notification,
+    NotificationPayload,
+    NotificationType,
+    reservation_changes,
+)
 from app.domain.reservation import (
     Reservation,
     ReservationStatus,
@@ -89,6 +98,9 @@ class RescheduleReservation:
             Accio.REPROGRAMAR,
             propi=reservation.coordinator_id == command.actor_user_id,
         )
+        exigir_reserva_no_gestionada(
+            command.actor_role, gestionada=reservation.managed_by_responsible
+        )
         es_responsable = command.actor_role == MembershipRole.RESPONSIBLE
 
         space = self._uow.spaces.get_by_id(command.entity_id, reservation.space_id)
@@ -111,9 +123,27 @@ class RescheduleReservation:
         if overlapping:
             raise ReservationOverlapError()
 
-        moved = replace(reservation, starts_at=starts_at, ends_at=ends_at)
+        changes = reservation_changes(
+            reservation.starts_at, reservation.ends_at, starts_at, ends_at
+        )
+        if es_responsable and not changes:
+            # Sense canvi real no hi ha res a notificar ni res a posar sota control del responsable.
+            return RescheduleReservationResult(
+                reservation=reservation,
+                notification=None,
+                space_name=space.name,
+                capacity=space.capacity,
+                min_attendance=space.min_attendance,
+            )
+
+        moved = replace(
+            reservation,
+            starts_at=starts_at,
+            ends_at=ends_at,
+            managed_by_responsible=reservation.managed_by_responsible or es_responsable,
+        )
         notification = None
-        if es_responsable:
+        if es_responsable and reservation.coordinator_id != command.actor_user_id:
             notification = Notification(
                 id=self._ids.new(),
                 entity_id=command.entity_id,
@@ -123,12 +153,14 @@ class RescheduleReservation:
                 payload=NotificationPayload(
                     entity_name=command.entity_name,
                     space_name=space.name,
+                    space_id=str(space.id),
                     starts_at=reservation.starts_at.isoformat(),
                     ends_at=reservation.ends_at.isoformat(),
                     responsible_name=command.actor_name,
                     reason=_reason(command.reason),
                     new_starts_at=starts_at.isoformat(),
                     new_ends_at=ends_at.isoformat(),
+                    changes=changes,
                 ),
                 created_at=self._clock.now(),
             )

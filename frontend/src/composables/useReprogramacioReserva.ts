@@ -27,12 +27,17 @@ export function useReprogramacioReserva(deps: ReprogramacioReservaDeps) {
   const horaHorari = ref("");
   const esResponsable = computed(() => sessio.role === "responsible");
 
+  /** Després d’una modificació del responsable, només ell pot tornar a canviar la reserva. */
+  function potMoureReserva(reserva: ReservaDto): boolean {
+    return esResponsable.value || (Boolean(reserva.mine) && !reserva.managed_by_responsible);
+  }
+
   const potReprogramar = computed(() => {
     const reserva = deps.reservaEnDetall();
     if (!reserva) {
       return false;
     }
-    return esResponsable.value || Boolean(reserva.mine);
+    return potMoureReserva(reserva);
   });
 
   const reprogramacioAmbAvis = computed(() => esResponsable.value);
@@ -58,9 +63,6 @@ export function useReprogramacioReserva(deps: ReprogramacioReservaDeps) {
     return minuts > 0 ? minuts : DURADA_PER_DEFECTE_MINUTS;
   }
 
-  function potMoureReserva(reserva: ReservaDto): boolean {
-    return esResponsable.value || reserva.mine;
-  }
 
   function esReservaMovible(reservaId: string): boolean {
     const reserva = deps.reservesCarregades.value.find((item) => item.id === reservaId);

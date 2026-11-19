@@ -1,33 +1,34 @@
-import { computed, onMounted, onUnmounted, ref, watch } from "vue";
+import { storeToRefs } from "pinia";
+import { onMounted, onUnmounted, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 
 import { ApiError } from "../services/http";
-import { requireAvisosApi, type AvisDto } from "../services/avisos";
+import { requireAvisosApi } from "../services/avisos";
+import { useAvisosStore } from "../stores/avisos";
 import { useSessioStore } from "../stores/sessio";
 import { requireDisparadorCalendari } from "../calendariLive";
 
 export function useAvisos() {
   const api = requireAvisosApi();
   const sessio = useSessioStore();
-  const avisos = ref<AvisDto[]>([]);
+  const store = useAvisosStore();
+  const { avisos, noLlegits } = storeToRefs(store);
   const carregant = ref(false);
   const error = ref("");
   const seleccionat = ref<string | null>(null);
   const arxivant = ref<string | null>(null);
 
-  const noLlegits = computed(() => avisos.value.filter((avis) => avis.read_at == null).length);
-
   async function carregar() {
     if (!sessio.token) {
-      avisos.value = [];
+      store.buidar();
       return;
     }
     carregant.value = true;
     error.value = "";
     try {
-      avisos.value = await api.llistar(sessio.token);
+      store.definir(await api.llistar(sessio.token));
     } catch (err) {
-      avisos.value = [];
+      store.buidar();
       error.value = err instanceof ApiError ? err.message : "No s’han pogut carregar els avisos.";
     } finally {
       carregant.value = false;
@@ -42,7 +43,7 @@ export function useAvisos() {
     }
     try {
       const actualitzat = await api.marcarLlegit(sessio.token, avisId);
-      avisos.value = avisos.value.map((avis) => (avis.id === actualitzat.id ? actualitzat : avis));
+      store.substituir(actualitzat);
     } catch {
       /* l’avís es pot rellegir; no bloquegem el detall */
     }
@@ -57,7 +58,7 @@ export function useAvisos() {
     error.value = "";
     try {
       await api.arxivar(sessio.token, avisId);
-      avisos.value = avisos.value.filter((avis) => avis.id !== avisId);
+      store.treure(avisId);
       if (seleccionat.value === avisId) {
         seleccionat.value = null;
       }
@@ -76,17 +77,18 @@ export function useComptadorAvisos() {
   const sessio = useSessioStore();
   const route = useRoute();
   const disparador = requireDisparadorCalendari();
-  const noLlegits = ref(0);
+  const store = useAvisosStore();
+  const { noLlegits } = storeToRefs(store);
   let aturar: (() => void) | null = null;
+  let aturarMissatges: (() => void) | null = null;
 
   async function refrescar() {
     if (!sessio.token || !sessio.iniciada) {
-      noLlegits.value = 0;
+      store.buidar();
       return;
     }
     try {
-      const items = await api.llistar(sessio.token);
-      noLlegits.value = items.filter((avis) => avis.read_at == null).length;
+      store.definir(await api.llistar(sessio.token));
     } catch {
       /* el badge no ha de trencar la navegació */
     }
@@ -97,10 +99,14 @@ export function useComptadorAvisos() {
     aturar = disparador.iniciar(() => {
       void refrescar();
     });
+    aturarMissatges = escoltaPushDelServiceWorker(() => {
+      void refrescar();
+    });
   });
 
   onUnmounted(() => {
     aturar?.();
+    aturarMissatges?.();
   });
 
   watch(
@@ -111,4 +117,33 @@ export function useComptadorAvisos() {
   );
 
   return { noLlegits, refrescar };
+}
+
+/** Missatge que `push-sw.js` envia a les pestanyes obertes quan arriba un push. */
+export const MISSATGE_PUSH_SW = "espais-push";
+
+type FontMissatgesSw = {
+  addEventListener(type: "message", listener: (event: MessageEvent) => void): void;
+  removeEventListener(type: "message", listener: (event: MessageEvent) => void): void;
+};
+
+/**
+ * El push només desperta la safata: l’avís real es llegeix del backend. Així el push
+ * no pot marcar res com a llegit ni mostrar un estat que el backend no tingui.
+ */
+export function escoltaPushDelServiceWorker(
+  alRebre: () => void,
+  font: FontMissatgesSw | undefined = typeof navigator !== "undefined" ? navigator.serviceWorker : undefined,
+): () => void {
+  if (!font) {
+    return () => undefined;
+  }
+  const escolta = (event: MessageEvent) => {
+    const dades = event.data as { type?: string } | null;
+    if (dades?.type === MISSATGE_PUSH_SW) {
+      alRebre();
+    }
+  };
+  font.addEventListener("message", escolta);
+  return () => font.removeEventListener("message", escolta);
 }

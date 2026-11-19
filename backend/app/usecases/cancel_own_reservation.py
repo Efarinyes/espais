@@ -5,7 +5,12 @@ from __future__ import annotations
 from dataclasses import dataclass, replace
 from uuid import UUID
 
-from app.domain.authorization import Accio, exigir_recurs_propi, exigir_rol
+from app.domain.authorization import (
+    Accio,
+    exigir_recurs_propi,
+    exigir_reserva_no_gestionada,
+    exigir_rol,
+)
 from app.domain.errors import (
     InvalidCancellationError,
     ReservationNotFoundError,
@@ -49,6 +54,9 @@ class CancelOwnReservation:
         )
         if reservation.status == ReservationStatus.CANCELLED:
             raise InvalidCancellationError("aquesta reserva ja està anul·lada")
+        exigir_reserva_no_gestionada(
+            command.actor_role, gestionada=reservation.managed_by_responsible
+        )
 
         space = self._uow.spaces.get_by_id(command.entity_id, reservation.space_id)
         if space is None:

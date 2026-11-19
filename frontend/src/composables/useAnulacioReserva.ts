@@ -27,7 +27,7 @@ export function useAnulacioReserva(deps: AnulacioReservaDeps) {
     if (sessio.role === "responsible") {
       return true;
     }
-    return sessio.role === "coordinator" && Boolean(reserva.mine);
+    return sessio.role === "coordinator" && Boolean(reserva.mine) && !reserva.managed_by_responsible;
   });
 
   function demanarAnulacio() {

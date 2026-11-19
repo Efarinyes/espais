@@ -1,0 +1,18 @@
+# Pila de la prova d’avisos i push. No publica 80 ni 443 i no fa servir els volums espais_*.
+# La clau VAPID la genera la prova (tools/e2e-notificacions.mjs la passa per entorn).
+services:
+  backend:
+    environment:
+      ESPAIS_DOMAIN: http://127.0.0.1:8091
+      ESPAIS_SMTP_HOST: mailpit
+      ESPAIS_SMTP_PORT: "1025"
+      ESPAIS_VAPID_PRIVATE_KEY: ${ESPAIS_VAPID_PRIVATE_KEY:?genera-la amb tools/generar-claus-vapid.py}
+      ESPAIS_VAPID_SUBJECT: mailto:e2e@example.com
+  web:
+    environment:
+      ESPAIS_DOMAIN: http://127.0.0.1:8091
+    ports: !override
+      - "127.0.0.1:8091:8091"
+  mailpit:
+    ports: !override
+      - "127.0.0.1:18026:8025"

@@ -3,6 +3,8 @@ import { computed, onMounted, onUnmounted, ref } from "vue";
 
 import { etiquetaDurada } from "../calendari";
 import type { ModalCalendari } from "../composables/useCalendariReserves";
+import { AVIS_MODIFICADA } from "../services/avisos";
+import { dataHoraMadrid } from "../utils/formatData";
 
 const props = defineProps<{
   modal: ModalCalendari;
@@ -53,6 +55,25 @@ const emit = defineEmits<{
   tornarDetall: [];
   confirmarAnulacio: [];
 }>();
+
+const estatAvis = computed(() => {
+  const avis = props.modal.tipus === "detall" ? props.modal.reserva.notice : null;
+  if (!avis) {
+    return "";
+  }
+  const tipus = avis.type === AVIS_MODIFICADA ? "modificació" : "anul·lació";
+  return avis.read_at
+    ? `Avís de ${tipus} al coordinador: llegit el ${dataHoraMadrid(avis.read_at)}.`
+    : `Avís de ${tipus} al coordinador: pendent de lectura.`;
+});
+
+const reservaBloquejada = computed(
+  () =>
+    props.modal.tipus === "detall" &&
+    Boolean(props.modal.reserva.managed_by_responsible) &&
+    !props.potReprogramar &&
+    !props.potAnular,
+);
 
 function actualitzarAssistencia(event: Event) {
   const camp = event.target as HTMLInputElement;
@@ -251,6 +272,10 @@ onUnmounted(() => {
       <p v-if="modal.reserva.coordinator_name && !modal.reserva.mine" class="text-base-content/80">
         {{ modal.reserva.coordinator_name }}
       </p>
+      <p v-if="reservaBloquejada" class="mt-1 text-sm" data-reserva-bloquejada>
+        El responsable ha modificat aquesta reserva. Només ell la pot tornar a canviar o anul·lar.
+      </p>
+      <p v-if="estatAvis" class="mt-1 text-sm" data-estat-avis>{{ estatAvis }}</p>
       <p v-if="potReprogramar" class="text-sm text-base-content/80">
         Arrossega la reserva al calendari per canviar l’horari, o tria el dia i l’hora aquí.
         <template v-if="reprogramacioAmbAvis"> S’avisarà el coordinador.</template>

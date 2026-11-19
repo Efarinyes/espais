@@ -77,6 +77,10 @@ def test_els_endpoints_privats_sense_sessio_responen_401(sqlite_session_factory)
         client.patch("/entitat/paleta", json={"palette": "mar-cel"}),
         client.post("/invitacions", json={"email": "nou@example.com"}),
         client.get("/avisos"),
+        client.get("/avisos/enviats"),
+        client.get("/push/configuracio"),
+        client.put("/push/subscripcio", json={"endpoint": "https://fcm.googleapis.com/x", "keys": {"p256dh": "a", "auth": "b"}}),
+        client.post("/push/subscripcio/cancelacio", json={"endpoint": "https://fcm.googleapis.com/x"}),
         client.post(f"/avisos/{ALIENA}/llegit"),
         client.post(f"/avisos/{ALIENA}/arxivat"),
         client.get("/sessio"),
@@ -120,6 +124,8 @@ def test_el_coordinador_no_executa_les_operacions_del_responsable(sqlite_session
     assert client.get("/entitat/coordinadors", headers=seus).status_code == 403
     assert client.patch("/entitat/paleta", headers=seus, json={"palette": "camps"}).status_code == 403
     assert client.post("/invitacions", headers=seus, json={"email": "altre@example.com"}).status_code == 403
+    assert client.get("/avisos/enviats", headers=seus).status_code == 403
+    assert client.get("/push/configuracio", headers=seus).status_code == 200
     assert client.get("/espais", headers=seus).status_code == 200
     assert client.get(f"/espais/{space_id}", headers=seus).status_code == 200
 
@@ -144,6 +150,8 @@ def test_el_responsable_no_executa_les_operacions_del_coordinador(sqlite_session
     )
     assert denied.status_code == 403
     assert client.get("/avisos", headers=headers).status_code == 403
+    assert client.get("/push/configuracio", headers=headers).status_code == 403
+    assert client.get("/avisos/enviats", headers=headers).status_code == 200
     avis_id = client.get("/avisos", headers=_auth(coord["token"])).json()
     assert avis_id == []
     assert client.post(f"/avisos/{ALIENA}/llegit", headers=headers).status_code == 403
