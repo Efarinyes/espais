@@ -29,3 +29,18 @@ export function dataHoraMadrid(iso: string): string {
     hour12: false,
   }).format(new Date(iso));
 }
+
+/** «dj., 10 de set.»: el dia d’una reserva en una llista. */
+export function diaMadrid(iso: string): string {
+  return new Intl.DateTimeFormat("ca-ES", {
+    timeZone: "Europe/Madrid",
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+  }).format(new Date(iso));
+}
+
+/** «16:00–18:00». */
+export function horariMadrid(inici: string, fi: string): string {
+  return `${horaMadrid(inici)}–${horaMadrid(fi)}`;
+}
