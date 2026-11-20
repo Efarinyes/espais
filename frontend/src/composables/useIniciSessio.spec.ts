@@ -27,6 +27,12 @@ const coordinador: SessioDto = {
   user_name: "Carla",
 };
 
+// El codi dura 2 minuts des d'ara: una data fixa ja passada fa saltar el
+// temporitzador de caducitat de `useIniciSessio` i competeix amb el test.
+function caducitatFutura(): string {
+  return new Date(Date.now() + 2 * 60 * 1000).toISOString();
+}
+
 function canalDe(codi = "123456", opcions: { falla?: boolean } = {}): CanalVerificacio & { talla: () => void } {
   let desconnexio: (() => void) | null = null;
   return {
@@ -37,7 +43,7 @@ function canalDe(codi = "123456", opcions: { falla?: boolean } = {}): CanalVerif
       return "canal-test";
     },
     async esperarCodi(challengeId) {
-      return { challenge_id: challengeId, code: codi, expires_at: "2026-11-18T18:02:00.000Z" };
+      return { challenge_id: challengeId, code: codi, expires_at: caducitatFutura() };
     },
     enDesconnexio(avis) {
       desconnexio = avis;
@@ -100,7 +106,7 @@ describe("IniciSessioView", () => {
     const { wrapper, router } = await muntar({
       async demanarCodiDeSessio(_email, _password, channel) {
         canalEnviat = channel;
-        return { challenge_id: "repte-1", expires_at: "2026-11-18T18:02:00.000Z" };
+        return { challenge_id: "repte-1", expires_at: caducitatFutura() };
       },
       async confirmarCodiDeSessio(challengeId, code, channel) {
         expect(challengeId).toBe("repte-1");
@@ -124,7 +130,7 @@ describe("IniciSessioView", () => {
   it("el coordinador entra pel mateix formulari", async () => {
     const { wrapper, router } = await muntar({
       async demanarCodiDeSessio() {
-        return { challenge_id: "repte-2", expires_at: "2026-11-18T18:02:00.000Z" };
+        return { challenge_id: "repte-2", expires_at: caducitatFutura() };
       },
       async confirmarCodiDeSessio() {
         return coordinador;
@@ -172,7 +178,7 @@ describe("IniciSessioView", () => {
   it("un codi incorrecte es mostra al camp i no obre sessió", async () => {
     const { wrapper } = await muntar({
       async demanarCodiDeSessio() {
-        return { challenge_id: "repte-3", expires_at: "2026-11-18T18:02:00.000Z" };
+        return { challenge_id: "repte-3", expires_at: caducitatFutura() };
       },
       async confirmarCodiDeSessio() {
         throw new ApiError("El codi no és correcte.", 400);
@@ -192,7 +198,7 @@ describe("IniciSessioView", () => {
     const { wrapper } = await muntar(
       {
         async demanarCodiDeSessio() {
-          return { challenge_id: "repte-4", expires_at: "2026-11-18T18:02:00.000Z" };
+          return { challenge_id: "repte-4", expires_at: caducitatFutura() };
         },
         async confirmarCodiDeSessio() {
           return responsable;
@@ -215,7 +221,7 @@ describe("IniciSessioView", () => {
       {
         async demanarCodiDeSessio() {
           demanat = true;
-          return { challenge_id: "repte", expires_at: "2026-11-18T18:02:00.000Z" };
+          return { challenge_id: "repte", expires_at: caducitatFutura() };
         },
         async confirmarCodiDeSessio() {
           return responsable;
@@ -231,7 +237,7 @@ describe("IniciSessioView", () => {
   it("un codi caducat es pot tornar a començar", async () => {
     const { wrapper } = await muntar({
       async demanarCodiDeSessio() {
-        return { challenge_id: "repte-5", expires_at: "2026-11-18T18:02:00.000Z" };
+        return { challenge_id: "repte-5", expires_at: caducitatFutura() };
       },
       async confirmarCodiDeSessio() {
         throw new ApiError("El codi ha caducat. Torna a iniciar el procés.", 410);
