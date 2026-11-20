@@ -37,6 +37,12 @@ html {
   line-height: 1.25;
 }
 
+/* Els temes d'Espais no defineixen `--border`. Sense ell DaisyUI calcula el padding i la vora del
+   badge amb una variable buida: l'etiqueta quedava sense marge i sense vora (badge-outline). */
+.badge {
+  --border: 1px;
+}
+
 @plugin "daisyui/theme" {
   name: "mar-cel";
   default: true;

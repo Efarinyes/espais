@@ -1,17 +1,17 @@
 ---
 name: reservations-attendance
-description: Reserves d’espais, conflictes d’horari, reprogramació i assistència per compte. Use when building bookings, calendars, overlaps, RecordAttendance, occupancy counts, or rescheduling.
+description: Reserves d’espais, conflictes d’horari, reprogramació i persones previstes (nom tècnic: assistència per compte). Use when building bookings, calendars, overlaps, RecordAttendance, occupancy counts, or rescheduling.
 ---
 
-# Reservations and attendance — Espais
+# Reservations and expected people — Espais
 
 ## Reserva
 
 `CreateReservation` valida disponibilitat i solapament al backend sempre. v1 estat inicial `confirmed`. Reprogramació v1: mateixa fila, estat `confirmed`; l’interval antic/nou va al payload de l’avís. El coordinador reprograma la seva sense avís. No afegeixis event log ni estat viu `rescheduled` si la tasca no ho demana (backlog del pla).
 
-## Assistència v1
+## Persones previstes (ADR 0027)
 
-`RecordAttendance` → port `AttendanceStrategy` → `count` ≥ 0. No llista de noms. No usuaris participants.
+Espais no registra ni verifica assistència real. El camp és «Persones previstes»: opcional, planificació i avís suau d’aforament. Es pot indicar en crear la reserva i al detall; es conserva en reprogramar. Tècnicament: `RecordAttendance` → port `AttendanceStrategy` → `count` ≥ 0 (noms històrics: `attendance_count`, `/assistencia`). No llista de noms, no confirmacions, no usuaris participants, no rol nou. Estadístiques no el mostra com a assistència.
 
 ## Checklist
 
@@ -19,9 +19,10 @@ description: Reserves d’espais, conflictes d’horari, reprogramació i assist
 - [ ] Coordinador només les seves; responsable totes
 - [ ] `AttendanceRecord.strategy = count`
 - [ ] Aforament mínim: visible, no cancel·la auto
-- [ ] `count > capacity`: avís, no bloqueig v1
+- [ ] Persones previstes > aforament: avís suau, no bloqueig; mai obligatori per crear o modificar
+- [ ] Cap UI ni text que presenti la previsió com a assistència real
 - [ ] Anul·lació pel responsable: cridar també `notifications-cancel`
-- [ ] Tests de solapament, assistència i permisos
+- [ ] Tests de solapament, persones previstes i permisos
 
 ## Recursos
 

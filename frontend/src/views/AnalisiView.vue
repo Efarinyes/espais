@@ -4,7 +4,6 @@ import { RouterLink, useRoute } from "vue-router";
 
 import { calendarisPerEspais } from "../aparenca/colorsCalendari";
 import AnalisiIndicadors from "../components/analisi/AnalisiIndicadors.vue";
-import AssistenciaPeriode from "../components/analisi/AssistenciaPeriode.vue";
 import ComparativaEspais from "../components/analisi/ComparativaEspais.vue";
 import OcupacioGlobal from "../components/analisi/OcupacioGlobal.vue";
 import RepartimentReserves from "../components/analisi/RepartimentReserves.vue";
@@ -70,7 +69,7 @@ watch([espaiDestacat, resum], () => void desplaçaAEspai(), { immediate: true, f
       <div class="min-w-0 sm:max-w-lg">
         <h1 class="titol-pantalla">Estadístiques</h1>
         <p class="mt-1 text-base-content/80">
-          Com s’han fet servir els espais de l’entitat: ocupació, reserves i assistència.
+          Com s’han fet servir els espais de l’entitat: ocupació i reserves.
         </p>
       </div>
       <div class="flex flex-wrap items-center gap-x-5 gap-y-2">
@@ -122,8 +121,6 @@ watch([espaiDestacat, resum], () => void desplaçaAEspai(), { immediate: true, f
         </div>
 
         <ComparativaEspais :espais="resum.spaces" :colors="colorsEspais" :destacat="espaiDestacat" />
-
-        <AssistenciaPeriode v-if="!periodeBuit" :resum="resum" :colors="colorsEspais" />
 
         <section v-if="periodeBuit" class="mt-10" aria-labelledby="buit-periode">
           <h2 id="buit-periode" class="text-lg font-semibold">Aquest mes no hi ha reserves</h2>

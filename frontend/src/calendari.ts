@@ -8,6 +8,31 @@ export type FranjaReserva = {
   ends_at: string;
 };
 
+/**
+ * «Persones previstes»: el nombre de persones que el coordinador o el responsable preveu que
+ * participaran. És una dada de planificació, no una assistència real. Els noms tècnics
+ * (`attendance_count`, `parseCompteAssistencia`, `/assistencia`) són històrics i no es canvien.
+ */
+export const ERROR_PERSONES_PREVISTES = "Les persones previstes han de ser un enter ≥ 0.";
+
+/** Avís suau, mai bloquejant: la previsió no canvia cap regla de reserva. */
+export function avisPrevisioAforament(
+  previsio: number | null,
+  aforament: number,
+  minim: number | null = null,
+): string {
+  if (previsio == null) {
+    return "";
+  }
+  if (previsio > aforament) {
+    return "Les persones previstes superen l’aforament de l’espai. Pots continuar igualment.";
+  }
+  if (minim != null && previsio < minim) {
+    return "Les persones previstes no arriben a l’aforament mínim de l’espai. Pots continuar igualment.";
+  }
+  return "";
+}
+
 export function parseCompteAssistencia(valor: unknown): number | null {
   const text = String(valor ?? "").trim();
   if (text === "") {

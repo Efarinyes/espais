@@ -34,20 +34,6 @@ function classeEstat(reserva: ReservaDto): string {
   const to = anulada(reserva) ? "border-error text-error" : "border-success text-success";
   return `inline-block whitespace-nowrap rounded-full border px-2.5 py-0.5 text-sm ${to}`;
 }
-
-/** El 0 és un registre. Sense nombre, una reserva confirmada «no té registre»; una d’anul·lada no n’espera cap. */
-function assistencia(reserva: ReservaDto): string {
-  if (reserva.attendance_count != null) {
-    return String(reserva.attendance_count);
-  }
-  return anulada(reserva) ? "—" : "Sense registrar";
-}
-
-/** El mateix text, amb la unitat, per a la línia petita del mòbil on no hi ha capçalera de columna. */
-function assistenciaMobil(reserva: ReservaDto): string {
-  const n = reserva.attendance_count;
-  return n == null ? assistencia(reserva) : `${n} ${n === 1 ? "assistent" : "assistents"}`;
-}
 </script>
 
 <template>
@@ -64,7 +50,6 @@ function assistenciaMobil(reserva: ReservaDto): string {
           <th scope="col" class="py-2 pe-3 text-start font-medium">Espai</th>
           <th scope="col" class="hidden py-2 pe-3 text-start font-medium sm:table-cell">Coordinador</th>
           <th scope="col" class="hidden py-2 pe-3 text-start font-medium sm:table-cell">Estat</th>
-          <th scope="col" class="hidden py-2 text-end font-medium sm:table-cell">Assistència</th>
         </tr>
       </thead>
       <tbody>
@@ -98,14 +83,12 @@ function assistenciaMobil(reserva: ReservaDto): string {
             </span>
             <span class="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm sm:hidden">
               <span :class="classeEstat(reserva)">{{ etiquetaEstat(reserva.status) }}</span>
-              <span class="text-base-content/70">{{ assistenciaMobil(reserva) }}</span>
             </span>
           </td>
           <td class="hidden whitespace-nowrap py-3 pe-3 sm:table-cell">{{ reserva.coordinator_name ?? "—" }}</td>
           <td class="hidden whitespace-nowrap py-3 pe-3 sm:table-cell">
             <span :class="classeEstat(reserva)">{{ etiquetaEstat(reserva.status) }}</span>
           </td>
-          <td class="hidden whitespace-nowrap py-3 text-end tabular-nums sm:table-cell">{{ assistencia(reserva) }}</td>
         </tr>
       </tbody>
     </table>

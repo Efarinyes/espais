@@ -17,23 +17,16 @@ function resum(): ResumUsDto {
     reserved_hours: 1,
     available_hours: 14,
     occupancy_ratio: 1 / 14,
-    average_attendance: 10,
-    unregistered_count: 0,
-    below_min_attendance: false,
     spaces: [
       {
         space_id: "s1",
         space_name: "Sala 1",
         capacity: 40,
-        min_attendance: 8,
         confirmed_count: 1,
         cancelled_count: 1,
         reserved_hours: 1,
         available_hours: 14,
         occupancy_ratio: 1 / 14,
-        average_attendance: 10,
-        unregistered_count: 0,
-        below_min_attendance: false,
       },
     ],
   };
@@ -62,15 +55,11 @@ function espaiUs(id: string, nom: string, over: Partial<EspaiUsDto> = {}): Espai
     space_id: id,
     space_name: nom,
     capacity: 40,
-    min_attendance: 10,
     confirmed_count: 0,
     cancelled_count: 0,
     reserved_hours: 0,
     available_hours: 40,
     occupancy_ratio: 0,
-    average_attendance: null,
-    unregistered_count: 0,
-    below_min_attendance: false,
     ...over,
   };
 }
@@ -79,7 +68,6 @@ function espaiUs(id: string, nom: string, over: Partial<EspaiUsDto> = {}): Espai
 function resumDe(espais: EspaiUsDto[]): ResumUsDto {
   const reservades = espais.reduce((suma, e) => suma + e.reserved_hours, 0);
   const disponibles = espais.reduce((suma, e) => suma + e.available_hours, 0);
-  const amb = espais.filter((e) => e.average_attendance != null);
   return {
     starts_at: "2026-08-31T22:00:00Z",
     ends_at: "2026-09-30T22:00:00Z",
@@ -88,9 +76,6 @@ function resumDe(espais: EspaiUsDto[]): ResumUsDto {
     reserved_hours: reservades,
     available_hours: disponibles,
     occupancy_ratio: disponibles > 0 ? reservades / disponibles : 0,
-    average_attendance: amb.length ? (amb[0]?.average_attendance ?? null) : null,
-    unregistered_count: espais.reduce((suma, e) => suma + e.unregistered_count, 0),
-    below_min_attendance: espais.some((e) => e.below_min_attendance),
     spaces: espais,
   };
 }
@@ -102,11 +87,8 @@ function tresEspais(): EspaiUsDto[] {
       cancelled_count: 1,
       reserved_hours: 12,
       occupancy_ratio: 12 / 40,
-      average_attendance: 8,
-      below_min_attendance: true,
-      unregistered_count: 1,
     }),
-    espaiUs("b", "Sala B", { confirmed_count: 3, reserved_hours: 4, occupancy_ratio: 4 / 40, unregistered_count: 3 }),
+    espaiUs("b", "Sala B", { confirmed_count: 3, reserved_hours: 4, occupancy_ratio: 4 / 40 }),
     espaiUs("c", "Sala C"),
   ];
 }
@@ -220,25 +202,6 @@ describe("AnalisiView", () => {
     wrapper.unmount();
   });
 
-  it("no confon l’assistència sense registrar amb zero", async () => {
-    const reserves = [
-      { ...reserva(), id: "r-zero", attendance_count: 0, starts_at: "2026-09-08T08:00:00Z" },
-      { ...reserva(), id: "r-null", attendance_count: null, starts_at: "2026-09-09T08:00:00Z" },
-      {
-        ...reserva(),
-        id: "r-anul",
-        status: "cancelled",
-        attendance_count: null,
-        starts_at: "2026-09-10T08:00:00Z",
-      },
-    ];
-    const { wrapper } = await muntar({ reserves });
-    const cel = (index: number) => wrapper.findAll("[data-fila-reserva]")[index]?.findAll("td").at(-1)?.text();
-    expect(cel(0)).toBe("0");
-    expect(cel(1)).toBe("Sense registrar");
-    expect(cel(2)).toBe("—");
-  });
-
   it("ordena les reserves del període cronològicament", async () => {
     const reserves = [
       { ...reserva(), id: "tard", space_name: "Sala tard", starts_at: "2026-09-20T08:00:00Z" },
@@ -250,32 +213,52 @@ describe("AnalisiView", () => {
     expect(noms[1]).toContain("Sala tard");
   });
 
-  it("mostra l’assistència per espai respecte de l’aforament i avisa sota el mínim", async () => {
-    const { wrapper } = await muntar({ resum: resumDe(tresEspais()) });
-    const assistencia = wrapper.get("[data-assistencia]");
-    expect(assistencia.text()).toContain("Assistència registrada a 5 de 9 reserves confirmades.");
-    expect(assistencia.get("[data-assistencia-espais]").text()).toContain("de 40 d’aforament");
-    expect(assistencia.get("[data-assistencia-espais]").text()).toContain("Per sota del mínim");
-    expect(assistencia.text()).toContain("Sense assistència registrada: Sala B.");
-  });
-
-  it("sense cap assistència registrada diu que no hi ha dades en lloc de mostrar zero", async () => {
-    const espais = [espaiUs("a", "Sala A", { confirmed_count: 4, reserved_hours: 8, occupancy_ratio: 0.2, unregistered_count: 4 })];
-    const { wrapper } = await muntar({ resum: resumDe(espais) });
-    expect(wrapper.get("[data-kpi='assistencia']").text()).toContain("Sense dades");
-    expect(wrapper.get("[data-kpi='assistencia']").text()).toContain("Cap reserva amb assistència registrada");
-    expect(wrapper.get("[data-assistencia]").text()).toContain("Encara no s’ha registrat l’assistència");
-    expect(wrapper.find("[data-assistencia-espais]").exists()).toBe(false);
-  });
-
-  it("amb zero assistents registrats mostra el zero, que és una dada", async () => {
-    const espais = [
-      espaiUs("a", "Sala A", { confirmed_count: 2, reserved_hours: 4, occupancy_ratio: 0.1, average_attendance: 0, below_min_attendance: true }),
+  it("no mostra cap indicador d’assistència, tingui o no persones previstes", async () => {
+    // El backend encara respon camps d’assistència al resum: la pàgina els ha d’ignorar.
+    const espais = tresEspais().map((espai) => ({
+      ...espai,
+      min_attendance: 10,
+      average_attendance: 8,
+      unregistered_count: 2,
+      below_min_attendance: true,
+    }));
+    const resumAmbCampsAntics = {
+      ...resumDe(espais),
+      average_attendance: 8,
+      unregistered_count: 5,
+      below_min_attendance: true,
+    } as unknown as ResumUsDto;
+    const reserves = [
+      { ...reserva(), id: "r-zero", attendance_count: 0, starts_at: "2026-09-08T08:00:00Z" },
+      { ...reserva(), id: "r-previsio", attendance_count: 12, starts_at: "2026-09-09T08:00:00Z" },
+      { ...reserva(), id: "r-sense", attendance_count: null, starts_at: "2026-09-10T08:00:00Z" },
     ];
-    const { wrapper } = await muntar({ resum: resumDe(espais) });
-    expect(wrapper.get("[data-kpi='assistencia']").text()).toContain("0");
-    expect(wrapper.get("[data-kpi='assistencia']").text()).not.toContain("Sense dades");
-    expect(wrapper.get("[data-assistencia-espais]").text()).toContain("0 de 40 d’aforament");
+    const { wrapper } = await muntar({ resum: resumAmbCampsAntics, reserves });
+    const text = wrapper.text();
+    expect(text).not.toMatch(/assist/i);
+    expect(text).not.toContain("Sense registrar");
+    expect(text).not.toContain("Sense dades");
+    expect(text).not.toContain("Per sota del mínim");
+    expect(wrapper.find("[data-kpi='assistencia']").exists()).toBe(false);
+    expect(wrapper.find("[data-assistencia]").exists()).toBe(false);
+    expect(wrapper.findAll("[data-indicadors] > div")).toHaveLength(3);
+    const capcaleres = wrapper.findAll("[data-reserves-periode] thead th").map((th) => th.text());
+    expect(capcaleres).toEqual(["Dia", "Horari", "Espai", "Coordinador", "Estat"]);
+    for (const fila of wrapper.findAll("[data-fila-reserva]")) {
+      expect(fila.findAll("td")).toHaveLength(4);
+    }
+  });
+
+  it("una reserva sense persones previstes no crea cap avís ni estat visual a les estadístiques", async () => {
+    const espais = [espaiUs("a", "Sala A", { confirmed_count: 4, reserved_hours: 8, occupancy_ratio: 0.2 })];
+    const reserves = [{ ...reserva(), attendance_count: null }];
+    const senseDades = await muntar({ resum: resumDe(espais), reserves });
+    const ambDades = await muntar({
+      resum: resumDe(espais),
+      reserves: [{ ...reserva(), attendance_count: 7 }],
+    });
+    expect(senseDades.wrapper.html()).toBe(ambDades.wrapper.html());
+    expect(senseDades.wrapper.find("[role='alert']").exists()).toBe(false);
   });
 
   it("no dibuixa donuts buits en un període sense reserves", async () => {
@@ -285,7 +268,6 @@ describe("AnalisiView", () => {
     expect(wrapper.find("[data-grafic='repartiment'] svg").exists()).toBe(false);
     expect(wrapper.get("[data-grafic='repartiment']").text()).toContain("No hi ha cap reserva confirmada");
     expect(wrapper.find("[data-reserves-periode]").exists()).toBe(false);
-    expect(wrapper.find("[data-assistencia]").exists()).toBe(false);
     expect(wrapper.get("[data-kpi='espai-actiu']").text()).toContain("Cap reserva aquest període");
   });
 

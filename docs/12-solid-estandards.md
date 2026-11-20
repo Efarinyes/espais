@@ -14,7 +14,7 @@ La pregunta és: **aquesta responsabilitat té una raó de canvi independent?** 
 
 ## Obert/tancat
 
-- Assistència: port `AttendanceStrategy`; v1 només `CountAttendance`.
+- Persones previstes (nom tècnic: assistència): port `AttendanceStrategy`; v1 només `CountAttendance` (ADR 0027).
 - Notificació: port `Notifier`.
 - No `if strategy == "named_list"` escampats per l’API.
 

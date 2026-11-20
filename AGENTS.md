@@ -14,11 +14,11 @@ Després crida el skill `session-start` i el skill de la feina concreta.
 
 ## Durant la feina
 
-- Termes de domini estables: *entitat*, *responsable*, *coordinador*, *espai*, *reserva*, *assistència*, *aforament*. No barrejar sinònims.
+- Termes de domini estables: *entitat*, *responsable*, *coordinador*, *espai*, *reserva*, *persones previstes*, *aforament*. No barrejar sinònims. «Assistència» (real) no és un terme de l’app: Espais no la registra ni la verifica (ADR 0027).
 - App d’ús intern i gratuïta. No dissenyar passarel·la, preu de reserva, pagament per ús ni camps de cobrament “per si de cas”.
 - Les activitats poden ser obertes al públic; a v1 reserva només qui té rol a l’entitat. Autoservei ciutadà = backlog, no cobrament.
 - Una app, moltes entitats. Tot accés a dades porta `entity_id`.
-- Assistència v1: nombre d’assistents, no usuaris participants. El model ha de quedar extensible.
+- Persones previstes (ADR 0027): nombre opcional que el coordinador o el responsable estima que participaran; planificació i avís suau d’aforament, no assistència real. Sense confirmacions, llista de participants ni rol nou. Estadístiques no el fa servir. El model ha de quedar extensible.
 - SOLID i responsabilitat única. Un cas d’ús = una classe/funció de cas d’ús.
 - Tests abans o amb el cas d’ús. Cap cas d’ús sense test.
 - Vue 3 només a `frontend/`, mai instal·lació global. Python només amb micromamba, mai `.venv`.
@@ -36,7 +36,7 @@ Després crida el skill `session-start` i el skill de la feina concreta.
 | Domini, glossari, model | `domain-model` |
 | Alta d’entitat / responsable / coordinadors | `registration-onboarding` |
 | Espais | `spaces-definition` |
-| Reserves i assistència | `reservations-attendance` |
+| Reserves i persones previstes | `reservations-attendance` |
 | Avís d’anul·lació | `notifications-cancel` |
 | Backend Python | `backend-fastapi` |
 | Frontend Vue | `frontend-vue` |

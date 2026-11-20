@@ -12,7 +12,7 @@ SOLID és un criteri de revisió. No és un motiu per refactoritzar ni per inven
 - Aquesta responsabilitat té una raó de canvi independent? El nombre de línies no hi respon.
 - El router o el component Vue calcula negoci?
 - Hi ha query sense `entity_id`?
-- L’assistència o el mail van per un port?
+- Les persones previstes (assistència) o el mail van per un port?
 - S’ha creat un `*Service`, composable o capa només per escurçar un fitxer?
 
 ## Classifica abans de corregir

@@ -1,6 +1,6 @@
 # ADR 0003 — Assistència per compte (extensible)
 
-- **Estat:** acceptat
+- **Estat:** acceptat; esmenat per l’[ADR 0027](0027-persones-previstes-no-assistencia-real.md) (el nombre és una previsió de persones, no assistència real; l’estratègia `count` darrere d’un port continua vigent)
 - **Data:** 2026-09-07
 
 ## Context

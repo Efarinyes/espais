@@ -10,7 +10,7 @@ Pot:
 - Crear, editar i desactivar espais.
 - Convidar coordinadors.
 - Veure la llista de coordinadors de l’entitat i filtrar el calendari per una persona (ADR [0021](adr/0021-filtre-coordinador-i-colors-sala.md)).
-- Veure **totes** les reserves de l’entitat i canviar-ne el nombre d’assistents.
+- Veure **totes** les reserves de l’entitat i canviar-ne les persones previstes.
 - Reprogramar i anul·lar qualsevol reserva.
 - Veure l’anàlisi d’ús.
 
@@ -22,10 +22,10 @@ Pot:
 
 - Veure els espais de la seva entitat i la disponibilitat.
 - Crear reserves als espais.
-- Veure i editar les **seves** reserves (horari mentre no hi hagi conflicte; assistència).
+- Veure i editar les **seves** reserves (horari mentre no hi hagi conflicte; persones previstes).
 - Cancel·lar les seves reserves (sense avís al responsable per correu a v1; sí visible al llistat del responsable).
 - Llegir avisos d’anul·lació/modificació i rebre’ls com a notificació del navegador (Web Push), si ho activa.
-- Una reserva que el responsable ha modificat o anul·lat ja no la pot reprogramar ni anul·lar (403); l’assistència sí que la pot registrar (ADR [0026](adr/0026-avisos-web-push-i-reserva-sota-control.md)).
+- Una reserva que el responsable ha modificat o anul·lat ja no la pot reprogramar ni anul·lar (403); les persones previstes sí que les pot canviar (ADR [0026](adr/0026-avisos-web-push-i-reserva-sota-control.md)).
 
 No pot:
 
@@ -45,7 +45,7 @@ No pot:
 | Crear reserva | no | sí |
 | Veure totes les reserves | sí | no |
 | Veure les seves reserves | sí | sí |
-| Registrar assistència | sí, a qualsevol reserva | sí, a la seva |
+| Indicar persones previstes | sí, a qualsevol reserva | sí, a la seva |
 | Reprogramar qualsevol reserva | sí | no |
 | Reprogramar la seva (si no hi ha conflicte) | sí | sí (v1) |
 | Anul·lar com a responsable (amb avís) | sí | no |

@@ -60,6 +60,9 @@ class RescheduleReservationResult:
     space_name: str
     capacity: int
     min_attendance: int | None
+    # Persones previstes (nom tècnic històric: attendance). L’horari no la toca; es retorna perquè
+    # el client no hagi de endevinar-la a partir d’una resposta que no la porta.
+    attendance_count: int | None = None
 
 
 def _reason(raw: str | None) -> str | None:
@@ -102,6 +105,8 @@ class RescheduleReservation:
             command.actor_role, gestionada=reservation.managed_by_responsible
         )
         es_responsable = command.actor_role == MembershipRole.RESPONSIBLE
+        record = self._uow.attendance.get_by_reservation_id(command.entity_id, reservation.id)
+        attendance_count = record.count if record is not None else None
 
         space = self._uow.spaces.get_by_id(command.entity_id, reservation.space_id)
         if space is None:
@@ -134,6 +139,7 @@ class RescheduleReservation:
                 space_name=space.name,
                 capacity=space.capacity,
                 min_attendance=space.min_attendance,
+                attendance_count=attendance_count,
             )
 
         moved = replace(
@@ -183,4 +189,5 @@ class RescheduleReservation:
             space_name=space.name,
             capacity=space.capacity,
             min_attendance=space.min_attendance,
+            attendance_count=attendance_count,
         )

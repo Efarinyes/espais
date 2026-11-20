@@ -85,15 +85,6 @@ async function sortir() {
             Calendari
           </RouterLink>
         </li>
-        <li v-if="veuEstadistiques">
-          <RouterLink
-            class="min-h-11"
-            to="/analisi"
-            :aria-current="esEstadistiques ? 'page' : undefined"
-          >
-            Estadístiques
-          </RouterLink>
-        </li>
         <li v-if="veuAvisosEnviats">
           <RouterLink
             class="min-h-11"
@@ -117,8 +108,23 @@ async function sortir() {
         </li>
       </ul>
       <div v-if="veuAdministracio" class="border-t border-base-content/20">
-        <p id="grup-administracio" class="px-4 pt-4 text-sm font-medium text-base-content/70">Administració</p>
+        <p
+          id="grup-administracio"
+          class="flex items-center gap-2 px-4 pt-4 text-sm font-semibold uppercase tracking-wide text-primary"
+        >
+          <span class="h-4 w-1 shrink-0 rounded-full bg-primary" aria-hidden="true" />
+          Administració
+        </p>
         <ul class="menu w-full p-2" aria-labelledby="grup-administracio">
+          <li v-if="veuEstadistiques">
+            <RouterLink
+              class="min-h-11"
+              to="/analisi"
+              :aria-current="esEstadistiques ? 'page' : undefined"
+            >
+              Estadístiques
+            </RouterLink>
+          </li>
           <li>
             <RouterLink
               class="min-h-11"

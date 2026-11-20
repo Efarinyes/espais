@@ -23,7 +23,7 @@ Identifica a [`AGENTS.md`](../../../AGENTS.md) quins skills apliquen, llegeix-lo
 - [ ] Fase del pla identificada
 - [ ] Skills aplicables identificats i llegits (`AGENTS.md`); cap d’inaplicable forçat
 - [ ] Si fase 0: cap codi d’aplicació
-- [ ] Termes del glossari: entitat, responsable, coordinador, espai, reserva, assistència, aforament
+- [ ] Termes del glossari: entitat, responsable, coordinador, espai, reserva, persones previstes, aforament
 
 ## Després
 

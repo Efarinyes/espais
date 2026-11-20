@@ -89,33 +89,10 @@ export function repartimentReserves<T extends ResumEspai>(espais: readonly T[]):
     .sort((a, b) => b.confirmed_count - a.confirmed_count || perNom(a, b));
 }
 
-/** Reserves confirmades amb un nombre d’assistents desat (el 0 també és un registre). */
-export function reservesAmbAssistencia(confirmades: number, senseRegistrar: number): number {
-  return Math.max(0, confirmades - senseRegistrar);
-}
-
 /** Part d’un total en tant per u, limitada a 0–1. Sense total, 0. */
 export function fraccio(part: number, total: number): number {
   if (total <= 0) {
     return 0;
   }
   return Math.min(1, Math.max(0, part / total));
-}
-
-export function nombreEtiqueta(valor: number): string {
-  return valor.toLocaleString("ca-ES", { maximumFractionDigits: 1, minimumFractionDigits: 0 });
-}
-
-export function assistenciaEtiqueta(
-  mitjana: number | null,
-  senseRegistrar: number,
-): string {
-  if (mitjana == null) {
-    return senseRegistrar > 0 ? "Sense registrar" : "—";
-  }
-  const xifra = mitjana.toLocaleString("ca-ES", { maximumFractionDigits: 1, minimumFractionDigits: 0 });
-  if (senseRegistrar > 0) {
-    return `${xifra} (${senseRegistrar} sense registrar)`;
-  }
-  return xifra;
 }

@@ -157,3 +157,49 @@ def test_other_entity_does_not_find_reservation(sqlite_session_factory) -> None:
         json={"count": 2},
     )
     assert response.status_code == 404
+
+
+def test_reschedule_keeps_persones_previstes_in_response_and_list(sqlite_session_factory) -> None:
+    client = TestClient(create_app(session_factory=sqlite_session_factory))
+    created = _register(client, email="anna-assist-move@example.com")
+    headers_resp = {"Authorization": f"Bearer {created['token']}"}
+    coord = _invite_coordinator(client, headers_resp, "carla-assist-move@example.com")
+    headers_coord = {"Authorization": f"Bearer {coord['token']}"}
+    reservation = _space_and_reservation(client, headers_resp, headers_coord, capacity=10)
+    recorded = client.put(
+        f"/reserves/{reservation['id']}/assistencia",
+        headers=headers_coord,
+        json={"count": 11},
+    )
+    assert recorded.status_code == 200
+
+    new_start, new_end = _slot_iso(12)
+    moved = client.post(
+        f"/reserves/{reservation['id']}/reprogramacio",
+        headers=headers_coord,
+        json={"starts_at": new_start, "ends_at": new_end},
+    )
+    assert moved.status_code == 200
+    assert moved.json()["attendance_count"] == 11
+    assert moved.json()["exceeds_capacity"] is True
+
+    listed = client.get("/reserves", headers=headers_coord, params={"des": new_start, "fins": new_end})
+    assert listed.json()[0]["attendance_count"] == 11
+
+
+def test_reservation_without_previsio_stays_valid(sqlite_session_factory) -> None:
+    client = TestClient(create_app(session_factory=sqlite_session_factory))
+    created = _register(client, email="anna-assist-none@example.com")
+    headers_resp = {"Authorization": f"Bearer {created['token']}"}
+    coord = _invite_coordinator(client, headers_resp, "carla-assist-none@example.com")
+    headers_coord = {"Authorization": f"Bearer {coord['token']}"}
+    reservation = _space_and_reservation(client, headers_resp, headers_coord)
+    new_start, new_end = _slot_iso(12)
+    moved = client.post(
+        f"/reserves/{reservation['id']}/reprogramacio",
+        headers=headers_coord,
+        json={"starts_at": new_start, "ends_at": new_end},
+    )
+    assert moved.status_code == 200
+    assert moved.json()["attendance_count"] is None
+    assert moved.json()["exceeds_capacity"] is False

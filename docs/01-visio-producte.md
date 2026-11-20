@@ -13,19 +13,19 @@ L’ús de l’app és **gratuït**. Els membres no paguen per reservar ni per u
 ## Principis
 
 - Ús intern i gratuït. Sense preu de reserva, sense pagament per ús, sense passarel·la de pagament. El cobrament no és backlog ni una extensió a dissenyar “per si de cas”.
-- L’eina és interna; els espais poden servir activitats obertes al públic. Els assistents no cal que tinguin compte (assistència per nombre).
+- L’eina és interna; els espais poden servir activitats obertes al públic. Els participants no cal que tinguin compte: el coordinador indica opcionalment quantes persones preveu (persones previstes, no assistència real; ADR [0027](adr/0027-persones-previstes-no-assistencia-real.md)).
 - Una estructura de codi, moltes tipologies. La tipologia és un atribut lliure, no un producte diferent.
 - Els espais no es comparteixen ni s’unifiquen entre entitats.
 - Mobile-first: el coordinador reserva des del telèfon.
 - El responsable governa i analitza; no cal que creï cada reserva.
-- Extensible sense reescriure el nucli (assistència, rols extra, més d’una entitat per persona, autoservei ciutadà). No s’hi inclou cobrament.
+- Extensible sense reescriure el nucli (assistència real nominativa, rols extra, més d’una entitat per persona, autoservei ciutadà). No s’hi inclou cobrament.
 
 ## Usuaris v1
 
 | Rol | Necessitat principal |
 |---|---|
 | Responsable de l’entitat | Alta de l’entitat i espais; visió global; reprogramar/anul·lar; anàlisi d’ús |
-| Coordinador d’activitat | Reservar un espai; registrar el nombre d’assistents; rebre avisos d’anul·lació |
+| Coordinador d’activitat | Reservar un espai; indicar, si vol, les persones previstes; rebre avisos d’anul·lació |
 
 No hi ha participants amb compte a v1. Vegeu [07-reserves-assistencia.md](07-reserves-assistencia.md).
 

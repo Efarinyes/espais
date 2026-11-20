@@ -80,8 +80,8 @@ function muntar(reserves: Partial<ReservesApi> = {}, inicial = reserva()) {
   });
 }
 
-describe("useAssistenciaReserva", () => {
-  it("rebutja un compte que no és un enter igual o superior a zero", async () => {
+describe("useAssistenciaReserva (persones previstes)", () => {
+  it("rebutja unes persones previstes que no són un enter igual o superior a zero", async () => {
     let cridat = false;
     const wrapper = muntar({
       registrarAssistencia: async () => {
@@ -92,13 +92,13 @@ describe("useAssistenciaReserva", () => {
     for (const valor of ["", "-1", "1.5"]) {
       wrapper.vm.campAssistencia = valor;
       expect(await wrapper.vm.desarAssistencia()).toBeNull();
-      expect(wrapper.vm.errorDetall).toContain("enter");
+      expect(wrapper.vm.errorDetall).toBe("Les persones previstes han de ser un enter ≥ 0.");
     }
     expect(cridat).toBe(false);
     expect(wrapper.vm.tancat()).toBe(false);
   });
 
-  it("desa el compte, actualitza la llista i tanca el detall", async () => {
+  it("desa les persones previstes, actualitza la llista i tanca el detall", async () => {
     let enviat: { id: string; count: number } | null = null;
     const wrapper = muntar({
       registrarAssistencia: async (_token, id, count) => {
@@ -115,14 +115,49 @@ describe("useAssistenciaReserva", () => {
     expect(wrapper.vm.enviantAssistencia).toBe(false);
   });
 
-  it("avisa si el compte supera l’aforament o no arriba al mínim", () => {
+  it("avisa, sense bloquejar, si les persones previstes superen l’aforament o no arriben al mínim", () => {
     const massa = muntar({}, reserva({ capacity: 10, attendance_count: null }));
     massa.vm.campAssistencia = "11";
-    expect(massa.vm.avisAforament).toContain("supera l’aforament");
+    expect(massa.vm.avisAforament).toBe(
+      "Les persones previstes superen l’aforament de l’espai. Pots continuar igualment.",
+    );
+    massa.vm.campAssistencia = "10";
+    expect(massa.vm.avisAforament).toBe("");
 
     const poc = muntar({}, reserva({ capacity: 40, min_attendance: 5, attendance_count: null }));
     poc.vm.campAssistencia = "2";
     expect(poc.vm.avisAforament).toContain("aforament mínim");
+    expect(poc.vm.avisAforament).not.toMatch(/assist/i);
+  });
+
+  it("sense persones previstes no hi ha cap avís", () => {
+    const wrapper = muntar({}, reserva({ capacity: 10, attendance_count: null }));
+    expect(wrapper.vm.avisAforament).toBe("");
+  });
+
+  it("l’avís d’aforament no impedeix desar una previsió que supera l’aforament", async () => {
+    const wrapper = muntar(
+      {
+        registrarAssistencia: async (_token, _id, count) =>
+          reserva({ capacity: 10, attendance_count: count, exceeds_capacity: true }),
+      },
+      reserva({ capacity: 10, attendance_count: null }),
+    );
+    wrapper.vm.campAssistencia = "25";
+    expect(wrapper.vm.avisAforament).toContain("superen l’aforament");
+    const desada = await wrapper.vm.desarAssistencia();
+    expect(desada?.attendance_count).toBe(25);
+    expect(wrapper.vm.reservesCarregades[0].attendance_count).toBe(25);
+    expect(wrapper.vm.errorDetall).toBe("");
+  });
+
+  it("el zero és una previsió vàlida", async () => {
+    const wrapper = muntar({
+      registrarAssistencia: async (_token, _id, count) => reserva({ attendance_count: count }),
+    });
+    wrapper.vm.campAssistencia = "0";
+    const desada = await wrapper.vm.desarAssistencia();
+    expect(desada?.attendance_count).toBe(0);
   });
 
   it("no desa una reserva que no és de qui la mira", async () => {
@@ -141,7 +176,7 @@ describe("useAssistenciaReserva", () => {
     expect(cridat).toBe(false);
   });
 
-  it("mostra l’error de permís si el servidor rebutja el compte", async () => {
+  it("mostra l’error de permís si el servidor rebutja la previsió", async () => {
     const wrapper = muntar({
       registrarAssistencia: async () => {
         throw new ApiError("només qui ha fet la reserva", 403);
@@ -149,7 +184,7 @@ describe("useAssistenciaReserva", () => {
     });
     wrapper.vm.campAssistencia = "3";
     expect(await wrapper.vm.desarAssistencia()).toBeNull();
-    expect(wrapper.vm.errorDetall).toContain("qui ha fet la reserva");
+    expect(wrapper.vm.errorDetall).toBe("Només qui ha fet la reserva en pot canviar les persones previstes.");
     expect(wrapper.vm.tancat()).toBe(false);
   });
 });

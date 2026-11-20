@@ -13,7 +13,7 @@ const passes = [
   },
   {
     titol: "Reserva al calendari",
-    text: "El coordinador reserva des del telèfon o l’ordinador. L’app evita solapaments. Si el nombre d’assistents passa de l’aforament, avisa i igualment es pot desar.",
+    text: "El coordinador reserva des del telèfon o l’ordinador. L’app evita solapaments. Pots indicar quantes persones hi ha previstes; si passen de l’aforament, avisa i igualment es pot desar.",
     imatge: "/landing/calendari.png",
     alt: "Calendari de reserves a Espais",
   },
@@ -25,7 +25,7 @@ const passes = [
   },
   {
     titol: "Mira les estadístiques de cada espai",
-    text: "El responsable veu ocupació, reserves i assistència per sala. Serveix per saber si un espai es fa servir o queda buit.",
+    text: "El responsable veu l’ocupació i les reserves per sala. Serveix per saber si un espai es fa servir o queda buit.",
     imatge: "",
     alt: "",
   },

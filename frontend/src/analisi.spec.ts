@@ -2,13 +2,11 @@ import { describe, expect, it } from "vitest";
 import "temporal-polyfill/global";
 
 import {
-  assistenciaEtiqueta,
   espaiMesActiu,
   espaisPerOcupacio,
   fraccio,
   horesLliures,
   repartimentReserves,
-  reservesAmbAssistencia,
   senseHoresDisponibles,
   horesEtiqueta,
   mesEnCursTimeZone,
@@ -34,12 +32,9 @@ describe("analisi", () => {
     expect(mesEnCursTimeZone("America/New_York", ara)).toBe("2026-08");
   });
 
-  it("formata ocupació i assistència sense zero silenciós", () => {
+  it("formata ocupació i hores", () => {
     expect(percentatgeOcupacio(1 / 14)).toBe("7,1 %");
     expect(horesEtiqueta(14)).toBe("14 h");
-    expect(assistenciaEtiqueta(null, 1)).toBe("Sense registrar");
-    expect(assistenciaEtiqueta(10, 1)).toBe("10 (1 sense registrar)");
-    expect(assistenciaEtiqueta(null, 0)).toBe("—");
   });
 });
 
@@ -83,12 +78,6 @@ describe("analisi: dades per al dashboard", () => {
   it("el repartiment de reserves deixa fora els espais sense reserves", () => {
     const llista = [espai("a", "A", 0, 0, 0), espai("b", "B", 2, 1, 0.1), espai("c", "C", 7, 1, 0.1)];
     expect(repartimentReserves(llista).map((e) => e.space_id)).toEqual(["c", "b"]);
-  });
-
-  it("les reserves amb assistència són les confirmades menys les sense registrar", () => {
-    expect(reservesAmbAssistencia(18, 2)).toBe(16);
-    expect(reservesAmbAssistencia(3, 3)).toBe(0);
-    expect(reservesAmbAssistencia(0, 0)).toBe(0);
   });
 
   it("la fracció es limita a 0–1 i sense total és 0", () => {

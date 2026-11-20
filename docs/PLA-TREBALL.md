@@ -2,7 +2,7 @@
 
 Document principal per revisar i tirar endavant el projecte. El desenvolupament és incremental i test-first. Cap fase comença sense el skill corresponent ni sense tests del cas d’ús.
 
-Idioma de docs i UI: **català**. Termes estables: *entitat*, *responsable*, *coordinador*, *espai*, *reserva*, *assistència*, *aforament*.
+Idioma de docs i UI: **català**. Termes estables: *entitat*, *responsable*, *coordinador*, *espai*, *reserva*, *persones previstes*, *aforament*.
 
 Producte d’**ús intern** i **gratuït**. Sense passarel·la, preu de reserva ni pagament per ús: això no és una fase ni un ítem de backlog. Les activitats poden ser obertes al públic; l’autoservei de reserva per a ciutadania sense rol a l’entitat sí que és backlog.
 
@@ -112,6 +112,8 @@ Una fase només es tanca si:
 
 Revisió `architecture-solid` (2026-09-10): neta. Capes i `entity_id` correctes; router i modal prims. Classificat en tancar la refactorització del frontend (2026-09-28): l’assistència per nombre és la decisió de l’ADR 0003. L’avís de la pantalla («per sota de l’aforament mínim, es desarà igualment») és el comportament volgut. No és feina oberta.
 
+Nota (2026-11-20, ADR [0027](adr/0027-persones-previstes-no-assistencia-real.md)): el nombre és una **previsió de persones** («Persones previstes»), no assistència real. Es pot indicar en crear la reserva i Estadístiques ja no el fa servir.
+
 ## Fase 6 — Govern del responsable (feta)
 
 **Objectiu:** el responsable reprograma o anul·la i el coordinador en queda assabentat.
@@ -135,7 +137,7 @@ Revisió `architecture-solid` (2026-09-10): neta a capes de negoci. La nota de n
 
 **Objectiu:** el responsable veu l’ús dels espais.
 
-**Casos d’ús:** `GetUsageSummary` (ocupació, reserves per espai, anul·lades, assistència mitjana).
+**Casos d’ús:** `GetUsageSummary` (ocupació, reserves per espai, anul·lades). La mitjana d’assistència que va retornar a la fase 7 ja no es mostra (ADR [0027](adr/0027-persones-previstes-no-assistencia-real.md)).
 
 **Tasques:**
 
@@ -174,7 +176,7 @@ Documentat, no implementat ara:
 - Diversos responsables per entitat.
 - Unió o fusió d’entitats.
 - Coordinador amb rol en més d’una entitat.
-- Assistència nominativa o comptes de participants.
+- Assistència real: llista nominativa, comptes de participants o confirmacions (demanaria un ADR i un rol nous; ADR [0027](adr/0027-persones-previstes-no-assistencia-real.md)).
 - Reserva en autoservei per a ciutadania sense rol a l’entitat (a v1 reserva el coordinador, també per a actes oberts al públic).
 - Aprovació de reserves pel responsable (si `pending` es vol com a flux real).
 - Temes visuals per tipologia d’activitat.

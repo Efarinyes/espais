@@ -8,6 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
 
 from app.api.deps import ReservationsHttp, get_reservations_http, require_session
+from app.domain.attendance import attendance_flags
 from app.domain.authorization import Accio, mostra_nom_de_coordinador, permet
 from app.domain.errors import (
     ForbiddenError,
@@ -337,6 +338,7 @@ def reschedule_reservation(
         raise HTTPException(status_code=404, detail="aquest espai no existeix a l’entitat") from None
 
     reservation = result.reservation
+    exceeds, below = attendance_flags(result.attendance_count, result.capacity, result.min_attendance)
     return ReservationResponse(
         id=reservation.id,
         space_id=reservation.space_id,
@@ -346,11 +348,11 @@ def reschedule_reservation(
         status=reservation.status,
         mine=reservation.coordinator_id == view.user_id,
         coordinator_name=reservation.coordinator_name,
-        attendance_count=None,
+        attendance_count=result.attendance_count,
         capacity=result.capacity,
         min_attendance=result.min_attendance,
-        exceeds_capacity=False,
-        below_min_attendance=False,
+        exceeds_capacity=exceeds,
+        below_min_attendance=below,
         managed_by_responsible=reservation.managed_by_responsible,
         notice=_notice_of_notification(result.notification) if view.role == MembershipRole.RESPONSIBLE else None,
     )

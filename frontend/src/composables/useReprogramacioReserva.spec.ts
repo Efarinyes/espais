@@ -153,6 +153,42 @@ describe("useReprogramacioReserva", () => {
     expect(wrapper.vm.reservesCarregades[0].starts_at).toBe("2026-09-08T10:00:00Z");
   });
 
+  it("en reprogramar, la reserva conserva les persones previstes que torna el servidor", async () => {
+    const inicial = reserva({ mine: true, attendance_count: 12 });
+    const wrapper = muntar(
+      {
+        reprogramar: async (_token, id, input) =>
+          reserva({
+            id,
+            mine: true,
+            starts_at: input.starts_at,
+            ends_at: input.ends_at,
+            attendance_count: 12,
+          }),
+      },
+      sessioCoord,
+      inicial,
+    );
+    const moguda = await wrapper.vm.moureReserva(
+      "r1",
+      Temporal.ZonedDateTime.from("2026-09-09T10:00:00+02:00[Europe/Madrid]"),
+      Temporal.ZonedDateTime.from("2026-09-09T10:30:00+02:00[Europe/Madrid]"),
+    );
+    expect(moguda?.attendance_count).toBe(12);
+    expect(wrapper.vm.reservesCarregades[0].attendance_count).toBe(12);
+  });
+
+  it("una reserva sense persones previstes es reprograma igual", async () => {
+    const wrapper = muntar({}, sessioCoord, reserva({ mine: true, attendance_count: null }));
+    const moguda = await wrapper.vm.moureReserva(
+      "r1",
+      Temporal.ZonedDateTime.from("2026-09-09T10:00:00+02:00[Europe/Madrid]"),
+      Temporal.ZonedDateTime.from("2026-09-09T10:30:00+02:00[Europe/Madrid]"),
+    );
+    expect(moguda).not.toBeNull();
+    expect(wrapper.vm.reservesCarregades[0].attendance_count).toBeNull();
+  });
+
   it("el coordinador mou la seva reserva sense avís", async () => {
     const wrapper = muntar({}, sessioCoord, reserva({ mine: true }));
     expect(wrapper.vm.reprogramacioAmbAvis).toBe(false);

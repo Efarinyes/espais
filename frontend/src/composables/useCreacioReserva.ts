@@ -1,7 +1,13 @@
 import type { Ref } from "vue";
 import "temporal-polyfill/global";
 
-import { arrodoneixInici, franjaDesDeInici, type FranjaReserva } from "../calendari";
+import {
+  arrodoneixInici,
+  ERROR_PERSONES_PREVISTES,
+  franjaDesDeInici,
+  parseCompteAssistencia,
+  type FranjaReserva,
+} from "../calendari";
 import {
   clicDinsFinestra,
   diaObert,
@@ -16,6 +22,8 @@ import { useSessioStore } from "../stores/sessio";
 export type CreacioReservaDeps = {
   espaiDeCreacio: () => string;
   franjaOberta: () => FranjaReserva | null;
+  /** Text del camp opcional «Persones previstes». Buit = sense previsió. */
+  previsio: () => string;
   enviant: Ref<boolean>;
   error: Ref<string>;
   reservesCarregades: Ref<ReservaDto[]>;
@@ -65,6 +73,12 @@ export function useCreacioReserva(deps: CreacioReservaDeps) {
     if (!franja || deps.enviant.value) {
       return null;
     }
+    const brut = deps.previsio().trim();
+    const previsio = parseCompteAssistencia(brut);
+    if (brut !== "" && previsio == null) {
+      deps.mostrarError(ERROR_PERSONES_PREVISTES);
+      return null;
+    }
     deps.enviant.value = true;
     deps.error.value = "";
     try {
@@ -74,8 +88,22 @@ export function useCreacioReserva(deps: CreacioReservaDeps) {
         ends_at: franja.ends_at,
       });
       deps.tancarModal();
-      deps.reservesCarregades.value = [...deps.reservesCarregades.value, creada];
-      return creada;
+      let resultat = creada;
+      let previsioPerduda = false;
+      if (previsio != null) {
+        try {
+          resultat = await reservesApi.registrarAssistencia(sessio.token, creada.id, previsio);
+        } catch {
+          previsioPerduda = true;
+        }
+      }
+      deps.reservesCarregades.value = [...deps.reservesCarregades.value, resultat];
+      if (previsioPerduda) {
+        deps.mostrarError(
+          "La reserva s’ha creat, però no s’han pogut desar les persones previstes. Les pots afegir des de la reserva.",
+        );
+      }
+      return resultat;
     } catch (err) {
       if (err instanceof ApiError && err.status === 409) {
         deps.mostrarError("Aquest interval ja està ocupat.");

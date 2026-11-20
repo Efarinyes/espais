@@ -6,15 +6,11 @@ export type EspaiUsDto = {
   space_id: string;
   space_name: string;
   capacity: number;
-  min_attendance: number | null;
   confirmed_count: number;
   cancelled_count: number;
   reserved_hours: number;
   available_hours: number;
   occupancy_ratio: number;
-  average_attendance: number | null;
-  unregistered_count: number;
-  below_min_attendance: boolean;
 };
 
 export type ResumUsDto = {
@@ -25,9 +21,6 @@ export type ResumUsDto = {
   reserved_hours: number;
   available_hours: number;
   occupancy_ratio: number;
-  average_attendance: number | null;
-  unregistered_count: number;
-  below_min_attendance: boolean;
   spaces: EspaiUsDto[];
 };
 

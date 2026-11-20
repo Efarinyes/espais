@@ -1,6 +1,6 @@
 import { computed, ref, type Ref } from "vue";
 
-import { parseCompteAssistencia } from "../calendari";
+import { avisPrevisioAforament, ERROR_PERSONES_PREVISTES, parseCompteAssistencia } from "../calendari";
 import { ApiError } from "../services/http";
 import { requireReservesApi, type ReservaDto } from "../services/reserves";
 import { useSessioStore } from "../stores/sessio";
@@ -14,6 +14,10 @@ export type AssistenciaReservaDeps = {
   tancarModal: () => void;
 };
 
+/**
+ * Persones previstes d'una reserva (opcional, planificació). El nom del composable és històric:
+ * no registra assistència real ni cap confirmació individual.
+ */
 export function useAssistenciaReserva(deps: AssistenciaReservaDeps) {
   const reservesApi = requireReservesApi();
   const sessio = useSessioStore();
@@ -33,17 +37,8 @@ export function useAssistenciaReserva(deps: AssistenciaReservaDeps) {
     if (!reserva) {
       return "";
     }
-    const count = parseCompteAssistencia(campAssistencia.value) ?? reserva.attendance_count;
-    if (count == null) {
-      return "";
-    }
-    if (count > reserva.capacity) {
-      return "El nombre supera l’aforament de l’espai. Es desarà igualment.";
-    }
-    if (reserva.min_attendance != null && count < reserva.min_attendance) {
-      return "El nombre no assoleix l’aforament mínim. Es desarà igualment.";
-    }
-    return "";
+    const previsio = parseCompteAssistencia(campAssistencia.value) ?? reserva.attendance_count;
+    return avisPrevisioAforament(previsio, reserva.capacity, reserva.min_attendance);
   });
 
   function actualitzarCampAssistencia(valor: string) {
@@ -58,7 +53,7 @@ export function useAssistenciaReserva(deps: AssistenciaReservaDeps) {
     }
     const n = parseCompteAssistencia(campAssistencia.value);
     if (n == null) {
-      deps.errorDetall.value = "L’assistència ha de ser un enter ≥ 0.";
+      deps.errorDetall.value = ERROR_PERSONES_PREVISTES;
       deps.okDetall.value = "";
       return null;
     }
@@ -77,11 +72,11 @@ export function useAssistenciaReserva(deps: AssistenciaReservaDeps) {
       return actualitzada;
     } catch (err) {
       if (err instanceof ApiError && err.status === 403) {
-        deps.errorDetall.value = "Només qui ha fet la reserva pot registrar-ne l’assistència.";
+        deps.errorDetall.value = "Només qui ha fet la reserva en pot canviar les persones previstes.";
       } else if (err instanceof ApiError) {
         deps.errorDetall.value = err.message;
       } else {
-        deps.errorDetall.value = "No s’ha pogut desar l’assistència.";
+        deps.errorDetall.value = "No s’han pogut desar les persones previstes.";
       }
       return null;
     } finally {

@@ -6,6 +6,7 @@ from zoneinfo import ZoneInfo
 
 import pytest
 
+from app.adapters.attendance import CountAttendance
 from app.adapters.memory.identity import FixedClock, SequentialIdGenerator
 from app.adapters.memory.notifier import FailingNotifier, InMemoryNotifier
 from app.adapters.memory.reservations import InMemoryReservationUnitOfWork
@@ -21,7 +22,11 @@ from app.domain.reservation import ReservationStatus, as_utc
 from app.domain.space import AvailabilityWindow, Space, default_week_windows
 from app.usecases.create_reservation import CreateReservation, CreateReservationCommand
 from app.usecases.list_reservations import ListReservations, ListReservationsQuery
-from app.usecases.reschedule_reservation import RescheduleReservation, RescheduleReservationCommand
+from app.usecases.record_attendance import RecordAttendance, RecordAttendanceCommand
+from app.usecases.reschedule_reservation import (
+    RescheduleReservation,
+    RescheduleReservationCommand,
+)
 
 MADRID = ZoneInfo("Europe/Madrid")
 ENTITY_A = UUID(int=10)
@@ -152,6 +157,37 @@ def test_coordinator_reschedules_own_without_notice() -> None:
     assert stored.ends_at == as_utc(new_end)
     assert stored.status == ReservationStatus.CONFIRMED
     assert uow.notifications.list_for_user(ENTITY_A, USER_A) == []
+
+
+def test_reschedule_keeps_and_returns_persones_previstes() -> None:
+    mover, uow, _mail, reservation_id = _setup()
+    RecordAttendance(uow, CountAttendance(), FixedClock(), SequentialIdGenerator()).execute(
+        RecordAttendanceCommand(
+            entity_id=ENTITY_A,
+            actor_user_id=USER_A,
+            actor_role=MembershipRole.COORDINATOR,
+            reservation_id=reservation_id,
+            count=12,
+        )
+    )
+    result = mover.execute(
+        _command(
+            reservation_id,
+            actor_user_id=USER_A,
+            actor_role=MembershipRole.COORDINATOR,
+            actor_name="Carla",
+        )
+    )
+    assert result.attendance_count == 12
+    kept = uow.attendance.get_by_reservation_id(ENTITY_A, reservation_id)
+    assert kept is not None
+    assert kept.count == 12
+
+
+def test_reschedule_without_previsio_returns_none() -> None:
+    mover, _uow, _mail, reservation_id = _setup()
+    result = mover.execute(_command(reservation_id))
+    assert result.attendance_count is None
 
 
 def test_coordinator_cannot_reschedule_others() -> None:

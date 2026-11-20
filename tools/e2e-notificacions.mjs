@@ -142,7 +142,7 @@ try {
   check(llegit.status === 200 && Boolean(llegit.json.read_at), "A: Carla llegeix l’avís i queda la data de lectura");
   const vist = (await llistar(resp)).json.find((item) => item.id === r1);
   check(vist?.notice?.read_at === llegit.json.read_at, "A: el responsable veu la mateixa data de lectura");
-  check((await api(`/reserves/${r1}/assistencia`, { method: "PUT", token: carla, body: { count: 6 } })).status === 200, "A: Carla continua registrant l’assistència");
+  check((await api(`/reserves/${r1}/assistencia`, { method: "PUT", token: carla, body: { count: 6 } })).status === 200, "A: Carla continua desant les persones previstes");
 
   // B. Anul·lació.
   const r2 = await reserva(carla, 9, 10);
@@ -152,7 +152,7 @@ try {
   check(avisB?.type === "reservation_cancelled" && avisB.new_starts_at === null, "B: Carla té l’avís d’anul·lació amb l’horari original");
   check((await api(`/reserves/${r2}/reprogramacio`, { method: "POST", token: carla, body: franja(9, 12) })).status === 400, "B: Carla no pot reprogramar-la");
   check((await api(`/reserves/${r2}/anulacio`, { method: "POST", token: carla })).status === 409, "B: Carla no pot tornar a anul·lar-la");
-  check((await api(`/reserves/${r2}/assistencia`, { method: "PUT", token: carla, body: { count: 3 } })).status === 400, "B: no es pot registrar assistència d’una anul·lada");
+  check((await api(`/reserves/${r2}/assistencia`, { method: "PUT", token: carla, body: { count: 3 } })).status === 400, "B: no es poden desar persones previstes d’una reserva anul·lada");
   check(!(await llistar(resp)).json.some((item) => item.id === r2), "B: la reserva anul·lada ja no surt al calendari");
   const enviats = await api("/avisos/enviats", { token: resp });
   check(enviats.json.some((item) => item.reservation_id === r2 && item.reservation_status === "cancelled"), "B: el responsable la veu als avisos enviats");

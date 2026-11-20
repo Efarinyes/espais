@@ -14,7 +14,7 @@ Punt de mapa. Llegeix [`SESSION.md`](../SESSION.md) abans de qualsevol capítol.
 - [04-rols-permisos.md](04-rols-permisos.md) — responsable i coordinador
 - [05-registre-alta.md](05-registre-alta.md) — onboarding i casuístiques
 - [06-espais.md](06-espais.md) — definició d’espais per entitat
-- [07-reserves-assistencia.md](07-reserves-assistencia.md) — reserves i compte d’assistents
+- [07-reserves-assistencia.md](07-reserves-assistencia.md) — reserves i persones previstes (el nom del fitxer és històric)
 - [08-notificacions.md](08-notificacions.md) — avís d’anul·lació
 - [09-analisi.md](09-analisi.md) — ús dels espais per al responsable
 
@@ -57,6 +57,7 @@ Punt de mapa. Llegeix [`SESSION.md`](../SESSION.md) abans de qualsevol capítol.
 - [adr/0024-verificacio-correu-responsable.md](adr/0024-verificacio-correu-responsable.md)
 - [adr/0025-verificacio-login-socket.md](adr/0025-verificacio-login-socket.md)
 - [adr/0026-avisos-web-push-i-reserva-sota-control.md](adr/0026-avisos-web-push-i-reserva-sota-control.md)
+- [adr/0027-persones-previstes-no-assistencia-real.md](adr/0027-persones-previstes-no-assistencia-real.md)
 
 ## Skills i rules
 

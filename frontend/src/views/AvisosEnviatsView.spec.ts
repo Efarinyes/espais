@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import { createPinia, setActivePinia } from "pinia";
 import { flushPromises, mount } from "@vue/test-utils";
@@ -113,5 +115,81 @@ describe("AvisosEnviatsView", () => {
     await flushPromises();
     expect(wrapper.get("[role='alert']").text()).toBe("només el responsable");
     expect(wrapper.text()).not.toContain("Encara no has enviat cap avís");
+  });
+
+  describe("presentació", () => {
+    const modificat = enviat({ id: "n1", coordinator_name: "Josep Oriol" });
+    const anullat = enviat({
+      id: "n2",
+      type: "reservation_cancelled",
+      new_starts_at: null,
+      new_ends_at: null,
+      changes: [],
+      reservation_status: "cancelled",
+      read_at: "2026-09-08T11:30:00Z",
+    });
+
+    it("l’etiqueta de tipus és un badge amb padding i vora definits, no un text enganxat", async () => {
+      const wrapper = muntar(async () => [modificat, anullat]);
+      await flushPromises();
+      const etiqueta = wrapper.get("article .badge");
+      expect(etiqueta.text()).toBe("Modificada");
+      expect(etiqueta.classes()).toContain("badge-warning");
+      const css = readFileSync(resolve(__dirname, "../styles.css"), "utf8");
+      expect(css).toMatch(/\.badge\s*\{[^}]*--border:\s*1px/);
+    });
+
+    it("té una versió de targetes en una columna i una taula per a pantalles amples", async () => {
+      const wrapper = muntar(async () => [modificat, anullat]);
+      await flushPromises();
+      const targetes = wrapper.get("[data-avisos-targetes]");
+      expect(targetes.classes()).toContain("@3xl:hidden");
+      expect(targetes.findAll("article")).toHaveLength(2);
+      const taula = wrapper.get("[data-avisos-taula]");
+      expect(taula.classes()).toEqual(expect.arrayContaining(["hidden", "@3xl:table"]));
+      expect(wrapper.get("main").classes()).not.toContain("max-w-md");
+    });
+
+    it("la taula té capçaleres i una fila per avís amb els mateixos fets que la targeta", async () => {
+      const wrapper = muntar(async () => [modificat, anullat]);
+      await flushPromises();
+      const taula = wrapper.get("[data-avisos-taula]");
+      expect(taula.findAll("thead th").map((th) => th.text())).toEqual([
+        "Avís",
+        "Espai i coordinador",
+        "Horari original",
+        "Nou horari",
+        "Enviat i lectura",
+      ]);
+      const [pendent, llegit] = taula.findAll("[data-fila-avis]");
+      expect(pendent.attributes("data-llegit")).toBe("false");
+      expect(pendent.text()).toContain("Modificada");
+      expect(pendent.text()).toContain("Sala 1");
+      expect(pendent.text()).toContain("Josep Oriol");
+      expect(pendent.text()).toContain("Pendent de lectura");
+      expect(pendent.text()).toContain("Ha canviat el dia, l’hora d’inici i l’hora de fi.");
+      expect(pendent.text()).toMatch(/\d{2}:\d{2}–\d{2}:\d{2}/);
+      expect(pendent.text()).not.toContain("Llegit ");
+      expect(llegit.attributes("data-llegit")).toBe("true");
+      expect(llegit.text()).toContain("Anul·lada");
+      expect(llegit.text()).toContain("Llegit");
+      expect(llegit.text()).toContain("Sense nou horari");
+      expect(llegit.text()).not.toContain("Pendent de lectura");
+      expect(llegit.text()).not.toContain("Ha canviat");
+    });
+
+    it("un coordinador sense nom no deixa un buit a la taula", async () => {
+      const wrapper = muntar(async () => [enviat({ coordinator_name: null })]);
+      await flushPromises();
+      const fila = wrapper.get("[data-fila-avis]");
+      expect(fila.get("th[scope='row']").text()).toBe("Sala 1");
+    });
+
+    it("sense avisos no es dibuixa ni la taula ni les targetes", async () => {
+      const wrapper = muntar(async () => []);
+      await flushPromises();
+      expect(wrapper.find("[data-avisos-taula]").exists()).toBe(false);
+      expect(wrapper.find("[data-avisos-targetes]").exists()).toBe(false);
+    });
   });
 });

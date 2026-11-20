@@ -45,11 +45,11 @@ Vegeu [07-reserves-assistencia.md](07-reserves-assistencia.md).
 - `managed_by_responsible` (booleà, defecte fals): cert quan el responsable ha modificat o anul·lat la reserva. Bloqueja el coordinador sobre aquest registre (ADR [0026](adr/0026-avisos-web-push-i-reserva-sota-control.md)). La migració `0012` el posa a cert a les reserves que ja tenien un avís de reprogramació.
 - Reprogramació v1 (Fase 6, tancada): la mateixa fila, interval actualitzat, estat `confirmed`. L’interval antic i el nou van al payload de l’avís. No implementis event log ni passis la reserva a `rescheduled`: el pla ho deixa al backlog.
 
-## Assistència
+## Persones previstes (nom tècnic: `AttendanceRecord`)
 
-- `AttendanceRecord`: `reservation_id`, `strategy` (`count` | futur `named_list` | `accounts`), `count` (enter ≥ 0).
+- `AttendanceRecord`: `reservation_id`, `strategy` (`count` | futur `named_list` | `accounts`), `count` (enter ≥ 0). **Llegiu-lo com a persones previstes**, no com a assistència real: opcional, es desa en planificar i no el verifica ningú (ADR [0027](adr/0027-persones-previstes-no-assistencia-real.md)).
 - v1 implementa només `count`. No posar columnes de llista nominativa “per si de cas”; el punt d’extensió és `strategy` + taula/estratègia nova.
-- ADR: [0003](adr/0003-assistencia-per-compte.md).
+- ADR: [0003](adr/0003-assistencia-per-compte.md) (esmenat) i [0027](adr/0027-persones-previstes-no-assistencia-real.md).
 
 ## Invariants
 

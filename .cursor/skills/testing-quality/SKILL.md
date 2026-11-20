@@ -15,7 +15,7 @@ Cap cas d’ús sense test. Primer el test del cas d’ús (fakes), després ada
 - Tenant A no veu B
 - Noms d’espai unique per entitat
 - Solapament de reserves
-- Assistència `count`
+- Persones previstes (`count`, nom tècnic: assistència)
 - Anul·lació + notifier
 - Correu caigut no desfa cancel
 

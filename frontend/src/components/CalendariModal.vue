@@ -3,6 +3,7 @@ import { computed, onMounted, onUnmounted, ref } from "vue";
 
 import { etiquetaDurada } from "../calendari";
 import type { ModalCalendari } from "../composables/useCalendariReserves";
+import CampPersonesPrevistes from "./CampPersonesPrevistes.vue";
 import { AVIS_MODIFICADA } from "../services/avisos";
 import { dataHoraMadrid } from "../utils/formatData";
 
@@ -74,11 +75,6 @@ const reservaBloquejada = computed(
     !props.potReprogramar &&
     !props.potAnular,
 );
-
-function actualitzarAssistencia(event: Event) {
-  const camp = event.target as HTMLInputElement;
-  emit("update:campAssistencia", camp.value);
-}
 
 function valorDe(event: Event): string {
   return (event.target as HTMLInputElement).value;
@@ -216,6 +212,12 @@ onUnmounted(() => {
           {{ etiquetaDurada(minuts) }}
         </button>
       </div>
+      <CampPersonesPrevistes
+        :model-value="campAssistencia"
+        :disabled="enviant"
+        @update:model-value="emit('update:campAssistencia', $event)"
+      />
+      <p v-if="avisAforament" class="mt-2 text-sm" data-avis-aforament>{{ avisAforament }}</p>
       <p v-if="errorDetall" class="mt-4 text-error" role="alert">{{ errorDetall }}</p>
       <p v-else-if="!nova.valida && nova.error" class="mt-4 text-error" role="alert">{{ nova.error }}</p>
       <p v-else-if="nova.resum" class="mt-4">{{ nova.resum }}</p>
@@ -252,6 +254,12 @@ onUnmounted(() => {
           {{ etiquetaDurada(minuts) }}
         </button>
       </div>
+      <CampPersonesPrevistes
+        :model-value="campAssistencia"
+        :disabled="enviant"
+        @update:model-value="emit('update:campAssistencia', $event)"
+      />
+      <p v-if="avisAforament" class="mt-2 text-sm" data-avis-aforament>{{ avisAforament }}</p>
       <div class="modal-action">
         <button class="btn btn-ghost min-h-11" type="button" :disabled="enviant" @click="emit('tancar')">
           Cancel·la
@@ -317,27 +325,16 @@ onUnmounted(() => {
           {{ enviantReprogramacio ? "Canviant…" : "Canvia l’horari" }}
         </button>
       </section>
-      <section v-if="potRegistrarAssistencia" aria-labelledby="assistencia-reserva">
-        <h3 id="assistencia-reserva" class="font-medium">Assistència</h3>
-        <label class="label mt-4" for="assistencia">Nombre d’assistents</label>
-        <input
-          id="assistencia"
-          class="input w-full min-h-11 border border-base-300 bg-base-100"
-          type="text"
-          inputmode="numeric"
-          pattern="[0-9]*"
-          name="assistencia"
-          autocomplete="off"
-          placeholder="12"
-          :value="campAssistencia"
-          :aria-invalid="Boolean(errorDetall) || undefined"
-          :aria-describedby="errorDetall ? 'assistencia-error' : undefined"
-          @input="actualitzarAssistencia"
-        />
-      </section>
-      <p v-if="errorDetall" id="assistencia-error" class="mt-2 text-error" role="alert">{{ errorDetall }}</p>
+      <CampPersonesPrevistes
+        v-if="potRegistrarAssistencia"
+        :model-value="campAssistencia"
+        :disabled="enviantAssistencia"
+        :error-id="errorDetall ? 'persones-previstes-error' : undefined"
+        @update:model-value="emit('update:campAssistencia', $event)"
+      />
+      <p v-if="errorDetall" id="persones-previstes-error" class="mt-2 text-error" role="alert">{{ errorDetall }}</p>
       <p v-else-if="okDetall" class="mt-2 text-success">{{ okDetall }}</p>
-      <p v-if="avisAforament" class="mt-2 text-sm">{{ avisAforament }}</p>
+      <p v-if="avisAforament" class="mt-2 text-sm" data-avis-aforament>{{ avisAforament }}</p>
       <div class="modal-action flex-wrap gap-2">
         <button class="btn btn-ghost min-h-11" type="button" :disabled="enviantAssistencia" @click="emit('tancar')">
           Tanca
@@ -348,7 +345,7 @@ onUnmounted(() => {
           type="submit"
           :disabled="enviantAssistencia"
         >
-          {{ enviantAssistencia ? "Desant…" : "Desa el nombre" }}
+          {{ enviantAssistencia ? "Desant…" : "Desa les persones previstes" }}
         </button>
         <button
           v-if="potAnular"

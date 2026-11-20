@@ -6,10 +6,12 @@ import { calendarisPerEspais } from "../aparenca/colorsCalendari";
 import {
   DURADA_PER_DEFECTE_MINUTS,
   DURADES_RESERVA_MINUTS,
+  avisPrevisioAforament,
   classesReserva,
   cobreixInstant,
   filaReserva,
   franjaDesDeInici,
+  parseCompteAssistencia,
   reservaVisible,
   titolReserva,
   valorRangAIso,
@@ -292,6 +294,7 @@ export function useCalendariReserves() {
 
   const { franjaDesDeClic, confirmarPendent } = useCreacioReserva({
     espaiDeCreacio: () => espaiPerCrear.value,
+    previsio: () => campAssistencia.value,
     franjaOberta: () => {
       if (modal.value?.tipus === "crear") {
         return modal.value.franja;
@@ -312,7 +315,7 @@ export function useCalendariReserves() {
     campAssistencia,
     enviantAssistencia,
     potRegistrarAssistencia,
-    avisAforament,
+    avisAforament: avisAforamentDetall,
     actualitzarCampAssistencia,
     desarAssistencia,
   } = useAssistenciaReserva({
@@ -322,6 +325,15 @@ export function useCalendariReserves() {
     okDetall,
     reservesCarregades,
     tancarModal,
+  });
+
+  /** Avís suau de la previsió: a la reserva oberta o, en crear-la, a l'espai triat. */
+  const avisAforament = computed(() => {
+    if (modal.value?.tipus === "crear" || modal.value?.tipus === "nova") {
+      const espai = espaisActius.value.find((item) => item.id === espaiPerCrear.value);
+      return espai ? avisPrevisioAforament(parseCompteAssistencia(campAssistencia.value), espai.capacity) : "";
+    }
+    return avisAforamentDetall.value;
   });
 
   const { enviantAnulacio, potAnular, demanarAnulacio, tornarDetall, confirmarAnulacio } = useAnulacioReserva({
@@ -378,6 +390,7 @@ export function useCalendariReserves() {
       return;
     }
     error.value = "";
+    campAssistencia.value = "";
     duradaMinuts.value = DURADA_PER_DEFECTE_MINUTS;
     espaiPerCrear.value = espaiId.value;
     const franja = franjaDesDeClic(dateTime, finestresPerClic(), duradaMinuts.value);
@@ -445,6 +458,7 @@ export function useCalendariReserves() {
     error.value = "";
     errorDetall.value = "";
     okDetall.value = "";
+    campAssistencia.value = "";
     espaiPerCrear.value = espaiId.value || espaisActius.value[0]?.id || "";
     diaNova.value = Temporal.Now.zonedDateTimeISO("Europe/Madrid").toPlainDate().toString();
     horaNova.value = "08:00";

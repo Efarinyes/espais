@@ -37,7 +37,7 @@ function reserva(overrides: Partial<ReservaDto> = {}): ReservaDto {
 
 function muntar(
   reserves: Partial<ReservesApi> = {},
-  opcions: { espaiId?: string; franja?: FranjaReserva | null; token?: string } = {},
+  opcions: { espaiId?: string; franja?: FranjaReserva | null; token?: string; previsio?: string } = {},
 ) {
   localStorage.clear();
   const pinia = createPinia();
@@ -55,6 +55,7 @@ function muntar(
     setup() {
       const espaiId = ref(opcions.espaiId ?? "s1");
       const franja = ref<FranjaReserva | null>(opcions.franja === undefined ? null : opcions.franja);
+      const previsio = ref(opcions.previsio ?? "");
       const enviant = ref(false);
       const error = ref("");
       const reservesCarregades = ref<ReservaDto[]>([]);
@@ -62,6 +63,7 @@ function muntar(
       const creacio = useCreacioReserva({
         espaiDeCreacio: () => espaiId.value,
         franjaOberta: () => franja.value,
+        previsio: () => previsio.value,
         enviant,
         error,
         reservesCarregades,
@@ -73,7 +75,7 @@ function muntar(
           franja.value = null;
         },
       });
-      return { ...creacio, espaiId, franja, enviant, error, reservesCarregades, tancat: () => tancat };
+      return { ...creacio, espaiId, franja, previsio, enviant, error, reservesCarregades, tancat: () => tancat };
     },
     template: "<div />",
   });
@@ -230,5 +232,141 @@ describe("useCreacioReserva", () => {
     );
     expect(await caiguda.vm.confirmarPendent()).toBeNull();
     expect(caiguda.vm.error).toContain("No s’ha pogut crear la reserva");
+  });
+
+  describe("persones previstes", () => {
+    const franja = { starts_at: "2026-09-08T08:00:00Z", ends_at: "2026-09-08T09:00:00Z" };
+
+    it("el camp és opcional: sense previsió es crea la reserva i no es crida l’endpoint de previsió", async () => {
+      let previsioDesada = false;
+      const wrapper = muntar(
+        {
+          registrarAssistencia: async () => {
+            previsioDesada = true;
+            return reserva();
+          },
+        },
+        { franja },
+      );
+      const creada = await wrapper.vm.confirmarPendent();
+      expect(creada?.attendance_count).toBeNull();
+      expect(previsioDesada).toBe(false);
+      expect(wrapper.vm.reservesCarregades).toHaveLength(1);
+      expect(wrapper.vm.error).toBe("");
+    });
+
+    it("un camp només amb espais compta com a buit", async () => {
+      const wrapper = muntar({}, { franja, previsio: "   " });
+      expect(await wrapper.vm.confirmarPendent()).not.toBeNull();
+      expect(wrapper.vm.error).toBe("");
+    });
+
+    it("desa les persones previstes en crear i les conserva a la llista", async () => {
+      const ordre: string[] = [];
+      const wrapper = muntar(
+        {
+          crear: async () => {
+            ordre.push("crear");
+            return reserva();
+          },
+          registrarAssistencia: async (_token, id, count) => {
+            ordre.push(`previsio:${id}:${count}`);
+            return reserva({ attendance_count: count });
+          },
+        },
+        { franja, previsio: "12" },
+      );
+      const creada = await wrapper.vm.confirmarPendent();
+      expect(ordre).toEqual(["crear", "previsio:r1:12"]);
+      expect(creada?.attendance_count).toBe(12);
+      expect(wrapper.vm.reservesCarregades).toHaveLength(1);
+      expect(wrapper.vm.reservesCarregades[0].attendance_count).toBe(12);
+      expect(wrapper.vm.tancat()).toBe(true);
+      expect(wrapper.vm.error).toBe("");
+    });
+
+    it("el zero és una previsió i es desa", async () => {
+      let desat: number | null = null;
+      const wrapper = muntar(
+        {
+          registrarAssistencia: async (_token, _id, count) => {
+            desat = count;
+            return reserva({ attendance_count: count });
+          },
+        },
+        { franja, previsio: "0" },
+      );
+      await wrapper.vm.confirmarPendent();
+      expect(desat).toBe(0);
+    });
+
+    it("una previsió que supera l’aforament no impedeix la reserva", async () => {
+      const wrapper = muntar(
+        {
+          registrarAssistencia: async (_token, _id, count) =>
+            reserva({ attendance_count: count, capacity: 10, exceeds_capacity: true }),
+        },
+        { franja, previsio: "30" },
+      );
+      const creada = await wrapper.vm.confirmarPendent();
+      expect(creada?.exceeds_capacity).toBe(true);
+      expect(wrapper.vm.reservesCarregades).toHaveLength(1);
+      expect(wrapper.vm.error).toBe("");
+    });
+
+    it("una previsió no vàlida atura la creació abans de cridar l’API", async () => {
+      let cridat = false;
+      for (const valor of ["-1", "1.5", "molts"]) {
+        const wrapper = muntar(
+          {
+            crear: async () => {
+              cridat = true;
+              return reserva();
+            },
+          },
+          { franja, previsio: valor },
+        );
+        expect(await wrapper.vm.confirmarPendent()).toBeNull();
+        expect(wrapper.vm.error).toBe("Les persones previstes han de ser un enter ≥ 0.");
+        expect(wrapper.vm.tancat()).toBe(false);
+        expect(wrapper.vm.enviant).toBe(false);
+      }
+      expect(cridat).toBe(false);
+    });
+
+    it("si la reserva es crea però la previsió no es pot desar, la reserva es conserva i s’avisa", async () => {
+      const wrapper = muntar(
+        {
+          registrarAssistencia: async () => {
+            throw new ApiError("error", 500);
+          },
+        },
+        { franja, previsio: "12" },
+      );
+      const creada = await wrapper.vm.confirmarPendent();
+      expect(creada?.id).toBe("r1");
+      expect(wrapper.vm.reservesCarregades).toHaveLength(1);
+      expect(wrapper.vm.error).toContain("La reserva s’ha creat");
+      expect(wrapper.vm.error).toContain("persones previstes");
+      expect(wrapper.vm.enviant).toBe(false);
+    });
+
+    it("si la reserva no es pot crear no es desa cap previsió", async () => {
+      let previsioDesada = false;
+      const wrapper = muntar(
+        {
+          crear: async () => {
+            throw new ApiError("aquest interval ja està ocupat", 409);
+          },
+          registrarAssistencia: async () => {
+            previsioDesada = true;
+            return reserva();
+          },
+        },
+        { franja, previsio: "12" },
+      );
+      expect(await wrapper.vm.confirmarPendent()).toBeNull();
+      expect(previsioDesada).toBe(false);
+    });
   });
 });

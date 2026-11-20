@@ -170,6 +170,95 @@ describe("useCalendariReserves", () => {
     });
   });
 
+  it("crea la reserva amb persones previstes, que es conserven a la llista", async () => {
+    const wrapper = await muntar({
+      crear: async (_token, input) =>
+        reserva({ mine: true, space_id: input.space_id, starts_at: input.starts_at, ends_at: input.ends_at }),
+      registrarAssistencia: async (_token, id, count) => reserva({ id, mine: true, attendance_count: count }),
+    });
+    await wrapper.vm.carregarEspais();
+    wrapper.vm.clicarFranja(Temporal.ZonedDateTime.from("2026-09-08T10:00:00+02:00[Europe/Madrid]"));
+    expect(wrapper.vm.campAssistencia).toBe("");
+    wrapper.vm.actualitzarCampAssistencia("15");
+    const creada = await wrapper.vm.confirmarPendent();
+    expect(creada?.attendance_count).toBe(15);
+    expect(wrapper.vm.reservesCarregades[0].attendance_count).toBe(15);
+    expect(wrapper.vm.modal).toBeNull();
+    expect(wrapper.vm.campAssistencia).toBe("");
+  });
+
+  it("crea una reserva sense persones previstes sense cap avís ni error", async () => {
+    let previsioDesada = false;
+    const wrapper = await muntar({
+      registrarAssistencia: async () => {
+        previsioDesada = true;
+        return reserva();
+      },
+    });
+    await wrapper.vm.carregarEspais();
+    wrapper.vm.clicarFranja(Temporal.ZonedDateTime.from("2026-09-08T10:00:00+02:00[Europe/Madrid]"));
+    expect(wrapper.vm.avisAforament).toBe("");
+    const creada = await wrapper.vm.confirmarPendent();
+    expect(creada).not.toBeNull();
+    expect(previsioDesada).toBe(false);
+    expect(wrapper.vm.error).toBe("");
+  });
+
+  it("en crear, l’avís d’aforament surt amb la previsió de l’espai triat i no bloqueja la reserva", async () => {
+    const wrapper = await muntar({
+      registrarAssistencia: async (_token, id, count) =>
+        reserva({ id, mine: true, attendance_count: count, exceeds_capacity: true }),
+    });
+    await wrapper.vm.carregarEspais();
+    wrapper.vm.clicarFranja(Temporal.ZonedDateTime.from("2026-09-08T10:00:00+02:00[Europe/Madrid]"));
+    wrapper.vm.actualitzarCampAssistencia("41");
+    expect(wrapper.vm.avisAforament).toContain("superen l’aforament");
+    expect(await wrapper.vm.confirmarPendent()).not.toBeNull();
+    wrapper.vm.clicarFranja(Temporal.ZonedDateTime.from("2026-09-09T10:00:00+02:00[Europe/Madrid]"));
+    wrapper.vm.actualitzarCampAssistencia("40");
+    expect(wrapper.vm.avisAforament).toBe("");
+  });
+
+  it("en crear des del formulari de nova reserva també es desa la previsió", async () => {
+    let desat: number | null = null;
+    const wrapper = await muntar({
+      registrarAssistencia: async (_token, id, count) => {
+        desat = count;
+        return reserva({ id, mine: true, attendance_count: count });
+      },
+    });
+    await wrapper.vm.carregarEspais();
+    wrapper.vm.obrirNovaReserva();
+    expect(wrapper.vm.campAssistencia).toBe("");
+    wrapper.vm.actualitzarCampAssistencia("8");
+    await wrapper.vm.confirmarNova();
+    expect(desat).toBe(8);
+  });
+
+  it("una previsió buida o antiga d’una altra fitxa no es filtra a la creació següent", async () => {
+    const wrapper = await muntar({
+      llistar: async () => [reserva({ mine: true, attendance_count: 22 })],
+    });
+    await wrapper.vm.carregarEspais();
+    await wrapper.vm.carregarReserves("2026-09-07T22:00:00Z", "2026-09-14T22:00:00Z");
+    wrapper.vm.obrirDetall("r1");
+    expect(wrapper.vm.campAssistencia).toBe("22");
+    wrapper.vm.tancarModal();
+    wrapper.vm.clicarFranja(Temporal.ZonedDateTime.from("2026-09-10T10:00:00+02:00[Europe/Madrid]"));
+    expect(wrapper.vm.campAssistencia).toBe("");
+  });
+
+  it("una reserva existent sense persones previstes obre el detall amb el camp buit", async () => {
+    const wrapper = await muntar({
+      llistar: async () => [reserva({ mine: true, attendance_count: null })],
+    });
+    await wrapper.vm.carregarEspais();
+    await wrapper.vm.carregarReserves("2026-09-07T22:00:00Z", "2026-09-14T22:00:00Z");
+    wrapper.vm.obrirDetall("r1");
+    expect(wrapper.vm.campAssistencia).toBe("");
+    expect(wrapper.vm.avisAforament).toBe("");
+  });
+
   it("mostra l’error de solapament del backend", async () => {
     const wrapper = await muntar({
       crear: async () => {
@@ -485,7 +574,7 @@ describe("useCalendariReserves", () => {
     expect(items).toEqual([]);
   });
 
-  it("el coordinador desa l’assistència de la seva reserva", async () => {
+  it("el coordinador desa les persones previstes de la seva reserva", async () => {
     let enviat: { id: string; count: number } | null = null;
     const wrapper = await muntar({
       llistar: async () => [reserva({ mine: true })],
@@ -509,7 +598,7 @@ describe("useCalendariReserves", () => {
     expect(wrapper.vm.modal).toBeNull();
   });
 
-  it("desa l’assistència si el camp arriba com a número", async () => {
+  it("desa les persones previstes si el camp arriba com a número", async () => {
     let enviat: number | null = null;
     const wrapper = await muntar({
       llistar: async () => [reserva({ mine: true })],
@@ -528,7 +617,7 @@ describe("useCalendariReserves", () => {
     expect(wrapper.vm.modal).toBeNull();
   });
 
-  it("avisa si el compte supera l’aforament però desa", async () => {
+  it("avisa si les persones previstes superen l’aforament però desa", async () => {
     const wrapper = await muntar({
       llistar: async () => [reserva({ mine: true, capacity: 10 })],
       registrarAssistencia: async (_token, _id, count) =>
@@ -544,7 +633,7 @@ describe("useCalendariReserves", () => {
     expect(wrapper.vm.modal).toBeNull();
   });
 
-  it("el responsable desa el nombre d’assistents d’una reserva aliena", async () => {
+  it("el responsable desa les persones previstes d’una reserva aliena", async () => {
     let enviat: number | null = null;
     const wrapper = await muntar(
       {
@@ -578,11 +667,11 @@ describe("useCalendariReserves", () => {
     expect(wrapper.vm.detall).toBeNull();
   });
 
-  it("mostra l’error si no es pot registrar l’assistència d’altri", async () => {
+  it("mostra l’error si no es poden desar les persones previstes d’una reserva d’altri", async () => {
     const wrapper = await muntar({
       llistar: async () => [reserva({ mine: true })],
       registrarAssistencia: async () => {
-        throw new ApiError("només qui ha fet la reserva pot registrar-ne l’assistència", 403);
+        throw new ApiError("només qui ha fet la reserva pot canviar-ne les persones previstes", 403);
       },
     });
     await wrapper.vm.carregarEspais();
@@ -590,7 +679,7 @@ describe("useCalendariReserves", () => {
     wrapper.vm.obrirDetall("r1");
     wrapper.vm.campAssistencia = "3";
     await wrapper.vm.desarAssistencia();
-    expect(wrapper.vm.errorDetall).toContain("qui ha fet la reserva");
+    expect(wrapper.vm.errorDetall).toContain("persones previstes");
   });
 
   it("el responsable confirma l’anul·lació i treu la reserva de la llista", async () => {

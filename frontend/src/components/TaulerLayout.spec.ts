@@ -128,8 +128,8 @@ describe("TaulerLayout", () => {
     expect(nav.findAll("a").map((enllac) => enllac.text())).toEqual([
       "Espais",
       "Calendari",
-      "Estadístiques",
       "Avisos enviats",
+      "Estadístiques",
       "Convida coordinadors",
       "Tria els colors",
     ]);
@@ -154,6 +154,7 @@ describe("TaulerLayout", () => {
     const nav = wrapper.get("nav[aria-label='Navegació']");
     const administracio = nav.get("[aria-labelledby='grup-administracio']");
     expect(administracio.findAll("a").map((enllac) => enllac.text())).toEqual([
+      "Estadístiques",
       "Convida coordinadors",
       "Tria els colors",
     ]);
@@ -161,6 +162,30 @@ describe("TaulerLayout", () => {
     expect(surt.text()).toBe("Surt");
     expect(surt.classes()).toContain("text-error");
     expect(surt.element.closest("[aria-labelledby='grup-administracio']")).toBeNull();
+  });
+
+  it("Estadístiques és sota Administració i no al grup principal", async () => {
+    const { wrapper } = await muntar("/espais");
+    const nav = wrapper.get("nav[aria-label='Navegació']");
+    const grups = nav.findAll("ul");
+    const principal = grups[0]!;
+    expect(principal.findAll("a").map((enllac) => enllac.text())).toEqual([
+      "Espais",
+      "Calendari",
+      "Avisos enviats",
+    ]);
+    const estadistiques = nav.get("a[href='/analisi']");
+    expect(estadistiques.element.closest("[aria-labelledby='grup-administracio']")).not.toBeNull();
+  });
+
+  it("Administració es llegeix com a secció, no com un enllaç més", async () => {
+    const { wrapper } = await muntar("/espais");
+    const titol = wrapper.get("#grup-administracio");
+    expect(titol.element.tagName).toBe("P");
+    expect(titol.classes()).toEqual(expect.arrayContaining(["font-semibold", "uppercase", "text-primary"]));
+    expect(titol.classes()).not.toContain("text-base-content/70");
+    expect(titol.find("a, button").exists()).toBe(false);
+    expect(titol.text()).toBe("Administració");
   });
 
   it("surt de la sessió des del lateral", async () => {
